@@ -1,0 +1,2136 @@
+{
+ "brands": [
+  {
+   "slug": "akikoaoki",
+   "name": "AKIKOAOKI",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": null,
+   "founders": [
+    "Akiko Aoki"
+   ],
+   "url": "https://akikoaoki.com",
+   "verification": "partial",
+   "story": "Akiko Aoki works from the position that a garment is a performance rather than an object, and takes classical womenswear apart accordingly. The label is among the most consistently cited young names in Tokyo. Its founding year is not something we could pin down.",
+   "liveItems": 157,
+   "img": "https://cdn.shopify.com/s/files/1/0272/5547/2225/files/jk2_28b14a58-5ad0-4161-973f-5b29f0e463e8.jpg?v=1745204947",
+   "medianUsd": 223,
+   "labels": [
+    {
+     "axis": "body_and_identity",
+     "value": "body_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "akikoaoki",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "official_url",
+     "value": "https://akikoaoki.com",
+     "url": "https://akikoaoki.com/en",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "angelchen",
+   "name": "Angel Chen",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2014,
+   "founders": [
+    "Angel Chen"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Angel Chen was born in 1991 and founded her Shanghai label in 2014, which makes her an elder of this cohort by a decade of scene time. Her signature is colour used at full saturation and a fluency in moving between Eastern and Western reference without treating either as exotic.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2014",
+     "url": "https://en.wikipedia.org/wiki/Angel_Chen",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "aoyes",
+   "name": "AO Yes",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2022,
+   "founders": [
+    "Austin Wang",
+    "Yansong Liu"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Founded in Shanghai in 2022 by Austin Wang, a creative-media figure, and Yansong Liu, a fashion graduate — a pairing that describes the label better than any description of the clothes would. AO Yes works older Chinese visual traditions into contemporary shapes and came up through Labelhood, the Shanghai incubator that has functioned as this generation's front door.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "legitimacy_route",
+     "value": "incubator",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "outside_cultural_capital",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "national_craft_revival",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "labelhood",
+     "channel": "incubator"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2022",
+     "url": "https://radii.co/article/4-chinese-streetwear-brands-to-check-out-in-shanghai",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "apresse",
+   "name": "a.PRESSE",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2021,
+   "founders": [
+    "Kazuma Shigematsu"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Kazuma Shigematsu founded a.PRESSE in 2021 and it is now, by item count, the most widely stocked label in this catalogue. The method is precise: take a vintage workwear or military garment, rebuild it with better cloth, better fit and better drape, and remove every logo. The result costs several times what the original did and looks, deliberately, like nothing in particular.",
+   "liveItems": 90,
+   "img": "https://cdn.shopify.com/s/files/1/0051/7042/files/A.Presse-Leather-Down-Jacket-Black-1.jpg?v=1766440517",
+   "medianUsd": 677,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "well_above_shelf",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "reconstructed_vintage",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "haven",
+     "channel": "retailer"
+    },
+    {
+     "store": "packer",
+     "channel": "retailer"
+    },
+    {
+     "store": "union",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2021",
+     "url": "https://en.wikipedia.org/wiki/A.PRESSE",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "attempt",
+   "name": "ATTEMPT",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2015,
+   "founders": [
+    "Liang Dong"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Liang Dong started ATTEMPT in Shanghai in 2015, working the seam between streetwear and tailoring at a moment when Chinese labels were mostly choosing one or the other. The clothes are deconstructed but not loud — structure taken apart and reassembled with the volume kept down.",
+   "liveItems": 7,
+   "img": "https://cdn.shopify.com/s/files/1/0014/2626/0017/files/distressed-trench-coat-brown_865e1b3f-d0d2-458a-b8e4-2ca01fd2c15a.jpg?v=1771951694",
+   "medianUsd": 337,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "tailoring_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "chinasquad",
+     "channel": "retailer"
+    },
+    {
+     "store": "sixtypercent",
+     "channel": "retailer"
+    },
+    {
+     "store": "ujng",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2015",
+     "url": "https://global.sixty-percent.com/shops/manufacture-by-attempt",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "carolinehu",
+   "name": "Caroline Hú",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": null,
+   "founders": [
+    "Caroline Hú"
+   ],
+   "url": null,
+   "verification": "unverified",
+   "story": "Caroline Hú works between Shanghai and New York, building surfaces out of layered and gathered fabric until they hold a texture that photographs like weather. The label has shown on the Paris schedule. Beyond that, little is firmly on record — no founding year we could verify, no direct store.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "legitimacy_route",
+     "value": "paris_calendar",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": []
+  },
+  {
+   "slug": "cfcl",
+   "name": "CFCL",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2020,
+   "founders": [
+    "Yusuke Takahashi"
+   ],
+   "url": "https://cfcl.jp",
+   "verification": "verified",
+   "story": "Yusuke Takahashi ran Issey Miyake Men before founding CFCL in 2020, and the initials — Clothing For Contemporary Life — read as a thesis rather than a name. Everything is knit, and the knit is computationally programmed in three dimensions, which means the garment is engineered before it is cut, or rather instead of being cut. Of the technique-led labels here, it is the one with the clearest industrial logic behind it.",
+   "liveItems": 448,
+   "img": "https://cdn.shopify.com/s/files/1/0495/2489/9996/files/CF009KC164_2709.jpg?v=1736842263",
+   "medianUsd": 457,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "technique_as_identity",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "well_above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "cfcl",
+     "channel": "direct"
+    },
+    {
+     "store": "club21",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2020",
+     "url": "https://cfcl.jp/en/pages/corporate",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://cfcl.jp",
+     "url": "https://cfcl.jp/en",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "faxcopyexpress",
+   "name": "Fax Copy Express*",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2020,
+   "founders": [
+    "Lia Liao",
+    "Nick Wang"
+   ],
+   "url": "https://faxcopyexpress.store",
+   "verification": "verified",
+   "story": "Shanghai, 2020. Lia Liao and Nick Wang named their label after the sort of shopfront that photocopies your documents while you wait — and then built a wardrobe out of the office culture that surrounds it. The reference is the Western corporate nineties: lanyards, pressed shirting, the visual language of the cubicle, all handled with enough distance to be funny and enough care not to be a costume. It is one of the few Chinese labels of its generation to have reached SSENSE early, and it ships from its own store.",
+   "liveItems": 15,
+   "img": "https://cdn.shopify.com/s/files/1/0622/6935/8309/files/1_6d61ce6f-2785-41c8-b03b-28f6f17a4614.jpg?v=1709289109",
+   "medianUsd": 350,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "reconstructed_vintage",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "ateliernewyork",
+     "channel": "retailer"
+    },
+    {
+     "store": "faxcopyexpress",
+     "channel": "direct"
+    },
+    {
+     "store": "nubiantokyo",
+     "channel": "retailer"
+    },
+    {
+     "store": "ssense",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2020",
+     "url": "https://hashtaglegend.com/post/new-chinese-fashion-brands-to-know-2026",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://faxcopyexpress.store",
+     "url": "https://faxcopyexpress.store/collections/all-products",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "fengchenwang",
+   "name": "Feng Chen Wang",
+   "country": "GB",
+   "city": "London",
+   "founded": 2015,
+   "founders": [
+    "Feng Chen Wang"
+   ],
+   "url": "https://fengchenwang.com",
+   "verification": "verified",
+   "story": "Feng Chen Wang founded her label in London in 2015, straight out of the Royal College of Art, and has spent it since taking garments apart in public. Doubled plackets, split seams, two jackets fused into one — the deconstruction is not a finish but the subject. She is Chinese-born and London-based, and the work is legible as neither one thing nor the other, which appears to be the point.",
+   "liveItems": 344,
+   "img": "https://cdn.shopify.com/s/files/1/0056/5893/5378/files/2026-07-28T130258.359.png?v=1785215005",
+   "medianUsd": 245,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "divincenzo",
+     "channel": "retailer"
+    },
+    {
+     "store": "fengchenwang",
+     "channel": "direct"
+    },
+    {
+     "store": "svrn",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2015",
+     "url": "https://fengchenwang.com/en-us/pages/about",
+     "confidence": 1.0
+    },
+    {
+     "field": "origin_country",
+     "value": "GB — London-based, Chinese-born designer, RCA graduate",
+     "url": "https://fengchenwang.com/en-us/pages/about",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "garconbygcogcn",
+   "name": "Garcon by Gcogcn",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": null,
+   "founders": [],
+   "url": null,
+   "verification": "unverified",
+   "story": "One of the labels Labelhood has put on the Shanghai schedule. Nothing further is documented in sources we could verify.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "legitimacy_route",
+     "value": "incubator",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "labelhood",
+     "channel": "incubator"
+    }
+   ],
+   "claims": []
+  },
+  {
+   "slug": "goodbai",
+   "name": "GoodBai",
+   "country": "CN",
+   "city": null,
+   "founded": 2021,
+   "founders": [
+    "Bai Jingting"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "GoodBai was founded in 2021 by Bai Jingting, an actor, and it belongs to a category that fashion criticism handles badly: the label that arrives with an audience already attached. The clothes are vintage-preppy with a cartoon streak. Whether that would have found a following without the name attached is unknowable, and not obviously the right question.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "legitimacy_route",
+     "value": "outside_cultural_capital",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2021",
+     "url": "https://radii.co/article/4-chinese-streetwear-brands-to-check-out-in-shanghai",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "kakankudo",
+   "name": "Kakan Kudo",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2024,
+   "founders": [
+    "Kakan Kudo"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Kakan Kudo launched in 2024 and took the Tokyo Fashion Award in 2026 — a fast two years. The work is hand-spun knit from raw undyed wool, shown under the title Wild, Not Pure, which is a fair description of the surface: distressed and irregular where knitwear is usually smooth.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "technique_as_identity",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "national_institution",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2024. Tokyo Fashion Award 2026 recipient; debut show 'Wild, Not Pure'",
+     "url": "https://www.tokyoweekender.com/art_and_culture/fashion/rakuten-fashion-week-tokyo-aw-2026/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "kamiya",
+   "name": "KAMIYA",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2023,
+   "founders": [
+    "Koji Kamiya"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Koji Kamiya was born in Aichi in 1995, started in Osaka out of high school, worked under Mihara Yasuhiro and then at the street label MYne, which he directed from 2018. KAMIYA proper launched in 2023 as MYne's successor. The method is damage — wear, distress and process used as the expressive material rather than as a finish applied at the end.",
+   "liveItems": 8,
+   "img": "https://cdn.shopify.com/s/files/1/0626/9065/files/G15PT054-IND__1.png?v=1765426444",
+   "medianUsd": 440,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "well_above_shelf",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "reconstructed_vintage",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "amamaniere",
+     "channel": "retailer"
+    },
+    {
+     "store": "gr8",
+     "channel": "retailer"
+    },
+    {
+     "store": "nubiantokyo",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2023 — relaunched FW23, succeeding the predecessor label MYne; Koji Kamiya born 1995 Aichi",
+     "url": "https://rakutenfashionweektokyo.com/en/brands/detail/kamiya/",
+     "confidence": 1.0
+    },
+    {
+     "field": "founded_year",
+     "value": "2018 with a 2023 rebrand, founder given as Ryo Kamiya — CONFLICTS; 2018 is when Kamiya became director of MYne, not of KAMIYA",
+     "url": "https://www.highsnobiety.com/p/best-japanese-clothing-brands/",
+     "confidence": 0.3
+    }
+   ]
+  },
+  {
+   "slug": "khoki",
+   "name": "khoki",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": null,
+   "founders": [
+    "Koki Abe"
+   ],
+   "url": null,
+   "verification": "unverified",
+   "story": "A Tokyo label run as a collective under Koki Abe, stocked through Union and the London shop Future Present. A founding year is not on record.",
+   "liveItems": 2,
+   "img": "https://cdn.shopify.com/s/files/1/0051/0392/files/091225_KHOKI_MODEL100.jpg?v=1757631571",
+   "medianUsd": 246,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "futurepresent",
+     "channel": "retailer"
+    },
+    {
+     "store": "union",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founders",
+     "value": "a collective led by Koki Abe",
+     "url": "https://futurepresent.london/brand/khoki",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "kotagushiken",
+   "name": "Kota Gushiken",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2017,
+   "founders": [
+    "Kota Gushiken"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Kota Gushiken was born in Yokohama, graduated from Central Saint Martins in 2016 and started his label in Tokyo the following year. He works almost entirely in knit and treats it as a structural rather than a soft material. He took the Tokyo Fashion Award in 2024.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "technique_as_identity",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "national_institution",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2017. CSM 2016 graduate, born Yokohama. Tokyo Fashion Award 2024",
+     "url": "https://industry.notjustalabel.com/kota-gushiken",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "markgong",
+   "name": "MARKGONG",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2018,
+   "founders": [
+    "Mark Gong"
+   ],
+   "url": "https://www.markgongstudio.com",
+   "verification": "verified",
+   "story": "Mark Gong trained at Parsons and returned to Shanghai in 2018 to make clothes for young women who go out. That is a narrower brief than most of his peers accept and it has served him well — the label became a fixture of both the New York and Shanghai schedules unusually fast.",
+   "liveItems": 7,
+   "img": "https://cdn.shopify.com/s/files/1/0093/2616/6071/files/0763-01_175bd331-d909-4a6a-a0ab-17516e69e2bb.jpg?v=1781152553",
+   "medianUsd": 195,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "at_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "markgong",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2018",
+     "url": "https://www.markgongstudio.com/pages/about",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://www.markgongstudio.com",
+     "url": "https://www.markgongstudio.com/pages/about",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "meanswhile",
+   "name": "meanswhile",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2014,
+   "founders": [
+    "Naohiro Fujisaki"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Naohiro Fujisaki started meanswhile in autumn 2014 on the premise that clothing is a tool. The label won the Tokyo New Designer Fashion Grand Prix in 2016 and the Tokyo Fashion Award in 2020 — a domestic institutional path rather than an international one, and a useful example of how those two routes differ.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "legitimacy_route",
+     "value": "national_institution",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2014 (AW). Tokyo New Designer Fashion Grand Prix 2016; Tokyo Fashion Award 2020",
+     "url": "https://rakutenfashionweektokyo.com/en/brands/detail/meanswhile/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "messential",
+   "name": "M Essential",
+   "country": "CN",
+   "city": null,
+   "founded": null,
+   "founders": [],
+   "url": null,
+   "verification": "unverified",
+   "story": "M Essential works in what Chinese fashion press has started calling the New Chinese register: cloud collars, traditional embroidery and older motifs rebuilt at contemporary proportions, meant for ordinary wear rather than occasion dressing. Founder and founding year are not on record.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "national_craft_revival",
+     "source": "research"
+    }
+   ],
+   "stores": [],
+   "claims": []
+  },
+  {
+   "slug": "midorikawa",
+   "name": "Midorikawa",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2017,
+   "founders": [
+    "Taku Midorikawa"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Taku Midorikawa, born in Tokyo in 1982 and trained at Bunka, launched his label in 2017 and reached the LVMH Prize semi-finals in 2021. The clothes are genderless and built on traditional Japanese finishing, frequently left raw at the hem so the construction stays visible. Stocked at Dover Street Market Ginza and Isetan, and largely undistributed outside Japan.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "body_and_identity",
+     "value": "genderless_as_position",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "international_prize",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "national_craft_revival",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "dsmginza",
+     "channel": "retailer"
+    },
+    {
+     "store": "isetan",
+     "channel": "retailer"
+    },
+    {
+     "store": "unitedarrows",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2017",
+     "url": "https://www.lvmhprize.com/en/midorikawa-official",
+     "confidence": 1.0
+    },
+    {
+     "field": "founders",
+     "value": "Taku Midorikawa, born 1982 Tokyo, Bunka Fashion College 2003. NOTE: this same page is internally inconsistent — its title credits the label to 'Takuya Morikawa', who is the designer of TAAKK, a different brand. The body text is the reading taken here; the title is rejected.",
+     "url": "https://www.lvmhprize.com/en/midorikawa-official",
+     "confidence": 0.7
+    }
+   ]
+  },
+  {
+   "slug": "mondaysleepingclub",
+   "name": "Monday Sleeping Club",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2022,
+   "founders": [],
+   "url": null,
+   "verification": "partial",
+   "story": "Opened in Shanghai in 2022, working in muted pastels and clean lines with a deliberately drowsy mood. Little else is firmly documented.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2022",
+     "url": "https://radii.co/article/4-chinese-streetwear-brands-to-check-out-in-shanghai",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "mukcyen",
+   "name": "mukcyen",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2024,
+   "founders": [
+    "Yuka Kimura"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Yuka Kimura was born in Tokyo, trained at Bunka, worked for a domestic designer, and started mukcyen in 2024 to make clothes about the fluidity of identity. It won the JFW NEXT BRAND AWARD in 2026 and staged its first runway show the same year.",
+   "liveItems": 1,
+   "img": "https://cdn.shopify.com/s/files/1/0093/2616/6071/files/0001-01_c4c404de-b86f-4c7e-b454-dba993986b94.jpg?v=1780983128",
+   "medianUsd": 116,
+   "labels": [
+    {
+     "axis": "body_and_identity",
+     "value": "genderless_as_position",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "national_institution",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "at_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2024. JFW NEXT BRAND AWARD 2026 winner; Bunka Fashion College graduate",
+     "url": "https://www.tokyoweekender.com/art_and_culture/fashion/rakuten-fashion-week-tokyo-aw-2026/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "nullus",
+   "name": "NULLUS",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2021,
+   "founders": [],
+   "url": null,
+   "verification": "unverified",
+   "story": "A Shanghai menswear label founded in 2021. We could not verify a founder, a stockist or a direct store; it is here because its existence is documented and its work is not.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": []
+  },
+  {
+   "slug": "ouat",
+   "name": "OUAT",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2019,
+   "founders": [
+    "Ryosuke Tamura"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Ryosuke Tamura ran a vintage shop in Tokyo before starting OUAT in 2019, and the label is essentially that shop's thesis made new: archival shapes and details rebuilt as unisex clothes that are meant to be worn rather than collected.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "body_and_identity",
+     "value": "genderless_as_position",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "reconstructed_vintage",
+     "source": "research"
+    }
+   ],
+   "stores": [],
+   "claims": []
+  },
+  {
+   "slug": "oudewaag",
+   "name": "Oude Waag",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2017,
+   "founders": [
+    "Jingwei Yin"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Jingwei Yin named his label after the seventeenth-century weigh house in Amsterdam, studied at Central Saint Martins and the Royal Academy, and worked under Haider Ackermann and Hussein Chalayan — a lineage you can read directly in the clothes. Oude Waag is about the relationship between a body, a garment and the mind wearing both. It now sells into more than forty boutiques worldwide, including Selfridges, while doing most of its actual volume at home on Tmall.",
+   "liveItems": 14,
+   "img": "https://cdn.shopify.com/s/files/1/0014/2626/0017/files/gathered-stretch-velvet-dress-black_9f44aace-0fc3-452e-ad6f-ae6f43fc36a2.jpg?v=1781708096",
+   "medianUsd": 304,
+   "labels": [
+    {
+     "axis": "body_and_identity",
+     "value": "body_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "hlorenzo",
+     "channel": "retailer"
+    },
+    {
+     "store": "selfridges",
+     "channel": "retailer"
+    },
+    {
+     "store": "tmall",
+     "channel": "marketplace"
+    },
+    {
+     "store": "ujng",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2017",
+     "url": "https://wwd.com/fashion-news/designer-luxury/oude-waag-shanghai-fashion-week-1237051444/",
+     "confidence": 1.0
+    },
+    {
+     "field": "founders",
+     "value": "Jingwei Yin",
+     "url": "https://fashionasiahk.com/en/designer/oude-waag/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "pettreekor",
+   "name": "pet-tree-kor",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2021,
+   "founders": [
+    "Liu Xinyu",
+    "Qiu Wanqing",
+    "Dong Hongyuan"
+   ],
+   "url": "https://www.pet-tree-kor.city",
+   "verification": "verified",
+   "story": "The name is petrichor — the smell of earth after rain — pushed through a phonetic spelling. Founded in Shanghai in 2021 by Liu Xinyu, Qiu Wanqing and Dong Hongyuan, the label builds tailoring that behaves like something grown rather than cut: jackets panelled like petals, coats with drapery that reads as vine. The tension is deliberate. The construction is architectural and precise; what it is imitating is not.",
+   "liveItems": 138,
+   "img": "https://cdn.shopify.com/s/files/1/0550/8762/8521/files/DSC_4702.jpg?v=1726199106",
+   "medianUsd": 320,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "nubiantokyo",
+     "channel": "retailer"
+    },
+    {
+     "store": "pettreekor",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2021",
+     "url": "https://hashtaglegend.com/post/new-chinese-fashion-brands-to-know-2026",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://www.pet-tree-kor.city",
+     "url": "https://www.pet-tree-kor.city/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "pillings",
+   "name": "pillings",
+   "country": "JP",
+   "city": null,
+   "founded": 2020,
+   "founders": [
+    "Ryota Murakami"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Ryota Murakami had been working under his own name since 2014 when he renamed the label pillings in 2020 — a pill being the small knot of fibre a knit raises with wear. The name is the thesis. The work is knitwear that treats its own deterioration as part of the design.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "technique_as_identity",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2020 under the name pillings; the predecessor RYOTAMURAKAMI dates from 2014",
+     "url": "https://fashionasiahk.com/en/designer/pillings/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "randomevent",
+   "name": "RANDOMEVENT",
+   "country": "CN",
+   "city": null,
+   "founded": null,
+   "founders": [
+    "Younker Hong"
+   ],
+   "url": null,
+   "verification": "unverified",
+   "story": "A Chinese streetwear label led by Younker Hong, working domestic cultural reference into contemporary graphics. It belongs to the first real wave of Chinese street brands rather than the designer cohort around it.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "chinasquad",
+     "channel": "retailer"
+    }
+   ],
+   "claims": []
+  },
+  {
+   "slug": "ruibuilt",
+   "name": "RUIbuilt",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2019,
+   "founders": [
+    "Rui Zhou"
+   ],
+   "url": "https://www.ruiofficial.me",
+   "verification": "verified",
+   "story": "Rui Zhou founded RUIbuilt in New York in 2019 and won the LVMH Prize's Karl Lagerfeld award two years later. The work is knit, and it is about the body: open structures that map and reveal rather than cover, engineered so the negative space is the design. It has since moved its base to Shanghai. Few labels this young are this legible from a single garment.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "body_and_identity",
+     "value": "body_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "generative_constraint",
+     "value": "technique_as_identity",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "international_prize",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "paris_calendar",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "breakfast",
+     "channel": "showroom"
+    },
+    {
+     "store": "ruibuilt",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2019 — founded in New York, now based in Shanghai",
+     "url": "https://www.ruiofficial.me/about",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://www.ruiofficial.me",
+     "url": "https://www.ruiofficial.me/about",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "ruohan",
+   "name": "RUOHAN",
+   "country": "CN",
+   "city": null,
+   "founded": 2021,
+   "founders": [
+    "Ruohan Nie"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Ruohan Nie launched RUOHAN in March 2021 and became, fairly quickly, the label people cite when they argue that quiet luxury has a Chinese branch. The restraint is real, but the substance underneath it is craft: traditional silk dyeing, local workshops, an explicit sustainability position. It is the rare brand in this group whose story and whose supply chain are the same story.",
+   "liveItems": 10,
+   "img": "https://cdn.shopify.com/s/files/1/0014/2626/0017/files/kavi-jacket-birch.jpg?v=1784204145",
+   "medianUsd": 552,
+   "labels": [
+    {
+     "axis": "legitimacy_route",
+     "value": "paris_calendar",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "well_above_shelf",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "national_craft_revival",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "lanecrawford",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2021 (March)",
+     "url": "https://www.businessoffashion.com/people/ruohan-nie/",
+     "confidence": 1.0
+    },
+    {
+     "field": "founders",
+     "value": "Ruohan Nie",
+     "url": "https://www.forbes.com/sites/gemmawilliams/2024/10/01/introducing-ruohan-quiet-luxurys-next-brand-to-know/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "shushutong",
+   "name": "SHUSHU/TONG",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2015,
+   "founders": [
+    "Liushu Lei",
+    "Yutong Jiang"
+   ],
+   "url": "https://www.shushutongstudio.com",
+   "verification": "verified",
+   "story": "Liushu Lei and Yutong Jiang started SHUSHU/TONG in Shanghai in 2015, and a decade later it is the reference point most people reach for when they describe what young Chinese womenswear looks like. The formula is femininity with something off in it — a bow that is too large, a proportion that is too knowing, prettiness handled as a material to be worked rather than a mood to be achieved.",
+   "liveItems": 4,
+   "img": "https://cdn.shopify.com/s/files/1/0093/2616/6071/files/0329-01_9f1677db-019b-48f0-91db-e75aa6b290e9.jpg?v=1777603595",
+   "medianUsd": 512,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "well_above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "divincenzo",
+     "channel": "retailer"
+    },
+    {
+     "store": "eraldo",
+     "channel": "retailer"
+    },
+    {
+     "store": "nubiantokyo",
+     "channel": "retailer"
+    },
+    {
+     "store": "shushutong",
+     "channel": "direct"
+    },
+    {
+     "store": "ssense",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2015",
+     "url": "https://en.wikipedia.org/wiki/Shushu/Tong",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://www.shushutongstudio.com",
+     "url": "https://www.shushutongstudio.com/about/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "shutingqiu",
+   "name": "Shuting Qiu",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2018,
+   "founders": [
+    "Shuting Qiu"
+   ],
+   "url": "https://shuting-qiu.com",
+   "verification": "verified",
+   "story": "Shuting Qiu's clothes are loud in a way that is easy to mistake for decoration and is actually construction. Founded in Shanghai in 2018, the label layers jacquard, embroidery and print until the surface itself becomes the garment's structure. She works with Chinese craft workshops directly, which is what separates this from maximalism as a styling choice: the density is where the money and the labour went.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "national_craft_revival",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "lanecrawford",
+     "channel": "retailer"
+    },
+    {
+     "store": "shutingqiu",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2018",
+     "url": "https://shuting-qiu.com/about/",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://shuting-qiu.com",
+     "url": "https://shuting-qiu.com/about/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "soshiotsuki",
+   "name": "SOSHIOTSUKI",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2015,
+   "founders": [
+    "Soshi Otsuki"
+   ],
+   "url": null,
+   "verification": "partial",
+   "story": "Soshi Otsuki founded his label in 2015 and has spent it since on a single subject: the Japanese suit, and specifically the 1980s salaryman's version of it. He treats that garment as a piece of national costume rather than a Western import, which is a genuinely unusual position, and it has carried him onto the Paris schedule as an FHCM member.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "tailoring_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "paris_calendar",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "nubiantokyo",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2015",
+     "url": "https://www.fhcm.paris/en/house/soshiotsuki",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "ssstein",
+   "name": "ssstein",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2016,
+   "founders": [
+    "Kiichiro Asakawa"
+   ],
+   "url": "https://ssstein.com",
+   "verification": "verified",
+   "story": "Kiichiro Asakawa is self-taught, opened a multi-brand shop in Tokyo called carol in 2016, and started ssstein in the same year — a sequence that explains the clothes. This is tailoring made by someone who spent his time looking at what other people made: elongated, quiet, technically exact, with the interest pushed into cloth and line rather than gesture. It has been an LVMH Prize name and remains one of the most widely stocked labels in this group.",
+   "liveItems": 84,
+   "img": "https://cdn.shopify.com/s/files/1/0051/7042/files/ssstein-Oversized-Layered-Combination-Coat-Black-1.jpg?v=1773253755",
+   "medianUsd": 308,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "tailoring_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "international_prize",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "antonioli",
+     "channel": "retailer"
+    },
+    {
+     "store": "beams",
+     "channel": "retailer"
+    },
+    {
+     "store": "haven",
+     "channel": "retailer"
+    },
+    {
+     "store": "ssstein",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2016",
+     "url": "https://www.lvmhprize.com/en/ssstein",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://ssstein.com",
+     "url": "https://ssstein.com/en-global",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "sugarhill",
+   "name": "SUGARHILL",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2016,
+   "founders": [
+    "Rikuya Hayashi"
+   ],
+   "url": "https://store.sugarhilltokyo.com",
+   "verification": "verified",
+   "story": "Rikuya Hayashi founded SUGARHILL in Tokyo in 2016 around a refusal of pretension, working from American vintage with the specificity Japanese labels bring to that material — the correct weight, the correct fade, the detail nobody outside the subject would notice.",
+   "liveItems": 188,
+   "img": "https://cdn.shopify.com/s/files/1/0515/1680/1203/files/2411300701_BLACK_01.jpg?v=1720978840",
+   "medianUsd": 347,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "reconstructed_vintage",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "beams",
+     "channel": "retailer"
+    },
+    {
+     "store": "sugarhill",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2016",
+     "url": "https://store.sugarhilltokyo.com/pages/about",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "susanfang",
+   "name": "Susan Fang",
+   "country": "GB",
+   "city": "London",
+   "founded": 2017,
+   "founders": [
+    "Susan Fang"
+   ],
+   "url": "https://www.susanfangofficial.com",
+   "verification": "verified",
+   "story": "Susan Fang studied in London and founded her label there in 2017, and the distance shows in the method rather than the mood. Her signature is a technique she developed herself — Air Weave, a way of building cloth so that it holds volume without weight. The work sits where a mathematician's interest in structure meets a naturalist's interest in petals and water. Of everything in this catalogue, it is the label whose innovation is most clearly the textile itself.",
+   "liveItems": 499,
+   "img": "https://cdn.shopify.com/s/files/1/0071/0272/6210/files/AIR-FLOWERSCLUSTEREDBRIDALGOWNPose3.jpg?v=1744218681",
+   "medianUsd": 500,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "material_invention",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "well_above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "gr8",
+     "channel": "retailer"
+    },
+    {
+     "store": "susanfang",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2017",
+     "url": "https://jingdaily.com/brands/susan-fang",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://www.susanfangofficial.com",
+     "url": "https://www.susanfangofficial.com/",
+     "confidence": 1.0
+    },
+    {
+     "field": "origin_country",
+     "value": "GB — brand founded in London by a Chinese designer",
+     "url": "https://jingdaily.com/brands/susan-fang",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "taakk",
+   "name": "TAAKK",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2014,
+   "founders": [
+    "Takuya Morikawa"
+   ],
+   "url": "https://taakk.jp",
+   "verification": "verified",
+   "story": "Takuya Morikawa spent eight years at Issey Miyake before starting TAAKK in 2014, and what he took with him was an interest in cloth as something to be manipulated rather than selected. Prints that turn out to be woven, surfaces that shift with the light, engineering hidden inside garments that read as ordinary at ten paces.",
+   "liveItems": 177,
+   "img": "https://cdn.shopify.com/s/files/1/0701/9230/0261/files/BL027-BLACK_5.jpg?v=1777344806",
+   "medianUsd": 331,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "material_invention",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "nubiantokyo",
+     "channel": "retailer"
+    },
+    {
+     "store": "taakk",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2014",
+     "url": "https://taakk.jp/en",
+     "confidence": 1.0
+    },
+    {
+     "field": "founded_year",
+     "value": "2012 — CONFLICTS with the official site's 2014",
+     "url": "https://rakutenfashionweektokyo.com/en/brands/detail/taakk/",
+     "confidence": 0.4
+    }
+   ]
+  },
+  {
+   "slug": "umawang",
+   "name": "Uma Wang",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": null,
+   "founders": [
+    "Uma Wang"
+   ],
+   "url": "https://umawang.com",
+   "verification": "partial",
+   "story": "Uma Wang treats cloth the way a restorer treats a surface: distressed, crumpled, scorched, worked until it carries time. Her Shanghai label deals in natural fibres — cashmere, mohair, silk — cut into volumes that hold their own shape and read the same on any body. It is the most expensive thing in this catalogue by a wide margin, and the price sits in the fabric rather than the label.",
+   "liveItems": 31,
+   "img": "https://cdn.shopify.com/s/files/1/0557/6743/3394/files/UM8502UW800-LONGCOATS-UMAWANG-Uomo-20260731080426_0-L.jpg?v=1785490232",
+   "medianUsd": 717,
+   "labels": [
+    {
+     "axis": "body_and_identity",
+     "value": "genderless_as_position",
+     "source": "research"
+    },
+    {
+     "axis": "legitimacy_route",
+     "value": "paris_calendar",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "well_above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "antonioli",
+     "channel": "retailer"
+    },
+    {
+     "store": "divincenzo",
+     "channel": "retailer"
+    },
+    {
+     "store": "italist",
+     "channel": "retailer"
+    },
+    {
+     "store": "umawang",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "official_url",
+     "value": "https://umawang.com",
+     "url": "https://umawang.com/stores/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "weiraen",
+   "name": "Weiraen",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": null,
+   "founders": [
+    "Wei Ran"
+   ],
+   "url": null,
+   "verification": "unverified",
+   "story": "The label of Wei Ran, shown through Labelhood at Shanghai Fashion Week. Beyond that the record is thin — no founding year, no founder biography, no direct store we could verify.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "legitimacy_route",
+     "value": "incubator",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "labelhood",
+     "channel": "incubator"
+    }
+   ],
+   "claims": []
+  },
+  {
+   "slug": "whitenook",
+   "name": "WHiTENOOK",
+   "country": "CN",
+   "city": null,
+   "founded": null,
+   "founders": [
+    "Sū Xīn"
+   ],
+   "url": null,
+   "verification": "unverified",
+   "story": "Led by the designer Sū Xīn, WHiTENOOK gave its first runway show in Tokyo as part of a China Fashion Week showcase, roughly three seasons into its life. A founding year is not on record.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": []
+  },
+  {
+   "slug": "wmwm",
+   "name": "WMWM",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": null,
+   "founders": [],
+   "url": null,
+   "verification": "unverified",
+   "story": "Shown through Labelhood at Shanghai Fashion Week. Nothing further is documented in sources we could verify.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "legitimacy_route",
+     "value": "incubator",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "labelhood",
+     "channel": "incubator"
+    }
+   ],
+   "claims": []
+  },
+  {
+   "slug": "yayi",
+   "name": "YA YI",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": 2022,
+   "founders": [],
+   "url": null,
+   "verification": "partial",
+   "story": "Launched in 2022 in Shanghai, YA YI is built around women with more than one cultural passport — an interest it pursues through multimedia presentation as much as through clothes. The subject is hybridity itself rather than any particular heritage.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [],
+   "claims": []
+  },
+  {
+   "slug": "yirantian",
+   "name": "Yirantian",
+   "country": "CN",
+   "city": "Shanghai",
+   "founded": null,
+   "founders": [
+    "Yirantian Guo"
+   ],
+   "url": "https://www.yirantian.com",
+   "verification": "partial",
+   "story": "Yirantian Guo builds for a specific customer rather than a specific mood: a woman who wants tailoring that survives a working week. The label's interest is in cut and cloth quality rather than statement, which makes it quieter than most of its Shanghai peers and, judging by its Tmall and RedNote presence, considerably better at selling domestically.",
+   "liveItems": 0,
+   "img": null,
+   "medianUsd": null,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "tailoring_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "unmeasured",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "tmall",
+     "channel": "marketplace"
+    },
+    {
+     "store": "yirantian",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "official_url",
+     "value": "https://www.yirantian.com",
+     "url": "https://www.yirantian.com/store/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "yoke",
+   "name": "YOKE",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2018,
+   "founders": [],
+   "url": null,
+   "verification": "unverified",
+   "story": "A Tokyo label founded in 2018, working in soft tailoring and muted colour with a genderless cut. It reaches the West mainly through Haven. Founder details are not on record in the sources we checked.",
+   "liveItems": 9,
+   "img": "https://cdn.shopify.com/s/files/1/0051/7042/files/Yoke-Stand-Collar-Over-Coat-Dark-Navy-1_cadf7761-396b-485a-b1ad-b286ff416683.jpg?v=1773791369",
+   "medianUsd": 227,
+   "labels": [
+    {
+     "axis": "body_and_identity",
+     "value": "genderless_as_position",
+     "source": "research"
+    },
+    {
+     "axis": "generative_constraint",
+     "value": "tailoring_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "haven",
+     "channel": "retailer"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2018",
+     "url": "https://www.highsnobiety.com/p/best-japanese-clothing-brands/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "yueqiqi",
+   "name": "Yueqi Qi",
+   "country": "CN",
+   "city": null,
+   "founded": 2019,
+   "founders": [
+    "Yueqi Qi"
+   ],
+   "url": "https://yueqiqi.com",
+   "verification": "verified",
+   "story": "Yueqi Qi graduated from Central Saint Martins, worked at Chanel in Paris, and went home in 2019 to do something the Paris ateliers had already taught her the value of: put handwork at the centre. Her beading is the argument — dense, slow, unmistakably manual, applied to silhouettes that are sculptural rather than nostalgic. She belongs to a specific movement of Chinese designers reviving domestic craft not as heritage display but as the reason a garment costs what it costs.",
+   "liveItems": 423,
+   "img": "https://cdn.shopify.com/s/files/1/0341/9622/6092/files/EN091-_34_7b1af9b2-88de-4b22-906f-2fef2004ec86.jpg?v=1775721804",
+   "medianUsd": 248,
+   "labels": [
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    },
+    {
+     "axis": "relation_to_past",
+     "value": "national_craft_revival",
+     "source": "research"
+    }
+   ],
+   "stores": [
+    {
+     "store": "chopsueyclub",
+     "channel": "retailer"
+    },
+    {
+     "store": "yueqiqi",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2019",
+     "url": "https://somethingcurated.com/2021/03/16/interview-chinese-designer-yueqi-qi-on-cultural-mutations-shanghai-fashion-week/",
+     "confidence": 1.0
+    },
+    {
+     "field": "official_url",
+     "value": "https://yueqiqi.com",
+     "url": "https://yueqiqi.com/",
+     "confidence": 1.0
+    }
+   ]
+  },
+  {
+   "slug": "yukihashimoto",
+   "name": "YUKI HASHIMOTO",
+   "country": "JP",
+   "city": "Tokyo",
+   "founded": 2018,
+   "founders": [
+    "Yuki Hashimoto"
+   ],
+   "url": "https://yuki-hashimoto.com",
+   "verification": "verified",
+   "story": "Yuki Hashimoto studied in Kyoto and then at the Royal Academy in Antwerp, and worked at Raf Simons and Maison Margiela before starting his own label in Tokyo in 2018. He calls the concept NEW ORDER, which in practice means menswear that argues with the history of menswear — structure and styling built from close reading rather than trend.",
+   "liveItems": 68,
+   "img": "https://cdn.shopify.com/s/files/1/0578/2100/3947/files/252-01-0401_KHAKI_front.png?v=1739436759",
+   "medianUsd": 311,
+   "labels": [
+    {
+     "axis": "generative_constraint",
+     "value": "tailoring_as_subject",
+     "source": "research"
+    },
+    {
+     "axis": "price_position",
+     "value": "above_shelf",
+     "source": "measured"
+    }
+   ],
+   "stores": [
+    {
+     "store": "yukihashimoto",
+     "channel": "direct"
+    }
+   ],
+   "claims": [
+    {
+     "field": "founded_year",
+     "value": "2018 — SS19 'BAD DAY CAMP' delivered July 2018",
+     "url": "https://yuki-hashimoto.com/en",
+     "confidence": 1.0
+    },
+    {
+     "field": "founded_year",
+     "value": "2004 — REJECTED, contradicted by the brand's own site and by Hypebeast describing it as emerging in 2023",
+     "url": "https://clothbase.com/brands/yuki-hashimoto",
+     "confidence": 0.1
+    }
+   ]
+  }
+ ],
+ "axes": [
+  {
+   "axis": "body_and_identity",
+   "value": "body_as_subject",
+   "title": "The body as subject",
+   "definition": "The work is about what happens between cloth and the body wearing it.",
+   "distinction": "genderless_as_position asks who wears it; this asks what the cloth does on skin. A brand can be either, both, or neither."
+  },
+  {
+   "axis": "body_and_identity",
+   "value": "genderless_as_position",
+   "title": "Genderless as a stated position",
+   "definition": "The brand states gender fluidity as a subject, not as a sizing convenience.",
+   "distinction": "Not every unisex size run qualifies. The brand has to be saying something."
+  },
+  {
+   "axis": "generative_constraint",
+   "value": "material_invention",
+   "title": "Material invention",
+   "definition": "The innovation is the textile, not the cut.",
+   "distinction": "Deliberately small. Two brands meet it; padding it with a third 'innovative' label would empty it of meaning."
+  },
+  {
+   "axis": "generative_constraint",
+   "value": "tailoring_as_subject",
+   "title": "Tailoring as subject",
+   "definition": "The tailored garment is the thing being argued with, not a category the brand happens to sell.",
+   "distinction": "A brand that merely sells a jacket is not here. The suit has to be the argument."
+  },
+  {
+   "axis": "generative_constraint",
+   "value": "technique_as_identity",
+   "title": "Technique as identity",
+   "definition": "The brand's whole proposition is one method of construction it has made its own; the garment is derived from the method rather than the method chosen to suit a garment.",
+   "distinction": "Not material_invention: here the technique already exists and the brand has mastered it. There, the textile itself is new."
+  },
+  {
+   "axis": "legitimacy_route",
+   "value": "incubator",
+   "title": "Incubator",
+   "definition": "Arrived through a platform that develops young labels — Labelhood at Shanghai Fashion Week.",
+   "distinction": "An incubator is neither a prize nor a shop. It shows the brand; it does not certify or stock it."
+  },
+  {
+   "axis": "legitimacy_route",
+   "value": "international_prize",
+   "title": "International prize",
+   "definition": "Recognised by a cross-border industry prize — the LVMH Prize and its shortlists.",
+   "distinction": "Asks who crowned the brand, which no other axis asks, and which predicts where it can be bought."
+  },
+  {
+   "axis": "legitimacy_route",
+   "value": "national_institution",
+   "title": "National institution",
+   "definition": "Recognised by a domestic body: the Tokyo Fashion Award, JFW's new-brand award.",
+   "distinction": "Domestic validation reaches domestic stockists first; an international prize reaches Paris buyers first."
+  },
+  {
+   "axis": "legitimacy_route",
+   "value": "outside_cultural_capital",
+   "title": "Outside cultural capital",
+   "definition": "Founded by someone who arrived with an audience already — an actor, a media figure.",
+   "distinction": "Reaches customers by a route no prize committee touches. Different, not lesser."
+  },
+  {
+   "axis": "legitimacy_route",
+   "value": "paris_calendar",
+   "title": "Paris calendar",
+   "definition": "Shows on the Paris schedule, or is a member of its governing body (FHCM).",
+   "distinction": "The calendar is access to buyers, not a judgement of merit."
+  },
+  {
+   "axis": "price_position",
+   "value": "above_shelf",
+   "title": "Above the shelf median",
+   "definition": "Median live item price between 1.5x and 3x the whole-catalogue median.",
+   "distinction": "Same measurement, a lower band."
+  },
+  {
+   "axis": "price_position",
+   "value": "at_shelf",
+   "title": "At the shelf median",
+   "definition": "Median live item price below 1.5x the whole-catalogue median.",
+   "distinction": "Measured, and the answer is ordinary. Not the same fact as unmeasured, and kept apart from it so an absence of data never reads as a result."
+  },
+  {
+   "axis": "price_position",
+   "value": "unmeasured",
+   "title": "No position on record",
+   "definition": "The brand has no live items in the catalogue, so it has no measured price position.",
+   "distinction": "Present as an explicit value rather than an absence, so an empty cell is never read as cheap. This is the largest of the three bands and that fact should stay visible."
+  },
+  {
+   "axis": "price_position",
+   "value": "well_above_shelf",
+   "title": "Well above the shelf median",
+   "definition": "Median live item price above 3x the whole-catalogue median.",
+   "distinction": "Measured from live items, never asserted from a brand's self-description."
+  },
+  {
+   "axis": "relation_to_past",
+   "value": "national_craft_revival",
+   "title": "National craft revival",
+   "definition": "The brand revives a specific traditional technique of its own culture — silk dyeing, cloud collars, hand embroidery, Japanese finishing.",
+   "distinction": "The past it reaches for is its own. This is the axis's whole point against reconstructed_vintage."
+  },
+  {
+   "axis": "relation_to_past",
+   "value": "reconstructed_vintage",
+   "title": "Reconstructed vintage",
+   "definition": "The source material is a used or archival garment, usually Western, rebuilt into something new.",
+   "distinction": "Also backward-looking, and culturally the opposite: reviving your own culture's embroidery and rebuilding someone else's army jacket are not the same project. Any classification by colour or garment type would merge these two."
+  }
+ ]
+}

@@ -21,6 +21,14 @@
   .cta{display:inline-block;background:var(--ink);color:var(--paper);text-decoration:none;
        padding:13px 26px;font-weight:600;letter-spacing:.01em;margin-bottom:8px}
   .cta:hover{background:var(--accent)}
+  .dir{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:12px}
+  .dcard{display:flex;flex-direction:column;gap:5px;padding:14px 15px;border:1px solid #ddd;
+         text-decoration:none;color:inherit;background:#fff}
+  a.dcard:hover{border-color:var(--ink)}
+  .dcard.off{opacity:.6}
+  .dname{font-weight:700}
+  .ddesc{font-size:.9em;color:#666;line-height:1.5}
+  @media (prefers-color-scheme: dark){ .dcard{background:transparent;border-color:#444} }
 </style>
 </head>
 <body>
@@ -45,6 +53,27 @@
     <li><b>Cross-shop matching.</b> The same item found at multiple retailers, cheapest first, with hard vetoes against false matches.</li>
     <li><b>Uncertainty stated, never hidden.</b> When shipping or tax can't be known, the page says so and lowers its confidence.</li>
   </ul>
+
+
+  <h2>Everything here</h2>
+  <div class="dir">
+    <a class="dcard" href="./shelf/">
+      <span class="dname">The shelf</span>
+      <span class="ddesc">Every piece, ordered by what it costs delivered. Filters, search,
+        and the landed-cost breakdown on each item.</span>
+    </a>
+    <a class="dcard" href="./shelf/brands.html">
+      <span class="dname">New from China and Japan</span>
+      <span class="ddesc">45 emerging labels — who founded them, where, how they were
+        recognised, and what each claim was checked against.</span>
+    </a>
+    <div class="dcard off">
+      <span class="dname">Activity &amp; Climate Kits</span>
+      <span class="ddesc">A layered outfit sized to temperature, effort and weather, built
+        from pieces in stock. Runs against the catalogue service, which is not public yet —
+        so it is named here rather than linked to a page that would not answer.</span>
+    </div>
+  </div>
 
   <h2>Today</h2>
   <ul>

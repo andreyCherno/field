@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New from China and Japan — Field</title>
+<style>
+  /* One file, no build, no dependencies — the same arrangement index.html uses. */
+  :root{
+    --ink:#141414; --paper:#faf9f6; --dim:#6b6b6b; --line:#e0ddd6;
+    --accent:#b8442e; --card:#fff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eceae5; --paper:#121211; --dim:#918d85; --line:#2b2a27;
+           --accent:#e2765c; --card:#1b1a18; }
+  }
+  *{box-sizing:border-box;margin:0}
+  body{
+    font:16px/1.65 -apple-system,"Segoe UI",Helvetica,sans-serif;
+    background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:56px 22px 96px}
+
+  header h1{font-size:clamp(2rem,5vw,3.1rem);letter-spacing:-.025em;line-height:1.08}
+  header h1 em{font-style:normal;color:var(--accent)}
+  .lede{color:var(--dim);max-width:60ch;margin-top:14px;font-size:1.06rem}
+  .counts{margin-top:22px;font-size:.86rem;color:var(--dim);
+          display:flex;gap:18px;flex-wrap:wrap}
+  .counts b{color:var(--ink);font-weight:600}
+
+  /* Filter rail. Values come from brand_axes, so the page never hardcodes a category. */
+  .rail{margin:36px 0 8px;border-top:1px solid var(--line);padding-top:20px}
+  .axis{margin-bottom:14px}
+  .axis h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+           color:var(--dim);font-weight:600;margin-bottom:8px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{
+    border:1px solid var(--line);background:transparent;color:var(--ink);
+    border-radius:999px;padding:5px 13px;font-size:.83rem;cursor:pointer;
+    font-family:inherit;transition:border-color .12s,background .12s;
+  }
+  .chip:hover{border-color:var(--accent)}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip .n{opacity:.55;margin-left:5px;font-variant-numeric:tabular-nums}
+
+  .grid{
+    margin-top:30px;display:grid;gap:22px;
+    grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  }
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  /* 37 of 45 have no photograph and will not until their items are ingested, so the
+     imageless card is the common case and gets the design — not a 4:5 grey rectangle
+     where a picture should have been. It collapses to a short crest band and lets the
+     writing carry the card, which is what a reader is here for anyway. */
+  .shot{background:var(--paper);position:relative;overflow:hidden}
+  .shot.photo{aspect-ratio:4/5}
+  .shot.photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .crest{
+    height:74px;display:flex;align-items:center;gap:11px;padding:0 18px;
+    background:linear-gradient(100deg,var(--paper),var(--card));
+    border-bottom:1px solid var(--line);
+  }
+  .crest span{
+    font-size:1.5rem;letter-spacing:.08em;color:var(--dim);opacity:.55;
+    font-weight:300;text-transform:uppercase;
+  }
+  .crest i{
+    font-style:normal;font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--dim);opacity:.55;margin-left:auto;text-align:right;
+  }
+  .body{padding:17px 18px 20px;display:flex;flex-direction:column;flex:1}
+  .name{font-size:1.12rem;font-weight:600;letter-spacing:-.01em}
+  .meta{color:var(--dim);font-size:.83rem;margin-top:3px}
+  .story{margin-top:11px;font-size:.92rem;color:var(--ink);opacity:.86}
+  .tags{margin-top:13px;display:flex;gap:6px;flex-wrap:wrap}
+  .tag{
+    font-size:.71rem;border:1px solid var(--line);border-radius:5px;
+    padding:2px 7px;color:var(--dim);
+  }
+  .tag.measured{border-color:var(--accent);color:var(--accent)}
+  .foot{
+    margin-top:auto;padding-top:14px;display:flex;gap:14px;align-items:baseline;
+    font-size:.8rem;color:var(--dim);flex-wrap:wrap;
+  }
+  .foot a{color:var(--accent);text-decoration:none}
+  .foot a:hover{text-decoration:underline}
+  /* Three states, carried to the surface rather than flattened. An unverified brand
+     says so; it is not quietly presented as if it were confirmed. */
+  .vf{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em}
+  .vf.verified{color:#3f7a4f}
+  .vf.partial{color:#9a7a2e}
+  .vf.unverified{color:var(--dim)}
+  .empty{color:var(--dim);padding:50px 0;text-align:center}
+
+  footer{margin-top:70px;border-top:1px solid var(--line);padding-top:22px;
+         color:var(--dim);font-size:.84rem;max-width:66ch}
+  footer p+p{margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>New from <em>China</em> and <em>Japan</em></h1>
+    <p class="lede">
+      Forty-five labels that are only starting to be carried outside their home markets —
+      grouped not by what they sell but by what they are trying to do.
+    </p>
+    <div class="counts" id="counts"></div>
+  </header>
+
+  <div class="rail" id="rail"></div>
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    <p id="note"></p>
+    <p>
+      Every brand fact here carries a source. Where a founding year, a founder or an
+      official shop could not be established, the card says nothing rather than
+      estimating — an empty field means it was looked for and not found.
+    </p>
+    <p>
+      Price positions are measured from live items in the catalogue, never taken from a
+      brand's own description of itself. Most of these labels have no items in the
+      catalogue yet, and those carry no position at all.
+    </p>
+  </footer>
+</div>
+
+<script>
+const COUNTRY = { CN: "China", JP: "Japan", GB: "United Kingdom" };
+let DATA = { brands: [], axes: [] };
+const ACTIVE = new Map();          // axis -> value
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+  c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+/* Initials for the crest: first letter of up to two words, so SHUSHU/TONG reads ST and
+   pet-tree-kor reads P. Purely typographic — nothing is fetched. */
+function initials(name){
+  const parts = name.replace(/[^A-Za-zÀ-ɏ ]/g, " ").split(/\s+/).filter(Boolean);
+  return (parts.slice(0, 2).map(w => w[0]).join("") || name[0] || "?").toUpperCase();
+}
+
+function axisTitle(axis, value){
+  const a = DATA.axes.find(x => x.axis === axis && x.value === value);
+  return a ? a.title : value.replace(/_/g, " ");
+}
+
+function matches(b){
+  for (const [axis, value] of ACTIVE)
+    if (!b.labels.some(l => l.axis === axis && l.value === value)) return false;
+  return true;
+}
+
+function renderRail(){
+  const byAxis = new Map();
+  for (const a of DATA.axes){
+    if (!byAxis.has(a.axis)) byAxis.set(a.axis, []);
+    byAxis.get(a.axis).push(a);
+  }
+  const label = { generative_constraint: "What makes the garment",
+                  relation_to_past: "Relation to the past",
+                  body_and_identity: "Body and identity",
+                  price_position: "Price position (measured)",
+                  legitimacy_route: "How it was recognised" };
+
+  $("rail").innerHTML = [...byAxis].map(([axis, values]) => `
+    <div class="axis">
+      <h3>${esc(label[axis] || axis.replace(/_/g, " "))}</h3>
+      <div class="chips">${values.map(v => {
+        const n = DATA.brands.filter(b =>
+          b.labels.some(l => l.axis === axis && l.value === v.value)).length;
+        if (!n) return "";
+        const on = ACTIVE.get(axis) === v.value;
+        return `<button class="chip" data-axis="${esc(axis)}" data-value="${esc(v.value)}"
+                  aria-pressed="${on}" title="${esc(v.definition)}">${esc(v.title)}<span class="n">${n}</span></button>`;
+      }).join("")}</div>
+    </div>`).join("");
+
+  $("rail").querySelectorAll(".chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const { axis, value } = btn.dataset;
+      if (ACTIVE.get(axis) === value) ACTIVE.delete(axis); else ACTIVE.set(axis, value);
+      renderRail(); renderGrid();
+    });
+  });
+}
+
+function card(b){
+  const where = [b.city, COUNTRY[b.country] || b.country].filter(Boolean).join(", ");
+  const meta = [where, b.founded || null].filter(Boolean).join(" · ");
+  const shot = b.img
+    ? `<div class="shot photo"><img src="${esc(b.img)}" alt="" loading="lazy" referrerpolicy="no-referrer"></div>`
+    : `<div class="shot"><div class="crest"><span>${esc(initials(b.name))}</span>` +
+      `<i>no photography yet</i></div></div>`;
+
+  const tags = b.labels
+    .filter(l => !(l.axis === "price_position" && l.value === "unmeasured"))
+    .map(l => `<span class="tag ${l.source === "measured" ? "measured" : ""}">${esc(axisTitle(l.axis, l.value))}</span>`)
+    .join("");
+
+  const foot = [
+    `<span class="vf ${esc(b.verification)}">${esc(b.verification)}</span>`,
+    b.url ? `<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">official shop</a>` : "",
+    b.liveItems ? `<span>${b.liveItems} in the catalogue</span>` : "",
+    b.medianUsd ? `<span>median $${b.medianUsd}</span>` : "",
+  ].filter(Boolean).join("");
+
+  return `<article class="card">
+    ${shot}
+    <div class="body">
+      <div class="name">${esc(b.name)}</div>
+      <div class="meta">${esc(meta)}</div>
+      ${b.story ? `<p class="story">${esc(b.story)}</p>` : ""}
+      ${tags ? `<div class="tags">${tags}</div>` : ""}
+      <div class="foot">${foot}</div>
+    </div>
+  </article>`;
+}
+
+function renderGrid(){
+  const shown = DATA.brands.filter(matches);
+  $("grid").innerHTML = shown.length
+    ? shown.map(card).join("")
+    : `<p class="empty">No brand sits in every one of those at once.</p>`;
+  const cn = shown.filter(b => b.country === "CN").length;
+  const jp = shown.filter(b => b.country === "JP").length;
+  $("counts").innerHTML =
+    `<span><b>${shown.length}</b> brands</span>` +
+    `<span><b>${cn}</b> Chinese</span><span><b>${jp}</b> Japanese</span>` +
+    `<span><b>${shown.filter(b => b.liveItems).length}</b> buyable in the catalogue today</span>`;
+}
+
+(async function(){
+  try{
+    const r = await fetch("brands.json", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    DATA = await r.json();
+  }catch(e){
+    $("grid").innerHTML = `<p class="empty">brands.json did not load — run
+      <code>python3 -m backend.export_brands --dsn "$DSN"</code> beside this page.</p>`;
+    return;
+  }
+  const noImg = DATA.brands.filter(b => !b.img).length;
+  $("note").textContent =
+    `${noImg} of ${DATA.brands.length} labels have no photography here. Their items are not `
+    + `in the catalogue yet, and no stand-in image is shown for them.`;
+  renderRail();
+  renderGrid();
+})();
+</script>
+</body>
+</html>
