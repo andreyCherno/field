@@ -715,11 +715,11 @@
         <span><i style="border-color:var(--t3)"></i><b>·</b></span>
       </div>
       <span class="market" id="market"></span>
+      <div class="cpop" id="countryPop" hidden role="listbox" aria-label="Destination country"></div>
       <!-- The other half of the operator's system, and it is hidden by default in the
            markup rather than by a stylesheet rule: this page is deployed publicly, and a
            link to a back office is only ever revealed on a private address. -->
       <a class="backoffice" id="backOffice" hidden>back office ↗</a>
-      <div class="cpop" id="countryPop" hidden role="listbox" aria-label="Destination country"></div>
     </div>
     <!-- tabindex + role: the entire catalog was pointer-only. Every interaction ran
          through pointerdown/move/up on this element and openSheet could only be
@@ -3980,13 +3980,9 @@ async function boot(){
   // computed once because bootFeed costs a full page load and calling it twice on the
   // happy path would fetch the whole first screen for nothing.
   //
-  // Two static fallbacks were written independently, one per side of this merge, and
-  // only one of them still has a body: `staticLoad()`/`STATIC` here, against a
-  // `buildLocal()` that this file calls and nowhere defines. Keeping both would have
-  // put a ReferenceError on the exact path a static host takes — the path this merge
-  // exists to make work. `initCountry`/`renderMarket`/`paintCurView` above are the
-  // other side's, and are kept: nothing else calls them, so dropping them would have
-  // silently retired the country picker.
+  // This replaces a fallback that read items.json and called `buildLocal`. That name was
+  // deleted with the 2D map on BOTH sides of this merge — the branch could only ever have
+  // thrown ReferenceError, which is what `staticLoad` was built to replace.
   let up = API !== null && await bootFeed();
   if(!up && !STATIC.on && await staticLoad()){
     staticNotice();
