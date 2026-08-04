@@ -97,6 +97,30 @@
   .home .dirlabel{font:700 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;
                   color:var(--ink-soft);margin:22px 0 8px}
   .home .dir{display:flex;flex-wrap:wrap;gap:7px}
+  .buzz .dirlabel{font:700 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;
+                  color:var(--ink-soft);margin:0 0 8px}
+  .buzzrail{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+  .buzzrail .bz{flex:0 0 132px;border:1px solid var(--line);background:var(--panel);
+                display:flex;flex-direction:column;cursor:pointer}
+  .buzzrail .bz .ph{aspect-ratio:1;background:var(--panel);overflow:hidden}
+  .buzzrail .bz .ph img{width:100%;height:100%;object-fit:cover;opacity:0;
+                        transition:opacity .2s}
+  .buzzrail .bz .ph img.on{opacity:1}
+  .buzzrail .bz .m{padding:7px 8px 8px;display:flex;flex-direction:column;gap:2px}
+  .buzzrail .bz .b{font:700 9px var(--mono);letter-spacing:.1em;text-transform:uppercase;
+                   color:var(--ink-soft);white-space:nowrap;overflow:hidden;
+                   text-overflow:ellipsis}
+  .buzzrail .bz .nm{font:500 11px var(--sans,inherit);line-height:1.25;color:var(--ink);
+                    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+                    overflow:hidden}
+  .buzzrail .bz .pr{font:700 11px var(--mono);color:var(--ink);margin-top:2px}
+  /* The attribution is a link out, and it must read as one — the headline belongs to
+     the publication, not to this shelf. */
+  .buzzrail .bz .src{font:600 9px var(--mono);letter-spacing:.06em;color:var(--ink-soft);
+                     text-decoration:none;border-top:1px solid var(--line);
+                     padding:5px 8px;display:block;white-space:nowrap;overflow:hidden;
+                     text-overflow:ellipsis}
+  .buzzrail .bz .src:hover{color:var(--ink);text-decoration:underline}
   .home .dir .rgn{border:1px solid var(--line);background:var(--panel);border-radius:0;
                   font:600 11px var(--mono);padding:6px 11px;cursor:pointer}
   .home .dir .rgn:hover{background:var(--card);border-color:var(--ink-soft)}
@@ -732,6 +756,17 @@
       <section class="home" id="home" style="padding:16px 22px 6px">
         <div class="dirlabel">jump straight to a neighbourhood</div>
         <div class="dir" id="homeDir"></div>
+      </section>
+      <!-- What the press is writing about, matched to what is actually on the shelf.
+           Hidden entirely when nothing matches: an empty "buzz" rail would imply the
+           feed was read and found nothing worth selling, which is a different claim
+           from "nobody has fetched it". The exporter marks a piece only when a headline
+           names its brand AND its model, so the chip says "wrote about this model" —
+           one Air Force 1 article marks every Air Force 1 we stock, and saying it was
+           about *this* colourway would be a claim the match cannot support. -->
+      <section class="buzz" id="buzz" hidden style="padding:6px 22px 10px">
+        <div class="dirlabel" id="buzzLabel"></div>
+        <div class="buzzrail" id="buzzRail"></div>
       </section>
       <div class="fbar" id="fbar">
         <div class="fchips" id="fchips"></div>
@@ -3173,6 +3208,76 @@ function feedCard(raw){
   return el;
 }
 
+/* The buzz rail: pieces on this shelf that the press wrote about recently.
+
+   Two rules it will not bend. **It never reorders the shelf** — the feed's order is a
+   claim about price, and letting editorial attention move a piece up would quietly make
+   "cheapest" mean "cheapest that somebody wrote about". This is a separate rail, above
+   the feed, and the feed below it is untouched.
+
+   **It says "this model", not "this piece".** The exporter matches a headline to a brand
+   and a model, so one Air Force 1 article marks every Air Force 1 in stock. The rail
+   shows the cheapest few per article and links back to the article so the reader can see
+   for themselves what was actually written. The headline is the publication's, shown as
+   the link's own text and never restated as ours. */
+function buzzRail(items){
+  const host = document.getElementById("buzz");
+  const rail = document.getElementById("buzzRail");
+  if(!host || !rail) return;
+  const marked = (items || []).filter(it => it && it.buzz && it.buzz.url);
+  if(!marked.length){ host.hidden = true; return; }   // silent, not an empty rail
+
+  // Newest article first; within one article the cheapest pieces, so the rail opens on
+  // the best price for a thing rather than an arbitrary colourway.
+  const byArticle = new Map();
+  for(const it of marked){
+    const list = byArticle.get(it.buzz.url) || [];
+    list.push(it);
+    byArticle.set(it.buzz.url, list);
+  }
+  const cents = it => (it.base_cents == null ? Number.MAX_SAFE_INTEGER : it.base_cents);
+  const picks = [...byArticle.values()]
+    .sort((a, b) => String(b[0].buzz.at).localeCompare(String(a[0].buzz.at)))
+    .flatMap(list => list.sort((x, y) => cents(x) - cents(y)).slice(0, 2))
+    .slice(0, 24);
+  if(!picks.length){ host.hidden = true; return; }
+
+  const label = document.getElementById("buzzLabel");
+  if(label) label.textContent =
+    `written about lately — ${byArticle.size} ${byArticle.size === 1 ? "story" : "stories"}`;
+
+  rail.textContent = "";
+  for(const it of picks){
+    const card = document.createElement("div");
+    card.className = "bz";
+    card.innerHTML = `<div class="ph"><img alt="" loading="lazy"></div>` +
+                     `<div class="m"><div class="b"></div><div class="nm"></div>` +
+                     `<div class="pr"></div></div>`;
+    const img = card.querySelector("img");
+    img.addEventListener("load", () => img.classList.add("on"));
+    const src = safeUrl(it.img);
+    if(src) img.src = src;
+    card.querySelector(".b").textContent = it.brand || "";
+    card.querySelector(".nm").textContent = it.name || "";
+    card.querySelector(".pr").textContent = it.price || "";
+    card.addEventListener("click", () => openById(it.id));
+
+    // Attribution, outside the click target that opens the piece.
+    const link = document.createElement("a");
+    link.className = "src";
+    const href = safeUrl(it.buzz.url);
+    if(href) link.href = href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.title = it.buzz.headline || "";       // the publication's words, not ours
+    link.textContent = `◆ ${it.buzz.source} · ${it.buzz.at || ""}`.trim();
+    link.addEventListener("click", e => e.stopPropagation());
+    card.appendChild(link);
+    rail.appendChild(card);
+  }
+  host.hidden = false;
+}
+
 function feedAppend(items){
   for(const raw of items){
     // Headers narrate the clustered order; under any other sort (or in the saved view)
@@ -3310,6 +3415,9 @@ async function bootFeed(){
     dir.appendChild(b);
   }
   wireFilters();
+  // Off the static catalogue, which is the only path that carries `buzz` — the API
+  // rows are the server's shape and do not have it. Hidden when there is nothing.
+  buzzRail(STATIC.on ? STATIC.items : []);
   feedAppend(first.items);
   FEED.offset = first.items.length;
   // Which element actually scrolls decides who watches for the bottom. Desktop: the
