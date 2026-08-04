@@ -1,0 +1,726 @@
+{
+ "activities": [
+  {
+   "id": "trail_running",
+   "title": "Trail Running & Outdoor",
+   "icon": "⛰️",
+   "description": "Durable, weather-resistant gear built for rugged outdoor trails.",
+   "slots": [
+    {
+     "id": "footwear",
+     "title": "Trail Footwear",
+     "category": "footwear",
+     "anchor_keywords": [
+      "trail",
+      "running",
+      "outdoor",
+      "grip",
+      "waterproof"
+     ],
+     "required_labels": [
+      "trail",
+      "running"
+     ],
+     "veto_keywords": [
+      "dress",
+      "leather",
+      "oxford",
+      "slipper",
+      "loafer",
+      "heels",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "bottoms",
+     "title": "Trail Bottoms",
+     "category": "bottoms",
+     "anchor_keywords": [
+      "cargo",
+      "shorts",
+      "trail",
+      "ripstop",
+      "utility"
+     ],
+     "required_labels": [
+      "shorts",
+      "cargo",
+      "activewear"
+     ],
+     "veto_keywords": [
+      "suit",
+      "denim",
+      "jean",
+      "cotton sweatpants",
+      "dress",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "tops",
+     "title": "Technical Top",
+     "category": "tops",
+     "anchor_keywords": [
+      "breathable",
+      "activewear",
+      "base layer",
+      "wicking"
+     ],
+     "required_labels": [
+      "activewear",
+      "t-shirt",
+      "top"
+     ],
+     "veto_keywords": [
+      "suit",
+      "blazer",
+      "tuxedo",
+      "silk",
+      "wool sweater",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "headwear",
+     "title": "Outdoor Cap",
+     "category": "accessories",
+     "anchor_keywords": [
+      "cap",
+      "visor",
+      "sun hat",
+      "running cap"
+     ],
+     "required_labels": [
+      "cap",
+      "hat",
+      "accessory"
+     ],
+     "veto_keywords": [
+      "beanie heavy",
+      "fedora",
+      "scarf",
+      "tie",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": false,
+     "min_clo": 0.0
+    }
+   ]
+  },
+  {
+   "id": "gym_training",
+   "title": "Gym & Athletic Fitness",
+   "icon": "🏋️",
+   "description": "High-flex, moisture-wicking gear for heavy workouts and training.",
+   "slots": [
+    {
+     "id": "footwear",
+     "title": "Training Shoes",
+     "category": "footwear",
+     "anchor_keywords": [
+      "training",
+      "gym",
+      "sneaker",
+      "athletic"
+     ],
+     "required_labels": [
+      "training",
+      "sneakers"
+     ],
+     "veto_keywords": [
+      "boot",
+      "cleats",
+      "skate",
+      "loafer",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "bottoms",
+     "title": "Workout Shorts/Leggings",
+     "category": "bottoms",
+     "anchor_keywords": [
+      "shorts",
+      "training",
+      "flex",
+      "sweatpants"
+     ],
+     "required_labels": [
+      "shorts",
+      "activewear"
+     ],
+     "veto_keywords": [
+      "cargo heavy",
+      "denim",
+      "jean",
+      "trousers",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "tops",
+     "title": "Performance Tee / Tank",
+     "category": "tops",
+     "anchor_keywords": [
+      "compression",
+      "tank",
+      "tee",
+      "dry fit"
+     ],
+     "required_labels": [
+      "t-shirt",
+      "activewear"
+     ],
+     "veto_keywords": [
+      "button down",
+      "sweater",
+      "coat",
+      "jacket heavy",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    }
+   ]
+  },
+  {
+   "id": "cycling",
+   "title": "Road & Gravel Cycling",
+   "icon": "🚴",
+   "description": "Aerodynamic, reflective, and packable apparel for cycling.",
+   "slots": [
+    {
+     "id": "footwear",
+     "title": "Cycling Footwear",
+     "category": "footwear",
+     "anchor_keywords": [
+      "cycling",
+      "road shoe",
+      "clip",
+      "sneaker"
+     ],
+     "required_labels": [
+      "footwear"
+     ],
+     "veto_keywords": [
+      "boot",
+      "slipper",
+      "heels",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "bottoms",
+     "title": "Cycling Shorts",
+     "category": "bottoms",
+     "anchor_keywords": [
+      "padded",
+      "bib",
+      "shorts",
+      "spandex"
+     ],
+     "required_labels": [
+      "shorts"
+     ],
+     "veto_keywords": [
+      "denim",
+      "heavy cargo",
+      "jeans",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "tops",
+     "title": "Windproof Jersey/Jacket",
+     "category": "tops",
+     "anchor_keywords": [
+      "jersey",
+      "windbreaker",
+      "reflective"
+     ],
+     "required_labels": [
+      "jacket",
+      "top"
+     ],
+     "veto_keywords": [
+      "heavy coat",
+      "parka",
+      "suit",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    }
+   ]
+  },
+  {
+   "id": "urban_casual",
+   "title": "Urban & Everyday Streetwear",
+   "icon": "🏙️",
+   "description": "Relaxed, clean streetwear outfits for daily urban wear.",
+   "slots": [
+    {
+     "id": "footwear",
+     "title": "Lifestyle Sneakers",
+     "category": "footwear",
+     "anchor_keywords": [
+      "sneaker",
+      "casual",
+      "canvas",
+      "low top"
+     ],
+     "required_labels": [
+      "sneakers"
+     ],
+     "veto_keywords": [
+      "running spike",
+      "ski boot",
+      "cleats",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "bottoms",
+     "title": "Relaxed Pants",
+     "category": "bottoms",
+     "anchor_keywords": [
+      "chino",
+      "pants",
+      "jeans",
+      "casual"
+     ],
+     "required_labels": [
+      "pants"
+     ],
+     "veto_keywords": [
+      "swim shorts",
+      "bib",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    },
+    {
+     "id": "tops",
+     "title": "Casual Tee / Hoodie",
+     "category": "tops",
+     "anchor_keywords": [
+      "hoodie",
+      "t-shirt",
+      "crewneck",
+      "sweatshirt"
+     ],
+     "required_labels": [
+      "t-shirt",
+      "hoodie"
+     ],
+     "veto_keywords": [
+      "swimwear",
+      "tuxedo",
+      "kids",
+      "infant",
+      "toddler",
+      "youth",
+      "junior",
+      "baby"
+     ],
+     "is_required": true,
+     "min_clo": 0.0
+    }
+   ]
+  }
+ ],
+ "climate": {
+  "id": "climate",
+  "title": "Climate Kit",
+  "icon": "🌡️",
+  "description": "A layered outfit sized to temperature, effort and weather.",
+  "slots": [
+   {
+    "id": "next_to_skin",
+    "title": "Next-to-Skin",
+    "category": "tops",
+    "anchor_keywords": [
+     "tee",
+     "t-shirt",
+     "long sleeve",
+     "base layer",
+     "thermal",
+     "merino",
+     "tank",
+     "henley"
+    ],
+    "required_labels": [],
+    "veto_keywords": [
+     "jacket",
+     "coat",
+     "parka",
+     "puffer",
+     "fleece",
+     "kids",
+     "infant",
+     "toddler",
+     "youth",
+     "junior",
+     "baby"
+    ],
+    "is_required": true,
+    "min_clo": 0.0
+   },
+   {
+    "id": "active_mid",
+    "title": "Active Mid",
+    "category": "tops",
+    "anchor_keywords": [
+     "hoodie",
+     "sweatshirt",
+     "crewneck",
+     "pullover",
+     "knit",
+     "sweater",
+     "fleece",
+     "half zip"
+    ],
+    "required_labels": [],
+    "veto_keywords": [
+     "down",
+     "parka",
+     "shell",
+     "tee",
+     "t-shirt",
+     "kids",
+     "infant",
+     "toddler",
+     "youth",
+     "junior",
+     "baby"
+    ],
+    "is_required": true,
+    "min_clo": 0.4
+   },
+   {
+    "id": "thermal_core",
+    "title": "Thermal Core",
+    "category": "tops outerwear",
+    "anchor_keywords": [
+     "fleece",
+     "down",
+     "insulated",
+     "puffer",
+     "vest",
+     "liner",
+     "quilted",
+     "sherpa"
+    ],
+    "required_labels": [],
+    "veto_keywords": [
+     "denim",
+     "leather",
+     "windbreaker",
+     "raincoat",
+     "blazer",
+     "kids",
+     "infant",
+     "toddler",
+     "youth",
+     "junior",
+     "baby"
+    ],
+    "is_required": true,
+    "min_clo": 1.0
+   },
+   {
+    "id": "weather_shell",
+    "title": "Weather Shell",
+    "category": "outerwear",
+    "anchor_keywords": [
+     "shell",
+     "windbreaker",
+     "anorak",
+     "waterproof",
+     "gore-tex",
+     "coach jacket",
+     "rain jacket",
+     "raincoat",
+     "nylon jacket",
+     "jacket"
+    ],
+    "required_labels": [],
+    "veto_keywords": [
+     "denim",
+     "leather",
+     "blazer",
+     "varsity",
+     "sweater",
+     "kids",
+     "infant",
+     "toddler",
+     "youth",
+     "junior",
+     "baby"
+    ],
+    "is_required": true,
+    "min_clo": 1.5
+   },
+   {
+    "id": "expedition_outer",
+    "title": "Expedition Outer",
+    "category": "tops outerwear",
+    "anchor_keywords": [
+     "parka",
+     "down",
+     "puffer",
+     "expedition",
+     "insulated",
+     "coat"
+    ],
+    "required_labels": [],
+    "veto_keywords": [
+     "denim",
+     "leather",
+     "blazer",
+     "varsity",
+     "sweat",
+     "kids",
+     "infant",
+     "toddler",
+     "youth",
+     "junior",
+     "baby"
+    ],
+    "is_required": true,
+    "min_clo": 2.4
+   },
+   {
+    "id": "bottoms",
+    "title": "Bottoms",
+    "category": "bottoms",
+    "anchor_keywords": [
+     "pants",
+     "trousers",
+     "cargo",
+     "jeans",
+     "shorts",
+     "sweatpants"
+    ],
+    "required_labels": [],
+    "veto_keywords": [
+     "swim",
+     "kids",
+     "infant",
+     "toddler",
+     "youth",
+     "junior",
+     "baby"
+    ],
+    "is_required": true,
+    "min_clo": 0.0
+   },
+   {
+    "id": "footwear",
+    "title": "Footwear",
+    "category": "footwear",
+    "anchor_keywords": [
+     "sneaker",
+     "boot",
+     "trail",
+     "running",
+     "shoe"
+    ],
+    "required_labels": [],
+    "veto_keywords": [
+     "slipper",
+     "heels",
+     "sandal",
+     "kids",
+     "infant",
+     "toddler",
+     "youth",
+     "junior",
+     "baby"
+    ],
+    "is_required": true,
+    "min_clo": 0.0
+   },
+   {
+    "id": "hardware",
+    "title": "Hardware & Gear",
+    "category": "accessories",
+    "anchor_keywords": [
+     "beanie",
+     "glove",
+     "scarf",
+     "gaiter",
+     "cap",
+     "hat",
+     "sunglasses",
+     "sock",
+     "bag",
+     "bottle"
+    ],
+    "required_labels": [],
+    "veto_keywords": [
+     "belt",
+     "wallet",
+     "keychain",
+     "kids",
+     "infant",
+     "toddler",
+     "youth",
+     "junior",
+     "baby"
+    ],
+    "is_required": false,
+    "min_clo": 0.0
+   }
+  ]
+ },
+ "thermal": {
+  "intensity_watts": {
+   "low": 90,
+   "moderate": 175,
+   "high": 350
+  },
+  "sensitivity_clo": {
+   "cold": 0.3,
+   "hot": -0.3
+  },
+  "weather_requirements": {
+   "rain": [
+    "weather_shell",
+    [
+     "waterproof",
+     "gore-tex",
+     "goretex",
+     "rain jacket",
+     "raincoat",
+     "rain shell",
+     "3l",
+     "2.5l",
+     "h2no",
+     "pertex"
+    ]
+   ],
+   "wind": [
+    "weather_shell",
+    [
+     "windproof",
+     "windbreaker",
+     "wind",
+     "anorak",
+     "coach jacket",
+     "shell"
+    ]
+   ],
+   "snow": [
+    "expedition_outer",
+    [
+     "down",
+     "insulated",
+     "puffer",
+     "parka",
+     "quilted"
+    ]
+   ],
+   "sun": [
+    null,
+    null
+   ]
+  },
+  "cold_temp_c": 5.0,
+  "cold_hardware_clo": 1.2,
+  "cold_bottoms_clo": 1.0,
+  "hardware_cold": [
+   "beanie",
+   "glove",
+   "scarf",
+   "gaiter",
+   "balaclava",
+   "sock"
+  ],
+  "hardware_warm": [
+   "cap",
+   "hat",
+   "sunglasses",
+   "visor",
+   "sock",
+   "bottle"
+  ]
+ }
+}

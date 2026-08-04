@@ -45,8 +45,12 @@
   .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
   .chip .n{opacity:.55;margin-left:5px;font-variant-numeric:tabular-nums}
 
+  /* `align-items:start` so each card is its own height. Without it a grid row stretches
+     every card to the tallest in it, and these differ enormously — a card with a
+     photograph and a six-line story next to one with neither. Stretching left the short
+     ones with a column of dead space above their footer. */
   .grid{
-    margin-top:30px;display:grid;gap:22px;
+    margin-top:30px;display:grid;gap:22px;align-items:start;
     grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
   }
   .card{
