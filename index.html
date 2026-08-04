@@ -18,6 +18,9 @@
   .status{display:inline-block;background:#eef3ee;border:1px solid #cfe0cf;border-radius:20px;padding:4px 14px;font-size:.9em;margin-top:40px}
   footer{margin-top:48px;padding-top:16px;border-top:1px solid #ddd;color:#777;font-size:.9em}
   a{color:#1a6fb0}
+  .cta{display:inline-block;background:var(--ink);color:var(--paper);text-decoration:none;
+       padding:13px 26px;font-weight:600;letter-spacing:.01em;margin-bottom:8px}
+  .cta:hover{background:var(--accent)}
 </style>
 </head>
 <body>
@@ -25,11 +28,15 @@
   <h1>field<span>.</span></h1>
   <p class="tag">Every piece, priced by what it actually costs delivered — not by the number on the tag.</p>
 
+  <p><a class="cta" href="./shelf/">Open the shelf — 25,534 pieces &rarr;</a></p>
+
   <h2>What it is</h2>
   <p>Field is a price-comparison engine for streetwear and fashion. It indexes independent
   boutiques and brand stores across the US, Europe and Israel, and ranks every piece by its
   <b>true landed cost</b> to the buyer's country: item price, shipping, customs duty, import
-  VAT and card FX — computed per destination, never guessed.</p>
+  VAT and card FX — computed per destination, never guessed. Where a retailer publishes no
+  international shipping rate, the piece shows its item price and says the delivered total
+  is unknown, rather than estimating one.</p>
 
   <h2>What makes it different</h2>
   <ul>
@@ -41,12 +48,17 @@
 
   <h2>Today</h2>
   <ul>
-    <li>50+ retailers indexed, 35,000+ live offers</li>
-    <li>Landed-cost engine covering IL, US, GB, DE, CA, AU</li>
-    <li>In private beta — public launch in preparation</li>
+    <li><b>25,534 pieces</b> on the shelf, from <b>57 retailers</b> across the US, Italy,
+        Israel, Canada, Germany, the UK and four more — read from the shops' own feeds</li>
+    <li>A complete delivered total on <b>5,590</b> of them; the rest state the item price
+        and say delivery is not known yet. That ratio is a shipping-rate coverage
+        problem, and it is stated on every piece rather than averaged away</li>
+    <li>Landed-cost engine covering IL, US, GB, DE, CA, AU — Israel's thresholds checked
+        against the Tax Authority's own personal-import calculator</li>
+    <li>Prices carry the date they were read. Nothing here is a live quote</li>
   </ul>
 
-  <span class="status">● In development — private beta</span>
+  <span class="status">● Live — the shelf is public and reads a dated export</span>
 
   <footer>
     Contact: <a href="mailto:Legdot123@gmail.com">Legdot123@gmail.com</a> · Tel Aviv, Israel
