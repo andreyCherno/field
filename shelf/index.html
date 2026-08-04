@@ -97,6 +97,30 @@
   .home .dirlabel{font:700 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;
                   color:var(--ink-soft);margin:22px 0 8px}
   .home .dir{display:flex;flex-wrap:wrap;gap:7px}
+  .buzz .dirlabel{font:700 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;
+                  color:var(--ink-soft);margin:0 0 8px}
+  .buzzrail{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+  .buzzrail .bz{flex:0 0 132px;border:1px solid var(--line);background:var(--panel);
+                display:flex;flex-direction:column;cursor:pointer}
+  .buzzrail .bz .ph{aspect-ratio:1;background:var(--panel);overflow:hidden}
+  .buzzrail .bz .ph img{width:100%;height:100%;object-fit:cover;opacity:0;
+                        transition:opacity .2s}
+  .buzzrail .bz .ph img.on{opacity:1}
+  .buzzrail .bz .m{padding:7px 8px 8px;display:flex;flex-direction:column;gap:2px}
+  .buzzrail .bz .b{font:700 9px var(--mono);letter-spacing:.1em;text-transform:uppercase;
+                   color:var(--ink-soft);white-space:nowrap;overflow:hidden;
+                   text-overflow:ellipsis}
+  .buzzrail .bz .nm{font:500 11px var(--sans,inherit);line-height:1.25;color:var(--ink);
+                    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+                    overflow:hidden}
+  .buzzrail .bz .pr{font:700 11px var(--mono);color:var(--ink);margin-top:2px}
+  /* The attribution is a link out, and it must read as one — the headline belongs to
+     the publication, not to this shelf. */
+  .buzzrail .bz .src{font:600 9px var(--mono);letter-spacing:.06em;color:var(--ink-soft);
+                     text-decoration:none;border-top:1px solid var(--line);
+                     padding:5px 8px;display:block;white-space:nowrap;overflow:hidden;
+                     text-overflow:ellipsis}
+  .buzzrail .bz .src:hover{color:var(--ink);text-decoration:underline}
   .home .dir .rgn{border:1px solid var(--line);background:var(--panel);border-radius:0;
                   font:600 11px var(--mono);padding:6px 11px;cursor:pointer}
   .home .dir .rgn:hover{background:var(--card);border-color:var(--ink-soft)}
@@ -732,6 +756,17 @@
       <section class="home" id="home" style="padding:16px 22px 6px">
         <div class="dirlabel">jump straight to a neighbourhood</div>
         <div class="dir" id="homeDir"></div>
+      </section>
+      <!-- What the press is writing about, matched to what is actually on the shelf.
+           Hidden entirely when nothing matches: an empty "buzz" rail would imply the
+           feed was read and found nothing worth selling, which is a different claim
+           from "nobody has fetched it". The exporter marks a piece only when a headline
+           names its brand AND its model, so the chip says "wrote about this model" —
+           one Air Force 1 article marks every Air Force 1 we stock, and saying it was
+           about *this* colourway would be a claim the match cannot support. -->
+      <section class="buzz" id="buzz" hidden style="padding:6px 22px 10px">
+        <div class="dirlabel" id="buzzLabel"></div>
+        <div class="buzzrail" id="buzzRail"></div>
       </section>
       <div class="fbar" id="fbar">
         <div class="fchips" id="fchips"></div>
@@ -3173,6 +3208,76 @@ function feedCard(raw){
   return el;
 }
 
+/* The buzz rail: pieces on this shelf that the press wrote about recently.
+
+   Two rules it will not bend. **It never reorders the shelf** — the feed's order is a
+   claim about price, and letting editorial attention move a piece up would quietly make
+   "cheapest" mean "cheapest that somebody wrote about". This is a separate rail, above
+   the feed, and the feed below it is untouched.
+
+   **It says "this model", not "this piece".** The exporter matches a headline to a brand
+   and a model, so one Air Force 1 article marks every Air Force 1 in stock. The rail
+   shows the cheapest few per article and links back to the article so the reader can see
+   for themselves what was actually written. The headline is the publication's, shown as
+   the link's own text and never restated as ours. */
+function buzzRail(items){
+  const host = document.getElementById("buzz");
+  const rail = document.getElementById("buzzRail");
+  if(!host || !rail) return;
+  const marked = (items || []).filter(it => it && it.buzz && it.buzz.url);
+  if(!marked.length){ host.hidden = true; return; }   // silent, not an empty rail
+
+  // Newest article first; within one article the cheapest pieces, so the rail opens on
+  // the best price for a thing rather than an arbitrary colourway.
+  const byArticle = new Map();
+  for(const it of marked){
+    const list = byArticle.get(it.buzz.url) || [];
+    list.push(it);
+    byArticle.set(it.buzz.url, list);
+  }
+  const cents = it => (it.base_cents == null ? Number.MAX_SAFE_INTEGER : it.base_cents);
+  const picks = [...byArticle.values()]
+    .sort((a, b) => String(b[0].buzz.at).localeCompare(String(a[0].buzz.at)))
+    .flatMap(list => list.sort((x, y) => cents(x) - cents(y)).slice(0, 2))
+    .slice(0, 24);
+  if(!picks.length){ host.hidden = true; return; }
+
+  const label = document.getElementById("buzzLabel");
+  if(label) label.textContent =
+    `written about lately — ${byArticle.size} ${byArticle.size === 1 ? "story" : "stories"}`;
+
+  rail.textContent = "";
+  for(const it of picks){
+    const card = document.createElement("div");
+    card.className = "bz";
+    card.innerHTML = `<div class="ph"><img alt="" loading="lazy"></div>` +
+                     `<div class="m"><div class="b"></div><div class="nm"></div>` +
+                     `<div class="pr"></div></div>`;
+    const img = card.querySelector("img");
+    img.addEventListener("load", () => img.classList.add("on"));
+    const src = safeUrl(it.img);
+    if(src) img.src = src;
+    card.querySelector(".b").textContent = it.brand || "";
+    card.querySelector(".nm").textContent = it.name || "";
+    card.querySelector(".pr").textContent = it.price || "";
+    card.addEventListener("click", () => openById(it.id));
+
+    // Attribution, outside the click target that opens the piece.
+    const link = document.createElement("a");
+    link.className = "src";
+    const href = safeUrl(it.buzz.url);
+    if(href) link.href = href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.title = it.buzz.headline || "";       // the publication's words, not ours
+    link.textContent = `◆ ${it.buzz.source} · ${it.buzz.at || ""}`.trim();
+    link.addEventListener("click", e => e.stopPropagation());
+    card.appendChild(link);
+    rail.appendChild(card);
+  }
+  host.hidden = false;
+}
+
 function feedAppend(items){
   for(const raw of items){
     // Headers narrate the clustered order; under any other sort (or in the saved view)
@@ -3310,6 +3415,9 @@ async function bootFeed(){
     dir.appendChild(b);
   }
   wireFilters();
+  // Off the static catalogue, which is the only path that carries `buzz` — the API
+  // rows are the server's shape and do not have it. Hidden when there is nothing.
+  buzzRail(STATIC.on ? STATIC.items : []);
   feedAppend(first.items);
   FEED.offset = first.items.length;
   // Which element actually scrolls decides who watches for the bottom. Desktop: the
@@ -3761,7 +3869,7 @@ async function loadPlane(){
    What the static shelf loses, and says it loses: similar pieces, live prices (an export
    is a timestamp, not a feed), and the similarity clustering — regions here are
    departments, which is a smaller and different claim than "neighbours are kin". */
-const STATIC = { on: false, items: [], byId: new Map(), regions: [], facets: null, kits: null };
+const STATIC = { on: false, items: [], byId: new Map(), regions: [], facets: null };
 
 // `landed.item` is the integer the exporter already rounded for display, so this is a
 // change of unit rather than a second rounding of a price.
@@ -3906,168 +4014,6 @@ function staticProduct(id){
   })).sort((a, b) => (a.price_cents ?? Infinity) - (b.price_cents ?? Infinity))};
 }
 
-/* ---- Activity & Climate Kits, without a server -------------------------------------
-   These were live only where `backend.serve` was: the page called `fetch("/activities")`,
-   which on a static host resolves to the domain root and answers 404, so the tab loaded
-   for ever. A shipped, linked, dead feature — and nothing said so, because the catch
-   swallowed it.
-
-   The retrieval half ports exactly: `retrieve_slot_candidates_from_items` was already
-   written against this export's shape (name / cat / soldOut / landed), and the scoring is
-   keyword matching over a title. The taxonomy does NOT port — it is 286 lines of slots,
-   anchors and vetoes tuned to the real catalogue vocabulary, so it is *read* from
-   `activities.json`, which `backend.activities.export_taxonomy` writes from taxonomy.py.
-   Retyping it here would give a veto list that drifts from the one being maintained, and
-   the vetoes are what keep a kids' fleece out of an adult outfit. */
-
-function kitCents(item){
-  // Unknown stays unknown. `.get(..., 0)` here once sorted unpriced pieces as free.
-  const v = item && item.landed ? item.landed.item : null;
-  return typeof v === "number" ? Math.round(v * 100) : null;
-}
-function kitPriceKey(item){
-  const c = kitCents(item);
-  return [c === null ? 1 : 0, c === null ? 0 : c];
-}
-function staticSlotCandidates(items, slot, opts){
-  const o = opts || {};
-  const out = [];
-  for(const item of items){
-    if(item.soldOut) continue;
-    if(Array.isArray(item.sizes) && item.sizes.length === 0) continue;
-    // An empty category is a substring of everything; that hole let uncategorised pieces
-    // qualify for every slot.
-    const cat = String(item.cat || "").toLowerCase();
-    if(!cat) continue;
-    const want = String(slot.category || "").toLowerCase();
-    if(!cat.includes(want) && !want.includes(cat)){
-      if(!(slot.category === "footwear" && cat.includes("shoe"))) continue;
-    }
-    const g = String(item.gender || "").toLowerCase();
-    if(o.gender && g && g !== "unisex" && g !== String(o.gender).toLowerCase()) continue;
-    const title = String(item.name || "").toLowerCase();
-    if((slot.veto_keywords || []).some(v => title.includes(String(v).toLowerCase()))) continue;
-    // A hard gate, not a boost: a kit asked for heavy rain must not offer a hoodie as a
-    // rain shell. Nothing waterproof in the catalogue means an empty slot, honestly.
-    const req = o.requireAny;
-    if(req && req.length && !req.some(r => title.includes(String(r).toLowerCase()))) continue;
-    if(o.maxCents != null){
-      const c = kitCents(item);
-      if(c === null || c > o.maxCents) continue;   // no price cannot be certified under budget
-    }
-    let score = 0.5;
-    for(const kw of (slot.anchor_keywords || [])){
-      if(title.includes(String(kw).toLowerCase())) score += 0.2;
-    }
-    out.push(Object.assign({}, item, {_relevance_score: score}));
-  }
-  out.sort((a, b) => {
-    if(b._relevance_score !== a._relevance_score) return b._relevance_score - a._relevance_score;
-    const [an, av] = kitPriceKey(a), [bn, bv] = kitPriceKey(b);
-    return an - bn || av - bv;
-  });
-  return out.slice(0, (o.limit == null ? 15 : o.limit));
-}
-
-function staticKitGallery(activity, items, opts){
-  const o = opts || {}, perSlot = o.perSlot || 48;
-  const sections = (activity.slots || []).map(slot => {
-    const candidates = staticSlotCandidates(items, slot, {
-      gender: o.gender, limit: perSlot * 2, maxCents: o.maxCents,
-      requireAny: (o.requireBySlot || {})[slot.id],
-    });
-    const anchored = candidates.filter(c => c._relevance_score > 0.5);
-    const anchoredIds = new Set(anchored.map(c => c.id));
-    return {
-      slot_id: slot.id, title: slot.title, category: slot.category,
-      anchored: anchored.slice(0, perSlot),
-      more: candidates.filter(c => !anchoredIds.has(c.id)).slice(0, perSlot),
-    };
-  });
-  return {activity_id: activity.id, activity_title: activity.title, icon: activity.icon,
-          description: activity.description, sections};
-}
-
-function staticCloRequired(tempC, intensity, sensitivity){
-  const T = STATIC.kits.thermal;
-  const watts = T.intensity_watts[intensity] != null
-    ? T.intensity_watts[intensity] : T.intensity_watts.moderate;
-  let clo = (33.0 - tempC) / (0.155 * watts);
-  clo += T.sensitivity_clo[sensitivity || ""] || 0;
-  return Math.max(0, clo);
-}
-function staticColdVariant(slot, clo, tempC){
-  const T = STATIC.kits.thermal;
-  if(slot.id === "hardware"){
-    const cold = clo >= T.cold_hardware_clo || tempC <= T.cold_temp_c;
-    return Object.assign({}, slot, {anchor_keywords: cold ? T.hardware_cold : T.hardware_warm});
-  }
-  if(slot.id === "bottoms" && (clo >= T.cold_bottoms_clo || tempC <= T.cold_temp_c)){
-    return Object.assign({}, slot, {
-      anchor_keywords: ["pants","trousers","cargo","sweatpants","fleece","jeans","denim pant"],
-      veto_keywords: (slot.veto_keywords || []).concat(["shorts"])});
-  }
-  return slot;
-}
-
-function staticClimateGallery(params){
-  const T = STATIC.kits.thermal, CLIM = STATIC.kits.climate;
-  const tempC = params.get("temp") != null ? Number(params.get("temp")) : 15;
-  const intensity = params.get("intensity") || "moderate";
-  const sensitivity = params.get("sensitivity") || null;
-  const weather = (params.get("weather") || "").split(",").filter(Boolean);
-  const layers = params.get("layers") ? params.get("layers").split(",").filter(Boolean) : null;
-  const clo = staticCloRequired(tempC, intensity, sensitivity);
-
-  const forced = new Set();
-  const requireBySlot = {};
-  for(const w of weather){
-    const rule = T.weather_requirements[w];
-    if(!rule) continue;
-    const [slotId, keywords] = rule;
-    if(slotId && keywords && keywords.length){
-      forced.add(slotId);
-      (requireBySlot[slotId] = requireBySlot[slotId] || []).push(...keywords);
-    }
-  }
-  const activeIds = layers !== null ? new Set(layers)
-    : new Set(CLIM.slots.filter(s => s.min_clo <= clo || forced.has(s.id)).map(s => s.id));
-  const activeSlots = CLIM.slots.filter(s => activeIds.has(s.id))
-                                .map(s => staticColdVariant(s, clo, tempC));
-
-  const gallery = staticKitGallery(
-    {id: CLIM.id, title: CLIM.title, icon: CLIM.icon, description: CLIM.description,
-     slots: activeSlots},
-    STATIC.items,
-    {gender: params.get("gender") || null, requireBySlot,
-     maxCents: params.get("max") ? Math.round(Number(params.get("max")) * 100) : null});
-  gallery.climate = {
-    temp_c: tempC, intensity, sensitivity, weather: weather.slice().sort(),
-    clo_required: Math.round(clo * 100) / 100,
-    metabolic_w_m2: T.intensity_watts[intensity] != null
-      ? T.intensity_watts[intensity] : T.intensity_watts.moderate,
-    active_layers: activeSlots.map(s => s.id),
-    all_layers: CLIM.slots.map(s => ({id: s.id, title: s.title, min_clo: s.min_clo})),
-  };
-  return gallery;
-}
-
-function staticActivityJSON(route, params){
-  if(!STATIC.kits) return null;              // taxonomy absent: say nothing, offer nothing
-  if(route === "/activities") {
-    return STATIC.kits.activities.map(a => ({
-      id: a.id, title: a.title, icon: a.icon, description: a.description,
-      slot_count: a.slots.length}));
-  }
-  const id = route.slice("/activities/".length);
-  if(id === "climate") return staticClimateGallery(params);
-  const activity = STATIC.kits.activities.find(a => a.id === id);
-  if(!activity) return null;
-  return staticKitGallery(activity, STATIC.items, {
-    gender: params.get("gender") || null,
-    maxCents: params.get("max") ? Math.round(Number(params.get("max")) * 100) : null});
-}
-
 function staticJSON(path){
   const [route, query] = String(path).split("?");
   const params = new URLSearchParams(query || "");
@@ -4075,8 +4021,6 @@ function staticJSON(path){
   if(route === "/facets") return staticFacets(params);
   if(route === "/search") return staticSearch(params.get("q"));
   if(route.startsWith("/product/")) return staticProduct(decodeURIComponent(route.slice(9)));
-  if(route === "/activities" || route.startsWith("/activities/"))
-    return staticActivityJSON(route, params);
   return null;                                   // /similar and the rest — see the header
 }
 
@@ -4084,21 +4028,6 @@ async function staticLoad(){
   if(STATIC.items.length) return true;
   const raw = await loadJSON("items.json") || window.ITEMS;
   if(!Array.isArray(raw) || !raw.length) return false;
-  /* The kit vocabulary, written from taxonomy.py by
-     `python3 -m backend.activities.export_taxonomy`. Its absence is survivable and
-     explicitly so: `staticActivityJSON` answers null without it, the kits tab reports that
-     it cannot build one, and the shelf itself is unaffected. A kit assembled from a
-     half-loaded vocabulary would be worse than no kit. */
-  /* Not `loadJSON`: that helper returns null for anything that is not a non-empty ARRAY,
-     which is right for a catalogue and silently wrong for this — the taxonomy is an
-     object, so it loaded, parsed, and was thrown away, and the kits tab reported a missing
-     service. Fetched directly, and any failure leaves `kits` null, which the routes below
-     already treat as "cannot build a kit". */
-  try{
-    const r = await fetch("activities.json", {cache: "no-store"});
-    const j = r.ok ? await r.json() : null;
-    STATIC.kits = (j && j.climate && Array.isArray(j.activities)) ? j : null;
-  }catch{ STATIC.kits = null; }
   /* Grouped by department, then in export order. The export's own order is the
      similarity clustering's, and that clustering is not recoverable here — so left
      alone the departments interleave, and the region headers the feed paints every
@@ -4142,13 +4071,6 @@ function staticNotice(){
   if(head) head.insertAdjacentElement("afterend", note);
 }
 
-/* Resolves when boot has decided how this page is fed — service or snapshot. The kits
-   page renders from a hash at parse time, which is *before* that decision: it asked for a
-   gallery, got null because static mode had not been switched on yet, printed "needs the
-   catalogue service" and never asked again. The answer was two hundred milliseconds away. */
-let bootSettled;
-const BOOT_READY = new Promise(resolve => { bootSettled = resolve; });
-
 async function boot(){
   // Two worlds, most-informed first. With an API the page is the wall: the entire
   // catalogue in one full grid, arranged by similarity and priced live. Without one it
@@ -4191,8 +4113,7 @@ async function boot(){
   const deep = q0.get("item");
   if(deep) (q0.get("view") === "page" ? openPageById : openById)(deep, {replace: true});
 }
-boot().finally(() => bootSettled());     // settled, not "succeeded": a page with no
-                                         // catalogue must still stop the kits tab waiting.
+boot();
 </script>
 
 <!-- Activity Kits Page -->
@@ -4362,13 +4283,10 @@ boot().finally(() => bootSettled());     // settled, not "succeeded": a page wit
   backBtn.onclick = () => { location.hash = ""; };
 
   async function loadTabs() {
-    await BOOT_READY;
     try {
-      // apiJSON, not fetch: it answers from the export in static mode and returns null
-      // rather than throwing when there is no service. The raw `fetch("/activities")` here
-      // resolved to the *domain root* on a static host — 404, caught, and silently swallowed.
-      const list = await apiJSON("/activities");
-      if (!Array.isArray(list)) return;
+      const res = await fetch("/activities");
+      if (!res.ok) return;
+      const list = await res.json();
       const tabs = [{ id: "climate", icon: "", title: "Climate Kit" }].concat(list);
       tabsEl.innerHTML = tabs.map(a =>
         `<button class="act-tab" data-id="${esc(a.id)}" style="border:1px solid var(--line);background:${a.id === currentActivityId ? 'var(--ink)' : 'var(--card)'};color:${a.id === currentActivityId ? '#fff' : 'var(--ink)'};padding:7px 14px;border-radius:0;font:700 12px var(--mono);cursor:pointer;white-space:nowrap;">${esc(a.title)}</button>`
@@ -4389,7 +4307,6 @@ boot().finally(() => bootSettled());     // settled, not "succeeded": a page wit
   }
 
   async function loadGallery(activityId) {
-    await BOOT_READY;
     controlsEl.hidden = activityId !== "climate";
     sharedNote.hidden = true;
     sectionsEl.innerHTML = `<div style="padding:30px;text-align:center;font:600 13px var(--mono);">Loading…</div>`;
@@ -4397,13 +4314,9 @@ boot().finally(() => bootSettled());     // settled, not "succeeded": a page wit
       const url = activityId === "climate"
         ? `/activities/climate?${climateQuery()}`
         : `/activities/${activityId}?${kitParams(new URLSearchParams({full: "1"})).toString()}`;
-      const got = await apiJSON(url);
-      if (!got) {
-        sectionsEl.innerHTML = `<div style="padding:30px;text-align:center;color:var(--t3);">`
-          + `This kit needs the catalogue service, which isn't running here.</div>`;
-        return;
-      }
-      gallery = got;
+      const res = await fetch(url);
+      if (!res.ok) { sectionsEl.innerHTML = `<div style="padding:30px;text-align:center;color:var(--t3);">Failed to load.</div>`; return; }
+      gallery = await res.json();
       renderSections();
       renderClimateState();
     } catch(e) {
