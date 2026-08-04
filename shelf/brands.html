@@ -104,10 +104,20 @@
   footer{margin-top:70px;border-top:1px solid var(--line);padding-top:22px;
          color:var(--dim);font-size:.84rem;max-width:66ch}
   footer p+p{margin-top:10px}
+  /* This page shipped with no way off it. Anyone who arrived — from the home page, from
+     a shared link — could reach 45 brands and nothing else on the site. */
+  .sitenav{display:flex;gap:14px;margin-bottom:26px;font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;
+           letter-spacing:.08em;text-transform:uppercase}
+  .sitenav a{opacity:.72;text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:2px}
+  .sitenav a:hover{opacity:1}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav class="sitenav" aria-label="Site">
+    <a href="index.html">&larr; the shelf</a>
+    <a href="index.html#kits">activity kits</a>
+  </nav>
   <header>
     <h1>New from <em>China</em> and <em>Japan</em></h1>
     <p class="lede">
@@ -141,6 +151,8 @@ let DATA = { brands: [], axes: [] };
 const ACTIVE = new Map();          // axis -> value
 
 const $ = (id) => document.getElementById(id);
+// Detected, never asserted: the export prices a single destination and says which.
+const SYMBOL = {ILS: "\u20aa", USD: "$", EUR: "\u20ac", GBP: "\u00a3", CAD: "C$", AUD: "A$"};
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
   c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
@@ -212,8 +224,13 @@ function card(b){
   const foot = [
     `<span class="vf ${esc(b.verification)}">${esc(b.verification)}</span>`,
     b.url ? `<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">official shop</a>` : "",
-    b.liveItems ? `<span>${b.liveItems} in the catalogue</span>` : "",
-    b.medianUsd ? `<span>median $${b.medianUsd}</span>` : "",
+    // Both figures come from the same export the shelf filter reads, so this link cannot
+    // land on an empty result — which is why it is a link at all. It was plain text while
+    // the count came from the items table, where 16 of 22 brands had no shelf presence.
+    b.liveItems ? `<a href="index.html?brand=${encodeURIComponent(b.slug)}">`
+                + `${b.liveItems} on the shelf &rarr;</a>` : "",
+    b.medianPrice ? `<span>median ${SYMBOL[b.medianCurrency] || ""}${b.medianPrice}`
+                  + `${SYMBOL[b.medianCurrency] ? "" : " " + esc(b.medianCurrency || "")}</span>` : "",
   ].filter(Boolean).join("");
 
   return `<article class="card">

@@ -721,9 +721,14 @@
 <div class="wrap">
   <div class="card">
     <div class="head">
-      <a class="brandmark" href="/" style="text-decoration:none;color:inherit">field<span style="color:var(--acc)">.</span></a>
+      <!-- `../`, not `/`. The site is served from a project path (/field/shelf/), so an
+           absolute `/` left it entirely and answered 404 on the domain root — the same
+           shape as the `fetch("/activities")` that kept the kits tab loading for ever.
+           Relative reaches the home page wherever the folder is mounted. -->
+      <a class="brandmark" href="../" style="text-decoration:none;color:inherit">field<span style="color:var(--acc)">.</span></a>
       <nav aria-label="Site" style="display:inline-flex;align-items:center;gap:8px;margin-left:8px">
-        <a href="/" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Home</a>
+        <a href="../" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Home</a>
+        <a href="brands.html" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Brands</a>
         <button id="activityKitsBtn" style="cursor:pointer;background:var(--ink);color:var(--card);border:none;padding:6px 14px;border-radius:0;font:700 12px var(--mono);display:inline-flex;align-items:center;gap:6px;">Activity Kits</button>
       </nav>
       <span class="tag">Every piece, priced by what it costs delivered. Colour of the frame is what it costs.</span>
@@ -3869,7 +3874,7 @@ async function loadPlane(){
    What the static shelf loses, and says it loses: similar pieces, live prices (an export
    is a timestamp, not a feed), and the similarity clustering — regions here are
    departments, which is a smaller and different claim than "neighbours are kin". */
-const STATIC = { on: false, items: [], byId: new Map(), regions: [], facets: null };
+const STATIC = { on: false, items: [], byId: new Map(), regions: [], facets: null, kits: null };
 
 // `landed.item` is the integer the exporter already rounded for display, so this is a
 // change of unit rather than a second rounding of a price.
@@ -4014,6 +4019,168 @@ function staticProduct(id){
   })).sort((a, b) => (a.price_cents ?? Infinity) - (b.price_cents ?? Infinity))};
 }
 
+/* ---- Activity & Climate Kits, without a server -------------------------------------
+   These were live only where `backend.serve` was: the page called `fetch("/activities")`,
+   which on a static host resolves to the domain root and answers 404, so the tab loaded
+   for ever. A shipped, linked, dead feature — and nothing said so, because the catch
+   swallowed it.
+
+   The retrieval half ports exactly: `retrieve_slot_candidates_from_items` was already
+   written against this export's shape (name / cat / soldOut / landed), and the scoring is
+   keyword matching over a title. The taxonomy does NOT port — it is 286 lines of slots,
+   anchors and vetoes tuned to the real catalogue vocabulary, so it is *read* from
+   `activities.json`, which `backend.activities.export_taxonomy` writes from taxonomy.py.
+   Retyping it here would give a veto list that drifts from the one being maintained, and
+   the vetoes are what keep a kids' fleece out of an adult outfit. */
+
+function kitCents(item){
+  // Unknown stays unknown. `.get(..., 0)` here once sorted unpriced pieces as free.
+  const v = item && item.landed ? item.landed.item : null;
+  return typeof v === "number" ? Math.round(v * 100) : null;
+}
+function kitPriceKey(item){
+  const c = kitCents(item);
+  return [c === null ? 1 : 0, c === null ? 0 : c];
+}
+function staticSlotCandidates(items, slot, opts){
+  const o = opts || {};
+  const out = [];
+  for(const item of items){
+    if(item.soldOut) continue;
+    if(Array.isArray(item.sizes) && item.sizes.length === 0) continue;
+    // An empty category is a substring of everything; that hole let uncategorised pieces
+    // qualify for every slot.
+    const cat = String(item.cat || "").toLowerCase();
+    if(!cat) continue;
+    const want = String(slot.category || "").toLowerCase();
+    if(!cat.includes(want) && !want.includes(cat)){
+      if(!(slot.category === "footwear" && cat.includes("shoe"))) continue;
+    }
+    const g = String(item.gender || "").toLowerCase();
+    if(o.gender && g && g !== "unisex" && g !== String(o.gender).toLowerCase()) continue;
+    const title = String(item.name || "").toLowerCase();
+    if((slot.veto_keywords || []).some(v => title.includes(String(v).toLowerCase()))) continue;
+    // A hard gate, not a boost: a kit asked for heavy rain must not offer a hoodie as a
+    // rain shell. Nothing waterproof in the catalogue means an empty slot, honestly.
+    const req = o.requireAny;
+    if(req && req.length && !req.some(r => title.includes(String(r).toLowerCase()))) continue;
+    if(o.maxCents != null){
+      const c = kitCents(item);
+      if(c === null || c > o.maxCents) continue;   // no price cannot be certified under budget
+    }
+    let score = 0.5;
+    for(const kw of (slot.anchor_keywords || [])){
+      if(title.includes(String(kw).toLowerCase())) score += 0.2;
+    }
+    out.push(Object.assign({}, item, {_relevance_score: score}));
+  }
+  out.sort((a, b) => {
+    if(b._relevance_score !== a._relevance_score) return b._relevance_score - a._relevance_score;
+    const [an, av] = kitPriceKey(a), [bn, bv] = kitPriceKey(b);
+    return an - bn || av - bv;
+  });
+  return out.slice(0, (o.limit == null ? 15 : o.limit));
+}
+
+function staticKitGallery(activity, items, opts){
+  const o = opts || {}, perSlot = o.perSlot || 48;
+  const sections = (activity.slots || []).map(slot => {
+    const candidates = staticSlotCandidates(items, slot, {
+      gender: o.gender, limit: perSlot * 2, maxCents: o.maxCents,
+      requireAny: (o.requireBySlot || {})[slot.id],
+    });
+    const anchored = candidates.filter(c => c._relevance_score > 0.5);
+    const anchoredIds = new Set(anchored.map(c => c.id));
+    return {
+      slot_id: slot.id, title: slot.title, category: slot.category,
+      anchored: anchored.slice(0, perSlot),
+      more: candidates.filter(c => !anchoredIds.has(c.id)).slice(0, perSlot),
+    };
+  });
+  return {activity_id: activity.id, activity_title: activity.title, icon: activity.icon,
+          description: activity.description, sections};
+}
+
+function staticCloRequired(tempC, intensity, sensitivity){
+  const T = STATIC.kits.thermal;
+  const watts = T.intensity_watts[intensity] != null
+    ? T.intensity_watts[intensity] : T.intensity_watts.moderate;
+  let clo = (33.0 - tempC) / (0.155 * watts);
+  clo += T.sensitivity_clo[sensitivity || ""] || 0;
+  return Math.max(0, clo);
+}
+function staticColdVariant(slot, clo, tempC){
+  const T = STATIC.kits.thermal;
+  if(slot.id === "hardware"){
+    const cold = clo >= T.cold_hardware_clo || tempC <= T.cold_temp_c;
+    return Object.assign({}, slot, {anchor_keywords: cold ? T.hardware_cold : T.hardware_warm});
+  }
+  if(slot.id === "bottoms" && (clo >= T.cold_bottoms_clo || tempC <= T.cold_temp_c)){
+    return Object.assign({}, slot, {
+      anchor_keywords: ["pants","trousers","cargo","sweatpants","fleece","jeans","denim pant"],
+      veto_keywords: (slot.veto_keywords || []).concat(["shorts"])});
+  }
+  return slot;
+}
+
+function staticClimateGallery(params){
+  const T = STATIC.kits.thermal, CLIM = STATIC.kits.climate;
+  const tempC = params.get("temp") != null ? Number(params.get("temp")) : 15;
+  const intensity = params.get("intensity") || "moderate";
+  const sensitivity = params.get("sensitivity") || null;
+  const weather = (params.get("weather") || "").split(",").filter(Boolean);
+  const layers = params.get("layers") ? params.get("layers").split(",").filter(Boolean) : null;
+  const clo = staticCloRequired(tempC, intensity, sensitivity);
+
+  const forced = new Set();
+  const requireBySlot = {};
+  for(const w of weather){
+    const rule = T.weather_requirements[w];
+    if(!rule) continue;
+    const [slotId, keywords] = rule;
+    if(slotId && keywords && keywords.length){
+      forced.add(slotId);
+      (requireBySlot[slotId] = requireBySlot[slotId] || []).push(...keywords);
+    }
+  }
+  const activeIds = layers !== null ? new Set(layers)
+    : new Set(CLIM.slots.filter(s => s.min_clo <= clo || forced.has(s.id)).map(s => s.id));
+  const activeSlots = CLIM.slots.filter(s => activeIds.has(s.id))
+                                .map(s => staticColdVariant(s, clo, tempC));
+
+  const gallery = staticKitGallery(
+    {id: CLIM.id, title: CLIM.title, icon: CLIM.icon, description: CLIM.description,
+     slots: activeSlots},
+    STATIC.items,
+    {gender: params.get("gender") || null, requireBySlot,
+     maxCents: params.get("max") ? Math.round(Number(params.get("max")) * 100) : null});
+  gallery.climate = {
+    temp_c: tempC, intensity, sensitivity, weather: weather.slice().sort(),
+    clo_required: Math.round(clo * 100) / 100,
+    metabolic_w_m2: T.intensity_watts[intensity] != null
+      ? T.intensity_watts[intensity] : T.intensity_watts.moderate,
+    active_layers: activeSlots.map(s => s.id),
+    all_layers: CLIM.slots.map(s => ({id: s.id, title: s.title, min_clo: s.min_clo})),
+  };
+  return gallery;
+}
+
+function staticActivityJSON(route, params){
+  if(!STATIC.kits) return null;              // taxonomy absent: say nothing, offer nothing
+  if(route === "/activities") {
+    return STATIC.kits.activities.map(a => ({
+      id: a.id, title: a.title, icon: a.icon, description: a.description,
+      slot_count: a.slots.length}));
+  }
+  const id = route.slice("/activities/".length);
+  if(id === "climate") return staticClimateGallery(params);
+  const activity = STATIC.kits.activities.find(a => a.id === id);
+  if(!activity) return null;
+  return staticKitGallery(activity, STATIC.items, {
+    gender: params.get("gender") || null,
+    maxCents: params.get("max") ? Math.round(Number(params.get("max")) * 100) : null});
+}
+
 function staticJSON(path){
   const [route, query] = String(path).split("?");
   const params = new URLSearchParams(query || "");
@@ -4021,6 +4188,8 @@ function staticJSON(path){
   if(route === "/facets") return staticFacets(params);
   if(route === "/search") return staticSearch(params.get("q"));
   if(route.startsWith("/product/")) return staticProduct(decodeURIComponent(route.slice(9)));
+  if(route === "/activities" || route.startsWith("/activities/"))
+    return staticActivityJSON(route, params);
   return null;                                   // /similar and the rest — see the header
 }
 
@@ -4028,6 +4197,21 @@ async function staticLoad(){
   if(STATIC.items.length) return true;
   const raw = await loadJSON("items.json") || window.ITEMS;
   if(!Array.isArray(raw) || !raw.length) return false;
+  /* The kit vocabulary, written from taxonomy.py by
+     `python3 -m backend.activities.export_taxonomy`. Its absence is survivable and
+     explicitly so: `staticActivityJSON` answers null without it, the kits tab reports that
+     it cannot build one, and the shelf itself is unaffected. A kit assembled from a
+     half-loaded vocabulary would be worse than no kit. */
+  /* Not `loadJSON`: that helper returns null for anything that is not a non-empty ARRAY,
+     which is right for a catalogue and silently wrong for this — the taxonomy is an
+     object, so it loaded, parsed, and was thrown away, and the kits tab reported a missing
+     service. Fetched directly, and any failure leaves `kits` null, which the routes below
+     already treat as "cannot build a kit". */
+  try{
+    const r = await fetch("activities.json", {cache: "no-store"});
+    const j = r.ok ? await r.json() : null;
+    STATIC.kits = (j && j.climate && Array.isArray(j.activities)) ? j : null;
+  }catch{ STATIC.kits = null; }
   /* Grouped by department, then in export order. The export's own order is the
      similarity clustering's, and that clustering is not recoverable here — so left
      alone the departments interleave, and the region headers the feed paints every
@@ -4071,6 +4255,13 @@ function staticNotice(){
   if(head) head.insertAdjacentElement("afterend", note);
 }
 
+/* Resolves when boot has decided how this page is fed — service or snapshot. The kits
+   page renders from a hash at parse time, which is *before* that decision: it asked for a
+   gallery, got null because static mode had not been switched on yet, printed "needs the
+   catalogue service" and never asked again. The answer was two hundred milliseconds away. */
+let bootSettled;
+const BOOT_READY = new Promise(resolve => { bootSettled = resolve; });
+
 async function boot(){
   // Two worlds, most-informed first. With an API the page is the wall: the entire
   // catalogue in one full grid, arranged by similarity and priced live. Without one it
@@ -4113,7 +4304,8 @@ async function boot(){
   const deep = q0.get("item");
   if(deep) (q0.get("view") === "page" ? openPageById : openById)(deep, {replace: true});
 }
-boot();
+boot().finally(() => bootSettled());     // settled, not "succeeded": a page with no
+                                         // catalogue must still stop the kits tab waiting.
 </script>
 
 <!-- Activity Kits Page -->
@@ -4283,10 +4475,13 @@ boot();
   backBtn.onclick = () => { location.hash = ""; };
 
   async function loadTabs() {
+    await BOOT_READY;
     try {
-      const res = await fetch("/activities");
-      if (!res.ok) return;
-      const list = await res.json();
+      // apiJSON, not fetch: it answers from the export in static mode and returns null
+      // rather than throwing when there is no service. The raw `fetch("/activities")` here
+      // resolved to the *domain root* on a static host — 404, caught, and silently swallowed.
+      const list = await apiJSON("/activities");
+      if (!Array.isArray(list)) return;
       const tabs = [{ id: "climate", icon: "", title: "Climate Kit" }].concat(list);
       tabsEl.innerHTML = tabs.map(a =>
         `<button class="act-tab" data-id="${esc(a.id)}" style="border:1px solid var(--line);background:${a.id === currentActivityId ? 'var(--ink)' : 'var(--card)'};color:${a.id === currentActivityId ? '#fff' : 'var(--ink)'};padding:7px 14px;border-radius:0;font:700 12px var(--mono);cursor:pointer;white-space:nowrap;">${esc(a.title)}</button>`
@@ -4307,6 +4502,7 @@ boot();
   }
 
   async function loadGallery(activityId) {
+    await BOOT_READY;
     controlsEl.hidden = activityId !== "climate";
     sharedNote.hidden = true;
     sectionsEl.innerHTML = `<div style="padding:30px;text-align:center;font:600 13px var(--mono);">Loading…</div>`;
@@ -4314,9 +4510,13 @@ boot();
       const url = activityId === "climate"
         ? `/activities/climate?${climateQuery()}`
         : `/activities/${activityId}?${kitParams(new URLSearchParams({full: "1"})).toString()}`;
-      const res = await fetch(url);
-      if (!res.ok) { sectionsEl.innerHTML = `<div style="padding:30px;text-align:center;color:var(--t3);">Failed to load.</div>`; return; }
-      gallery = await res.json();
+      const got = await apiJSON(url);
+      if (!got) {
+        sectionsEl.innerHTML = `<div style="padding:30px;text-align:center;color:var(--t3);">`
+          + `This kit needs the catalogue service, which isn't running here.</div>`;
+        return;
+      }
+      gallery = got;
       renderSections();
       renderClimateState();
     } catch(e) {
