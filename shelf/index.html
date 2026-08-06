@@ -721,9 +721,14 @@
 <div class="wrap">
   <div class="card">
     <div class="head">
-      <a class="brandmark" href="/" style="text-decoration:none;color:inherit">field<span style="color:var(--acc)">.</span></a>
+      <!-- `../`, not `/`. The site is served from a project path (/field/shelf/), so an
+           absolute `/` left it entirely and answered 404 on the domain root — the same
+           shape as the `fetch("/activities")` that kept the kits tab loading for ever.
+           Relative reaches the home page wherever the folder is mounted. -->
+      <a class="brandmark" href="../" style="text-decoration:none;color:inherit">field<span style="color:var(--acc)">.</span></a>
       <nav aria-label="Site" style="display:inline-flex;align-items:center;gap:8px;margin-left:8px">
-        <a href="/" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Home</a>
+        <a href="../" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Home</a>
+        <a href="brands.html" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Brands</a>
         <button id="activityKitsBtn" style="cursor:pointer;background:var(--ink);color:var(--card);border:none;padding:6px 14px;border-radius:0;font:700 12px var(--mono);display:inline-flex;align-items:center;gap:6px;">Activity Kits</button>
       </nav>
       <span class="tag">Every piece, priced by what it costs delivered. Colour of the frame is what it costs.</span>
@@ -913,6 +918,11 @@ const zmin = () => WALL ? Math.min(Math.max(WALL.fit, 0.3), 1) : ZMIN;
 const CULL = 0.13;   // hide tiles the lens shrinks below this scale
 let PX = 20, PY = 13;    // static fallback: price×formality. The wall overwrites both at boot.
 
+const FALLBACK = [
+  { brand:"Uniqlo", name:"Basics tee", price:"$15", tier:1, cat:"Tops", url:"#", img:null },
+  { brand:"Stussy", name:"Graphic tee", price:"$55", tier:2, cat:"Tops", url:"#", img:null },
+  { brand:"COS",    name:"Wool trouser", price:"$135", tier:3, cat:"Bottoms", url:"#", img:null },
+];
 let ITEMS = [], COLS = [], GUIDES = [];
 // cell -> index within its column. Nothing writes these since the price×formality map
 // went; itemAt() reads them empty and answers null, which renders a placeholder tile.
@@ -993,9 +1003,8 @@ function toggleFav(it){
   // route was left pointing at an `EventBatch` model that exists nowhere. Every one of
   // these calls has answered 400 since; `.catch(() => {})` swallowed it, so a feature
   // that had already been deleted went on looking like it worked.
-  // Repainting a tile and a favourites counter used to happen here. Both belonged to the
-  // map: `active` was its node pool, always empty, and `favCountEl` was only ever assigned
-  // by the chrome builders. The feed repaints favourites through FILTERS._paint below.
+  active.forEach(n => { if(n._item) n.classList.toggle("fav", isFav(n._item)); });
+  if(favCountEl) favCountEl.textContent = String(favs.size).padStart(2, "0");
   if(typeof FILTERS !== "undefined" && FILTERS._paint) FILTERS._paint();
   return favs.has(k);
 }
@@ -1111,23 +1120,428 @@ function coverage(){
    engine the static map uses; the wall only swaps what `itemAt` answers, uncaps the
    horizontal pan (the wall wraps — walk east long enough and you come home), and floats
    region names over their neighbourhoods. ---- */
-// `WALL` alone, and only because two functions below still read it — `zmin()` and
-// `itemAt()`, both themselves unreachable, both going in the next cut with the rest of
-// the wall's geometry. Its siblings are gone: `wallLabels`, `PULSE` and `regionPillEl`
-// were declared here and read only inside the engine and the chrome builders, so nothing
-// names them any more.
 let WALL = null;
+let wallLabels = [];
 let WALLFLY = null;      // an eased camera trip to a search hit; any touch cancels it
+let PULSE = null;        // {key, until} — the tile a search just landed on
 
+async function loadWall(){
+  const data = await apiJSON("/grid");
+  if(!data || !data.items || !data.items.length) return false;
+  const cells = new Map();
+  const names = new Map((data.regions || []).map(r => [r.region, r.name]));
+  const acc = new Map();
+  for(const raw of data.items){
+    cells.set(raw.grid_x + "," + raw.grid_y, {
+      id: raw.id, brand: raw.brand_slug, img: raw.img, region: raw.region,
+      price: raw.price_cents != null ? PMONEY(raw.price_cents, raw.currency) : "",
+      // Same thresholds as the backend's _tier, on base cents — the border colour must
+      // not depend on which currency the shop happened to price in.
+      tier: raw.base_cents == null ? 1 : raw.base_cents < 5000 ? 1 : raw.base_cents < 15000 ? 2 : 3,
+    });
+    const a = acc.get(raw.region) || [0, 0, 0];
+    a[0] += raw.grid_x; a[1] += raw.grid_y; a[2]++;
+    acc.set(raw.region, a);
+  }
+  WALL = {
+    cols: data.cols, rows: data.rows, cells, names, count: data.items.length,
+    // A label per region worth naming, at its centre of mass. The cut keeps regions
+    // contiguous, so the centroid lands inside its own patch.
+    labels: (data.regions || []).filter(r => r.count >= 40).map(r => {
+      const a = acc.get(r.region) || [0, 0, 1];
+      return { name: r.name, wx: a[0] / a[2] * U, wy: a[1] / a[2] * U };
+    }),
+  };
+  PX = data.cols; PY = data.rows;
+  // The zoom at which the strip exactly fills the width. Boot starts there and the
+  // wheel cannot go below it: zooming out past the strip's own width buys nothing but
+  // blank margins and a second axis.
+  WALL.fit = fieldEl.clientWidth / (PX * U);
+  return true;
+}
 
 /* Ease the camera to a cell. Wrap-aware: the trip goes through the nearer seam, so a
    hit just west of you does not tour the whole planet eastward first. */
+function flyWall(wx, wy, targetZoom){
+  // The per-frame clamp corrects the x it lands on, so the flight can aim at the cell
+  // and let the one-axis rule decide how much sideways travel that actually means.
+  WALLFLY = {t0: performance.now(), dur: 650,
+             from: {x: cam.x, y: cam.y, z: zoom},
+             to:   {x: wx, y: wy, z: targetZoom || zoom}};
+}
 
+/* ---- engine state ---- */
+// The field (map view) was removed from the markup, but its handlers below predate
+// that and this is the app's one script block — a null here threw at the first
+// addEventListener and killed every listener wired after it (~1,500 lines of them).
+// A detached element keeps the orphaned wiring harmless.
+const fieldEl = document.getElementById("field") || document.createElement("div");
+const cam = { x: 0, y: 0 };          // world coord at viewport centre
+let zoom = 1;
+const focus = { x: 0, y: 0 };        // eased lens centre (field-local px)
+const focusTarget = { x: 0, y: 0 };
+const vel = { x: 0, y: 0 };          // pan inertia (world px/frame)
+let pointerOver = false, down = false, dragging = false, started = false, valueMode = false;
+const active = new Map();            // cellKey -> node
+const free = [];
+let capEl, favCountEl, prevFocusNode = null, capItem = null;
 
-// `started` is all that survives of the map engine's state: boot() guards re-entry with
-// it. The four flags it shared a `let` with — pointerOver, down, dragging, valueMode —
-// were pointer state for a lens that has no element to render into.
-let started = false;
+function makeTile(){
+  const el = document.createElement("div");
+  el.className = "tile";
+  el.innerHTML = `<img alt=""><span class="lbl"></span><span class="favdot">♥</span><span class="dealtag">value</span>`;
+  el.querySelector("img").addEventListener("load", e => e.target.classList.add("on"));
+  fieldEl.appendChild(el);
+  return el;
+}
+function configure(node, c, r){
+  const h = hash(c, r);
+  const it = itemAt(c, r);
+  if(!it){
+    // `deal` too: a pooled node recycled from a real piece into a placeholder kept the
+    // class, and `.field.values .tile.deal .dealtag` has no `:not(.empty)` guard — so
+    // grey "HEAVY OUTERWEAR" tiles sprouted green value badges in value mode.
+    node.classList.add("empty"); node.classList.remove("fav", "deal");
+    node._item = null;
+    node.querySelector(".lbl").textContent = EMPTY_LABELS[h % EMPTY_LABELS.length];
+    const img = node.querySelector("img"); img.classList.remove("on"); img.removeAttribute("src");
+    node.style.borderColor = "var(--line)";
+  } else {
+    node.classList.remove("empty");
+    node._item = it;
+    const img = node.querySelector("img");
+    if(img.getAttribute("src") !== it.img){
+      img.classList.remove("on");
+      // Mid-flight, hold the fetch. A 900-row flight otherwise starts a thumbnail
+      // download for every row it passes, and the destination then queues behind
+      // hundreds of doomed requests — which is why arriving looked like a wall of
+      // blank cards. The frame loop releases the src the moment the flight ends.
+      if(WALLFLY){ img.removeAttribute("src"); node._lazyImg = it.img; }
+      else { img.src = it.img; node._lazyImg = null; if(img.complete) img.classList.add("on"); }
+    }
+    node.style.borderColor = RING[it.tier] || "var(--line)";
+    node.classList.toggle("fav", isFav(it));
+    // Matches what the pill counts, or the spotlight highlights one set while the header
+    // tallies another and neither is wrong on its own terms.
+    node.classList.toggle("deal", it.deal ? !!it._verified : (it._value ?? 0) >= DEAL);
+    // On a real saving, not merely on another retailer existing. `alt_offers > 0` says
+    // "someone else sells this too" — which is often at the same price or a higher one,
+    // and a badge for that is a promise the tile cannot keep.
+    node.classList.toggle("alt", (it.saving_base_cents || 0) > 0);
+  }
+  node.style.display = "";
+}
+function acquire(key, c, r){
+  let node = active.get(key);
+  if(node) return node;
+  node = free.pop() || makeTile();
+  node._key = key;
+  configure(node, c, r);
+  active.set(key, node);
+  return node;
+}
+function release(key){
+  const node = active.get(key);
+  if(!node) return;
+  node.style.display = "none"; node._key = null;
+  active.delete(key); free.push(node);
+}
+
+/* ---- the frame loop: physics + fisheye render ---- */
+function frame(){
+  if(WALLFLY){
+    const t = Math.min(1, (performance.now() - WALLFLY.t0) / WALLFLY.dur);
+    const k = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+    cam.x = WALLFLY.from.x + (WALLFLY.to.x - WALLFLY.from.x) * k;
+    cam.y = WALLFLY.from.y + (WALLFLY.to.y - WALLFLY.from.y) * k;
+    zoom  = WALLFLY.from.z + (WALLFLY.to.z - WALLFLY.from.z) * k;
+    vel.x = vel.y = 0;
+    if(t >= 1) WALLFLY = null;
+  }
+  // pan inertia + idle drift
+  if(!dragging){
+    cam.x += vel.x; cam.y += vel.y;
+    vel.x *= 0.9; vel.y *= 0.9;
+    if(Math.hypot(vel.x, vel.y) < 0.03){ vel.x = vel.y = 0; }
+  }
+  const W = fieldEl.clientWidth, H = fieldEl.clientHeight;
+  const gw = (PX - 1) * U, gh = (PY - 1) * U;
+  if(WALL){
+    // One axis. The strip is 16 cells wide and the default zoom fits all of them, so
+    // horizontally the camera is pinned (or, zoomed in, clamped so the strip always
+    // fills the width). Vertically it runs [0, gh] — the ends can reach the middle of
+    // the screen, which is what "reachable" means. Two free axes read as a map; one
+    // reads as a shelf you scroll.
+    const wmx = Math.min((W / 2) / zoom, gw / 2);
+    cam.x = Math.max(Math.min(wmx, gw / 2), Math.min(Math.max(gw - wmx, gw / 2), cam.x));
+    cam.y = Math.max(0, Math.min(gh, cam.y));
+  } else {
+    const mx = Math.min((W / 2) / zoom, gw / 2), my = Math.min((H / 2) / zoom, gh / 2);
+    cam.x = Math.max(mx, Math.min(gw - mx, cam.x));
+    cam.y = Math.max(my, Math.min(gh - my, cam.y));
+  }
+  // ease the lens toward its target
+  focus.x += (focusTarget.x - focus.x) * 0.2;
+  focus.y += (focusTarget.y - focus.y) * 0.2;
+
+  if(W && H && (WALL || ITEMS.length)){
+    const cx = W / 2, cy = H / 2;
+    const R = Math.hypot(W, H) * 0.6;
+    const halfW = (W / 2) / zoom + U, halfH = (H / 2) / zoom + U;
+    const c0 = Math.floor((cam.x - halfW) / U), c1 = Math.ceil((cam.x + halfW) / U);
+    const r0 = Math.floor((cam.y - halfH) / U), r1 = Math.ceil((cam.y + halfH) / U);
+
+    const needed = new Set();
+    let bestScale = 0, bestNode = null, bestItem = null, bestX = 0, bestY = 0, bestSize = 0;
+
+    for(let r = r0; r <= r1; r++){
+      if(r < 0 || r >= PY) continue;
+      const wy = r * U;
+      for(let c = c0; c <= c1; c++){
+        if(c < 0 || c >= PX) continue;
+        const bx = (c * U - cam.x) * zoom + cx;
+        const by = (wy - cam.y) * zoom + cy;
+        // The wall renders flat. The fisheye was the "sphere effect", and it cost the
+        // basics: tiles moved under the pointer, the periphery was shrunk and culled,
+        // and reaching a piece meant dragging it into the lens. A gallery you can
+        // actually use beats an effect. The static fallback keeps its lens — it is a
+        // bounded 20×13 novelty, not the catalogue.
+        let fx, fy, scale;
+        if(WALL){
+          fx = bx; fy = by; scale = zoom;
+        } else {
+          let vx = bx - focus.x, vy = by - focus.y;
+          const d = Math.hypot(vx, vy) || 0.0001;
+          const x = d / R;
+          const sf = MAG / (((MAG - 1) * x + 1) ** 2);         // local magnification
+          if(sf < CULL){ continue; }                            // too small — skip (culls periphery)
+          const nd = R * (MAG * x) / ((MAG - 1) * x + 1);       // remapped radius (spreads the centre)
+          fx = focus.x + vx / d * nd; fy = focus.y + vy / d * nd;
+          scale = zoom * sf;
+        }
+        const size = TILE * scale;
+        if(fx + size < 0 || fx - size > W || fy + size < 0 || fy - size > H) continue;  // off-screen
+
+        const key = c + "," + r;
+        needed.add(key);
+        const node = acquire(key, c, r);
+        node.style.transform = `translate(${(fx - TILE / 2).toFixed(1)}px,${(fy - TILE / 2).toFixed(1)}px) scale(${scale.toFixed(3)})`;
+        node.style.zIndex = WALL ? 1 : (scale / zoom * 100) | 0;
+
+        if(!WALL && scale / zoom > bestScale && !node.classList.contains("empty")){
+          bestScale = scale / zoom; bestNode = node; bestItem = node._item; bestX = fx; bestY = fy; bestSize = size;
+        }
+      }
+    }
+    // On the wall the hero is simply the cell under the pointer (or the screen centre,
+    // where the keyboard parks the focus) — no lens to elect one.
+    if(WALL){
+      const wc = KCUR ? KCUR.c : Math.round((cam.x + (focus.x - cx) / zoom) / U);
+      const wr = KCUR ? KCUR.r : Math.round((cam.y + (focus.y - cy) / zoom) / U);
+      const it = itemAt(wc, wr);
+      const node = active.get(wc + "," + wr);
+      if(it && node){
+        bestScale = 2; bestNode = node; bestItem = it;
+        bestX = (wc * U - cam.x) * zoom + cx;
+        bestY = (wr * U - cam.y) * zoom + cy;
+        bestSize = TILE * zoom;
+      }
+    }
+
+    // recycle whatever is no longer needed
+    for(const key of [...active.keys()]) if(!needed.has(key)) release(key);
+
+    if(!WALLFLY){
+      for(const node of active.values()){
+        if(node._lazyImg){ node.querySelector("img").src = node._lazyImg; node._lazyImg = null; }
+      }
+    }
+
+    if(PULSE){
+      const node = active.get(PULSE.key);
+      if(performance.now() > PULSE.until){
+        if(node) node.classList.remove("pulse");
+        PULSE = null;
+      } else if(node){ node.classList.add("pulse"); }
+    }
+
+    // hero caption follows the most-magnified piece
+    if(bestNode !== prevFocusNode){
+      if(prevFocusNode) prevFocusNode.classList.remove("focused");
+      if(bestNode) bestNode.classList.add("focused");
+      prevFocusNode = bestNode;
+    }
+    if(bestItem && bestScale > 1.15){
+      if(capItem !== bestItem){
+        capItem = bestItem;
+        capEl.querySelector(".b").textContent = bestItem.brand;
+        capEl.querySelector(".p").textContent = bestItem.price;
+      }
+      capEl.style.display = "flex";
+      capEl.style.left = bestX + "px";
+      capEl.style.top = (bestY + bestSize / 2 + 8) + "px";
+    } else { capEl.style.display = "none"; capItem = null; }
+
+    // Region names ride the same warp as the tiles, so a label sits on its
+    // neighbourhood even inside the lens.
+    if(WALL){
+      for(const L of wallLabels){
+        const fx = (L.wx - cam.x) * zoom + cx, fy = (L.wy - cam.y) * zoom + cy;
+        const off = fx < -120 || fx > W + 120 || fy < -30 || fy > H + 30;
+        L.el.style.display = off ? "none" : "";
+        if(!off) L.el.style.transform =
+          "translate(" + (fx - L.el.offsetWidth / 2).toFixed(1) + "px," + fy.toFixed(1) + "px)";
+      }
+      if(regionPillEl && capItem)
+        regionPillEl.textContent = WALL.names.get(capItem.region) || "—";
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---- input: pan, lens-follow, tap, zoom ---- */
+const pts = new Map();
+// `gestured` outlives a single pointer: a pinch is not a tap, and it is not over when
+// the first finger lifts. Without it, letting go of a pinch opened the detail sheet for
+// whatever tile was under the remaining thumb — `dragging` is never set on the pinch path
+// and the second `pointerdown` had already reset `moved` to 0, so `wasTap` was true.
+let last = null, pinch = null, moved = 0, gestured = false;
+const localPt = e => { const b = fieldEl.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top }; };
+
+fieldEl.addEventListener("pointerdown", e => {
+  // A press that starts on a control belongs to the control. Capturing it here retargeted
+  // the pointerup to the field, and the browser dispatches `click` to the common ancestor
+  // of the down- and up-targets — the field — so no pill ever received a click from a real
+  // mouse or finger. Keyboard and programmatic `.click()` still worked, which is exactly
+  // how it went unnoticed: every test and every console check took one of those paths.
+  if(e.target.closest(".bar")) return;
+  WALLFLY = null;                                    // a hand on the wall outranks a flight
+  fieldEl.setPointerCapture(e.pointerId);
+  const p = localPt(e); pts.set(e.pointerId, p);
+  down = true; last = p; vel.x = vel.y = 0;
+  // Only the FIRST finger starts a fresh gesture. Resetting on every pointerdown let a
+  // second finger wipe the drag state mid-pan.
+  if(pts.size === 1){ dragging = false; moved = 0; gestured = false; }
+  focusTarget.x = p.x; focusTarget.y = p.y;
+  if(pts.size === 2){
+    const a = [...pts.values()];
+    const d = Math.hypot(a[0].x-a[1].x, a[0].y-a[1].y);
+    pinch = { d: Math.max(d, 1), z: zoom };   // two pointers at one spot would divide by 0
+    gestured = true;
+  }
+});
+fieldEl.addEventListener("pointermove", e => {
+  pointerOver = true;
+  KCUR = null;
+  const p = localPt(e);
+  if(pts.has(e.pointerId)) pts.set(e.pointerId, p);
+  focusTarget.x = p.x; focusTarget.y = p.y;          // lens follows the pointer
+
+  if(pinch && pts.size >= 2){
+    const a = [...pts.values()];
+    const d = Math.hypot(a[0].x-a[1].x, a[0].y-a[1].y);
+    const mid = { x:(a[0].x+a[1].x)/2, y:(a[0].y+a[1].y)/2 };
+    zoomAt(mid, (pinch.z * d / pinch.d) / zoom);
+    // Keep `last` current through the pinch. It used to be left at the pre-pinch point,
+    // so the first move after lifting one finger computed dx against it and the map
+    // lurched by however far the fingers had travelled — with `vel` inheriting it, so it
+    // kept sliding afterwards.
+    last = p;
+    return;
+  }
+  if(down && last){
+    const dx = p.x - last.x, dy = p.y - last.y;
+    moved += Math.abs(dx) + Math.abs(dy);
+    if(moved > 6){ dragging = true; fieldEl.classList.add("drag"); }
+    if(dragging){ cam.x -= dx / zoom; cam.y -= dy / zoom; vel.x = -dx / zoom; vel.y = -dy / zoom; }
+    last = p;
+  }
+});
+function endPointer(e){
+  const wasTap = down && !dragging && !gestured;
+  pts.delete(e.pointerId);
+  if(pts.size < 2) pinch = null;
+  // The remaining finger continues from where it is now, not from the pre-pinch point.
+  if(pts.size === 1) last = [...pts.values()][0];
+  if(pts.size === 0){
+    down = false; dragging = false; gestured = false;
+    fieldEl.classList.remove("drag"); last = null;
+    if(wasTap){
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const tile = el && el.closest(".tile");
+      if(tile && tile._item) openTile(tile._item);
+    }
+  }
+}
+fieldEl.addEventListener("pointerup", endPointer);
+fieldEl.addEventListener("pointercancel", endPointer);
+
+/* ---- keyboard: the same map, without a pointer ----
+   Every interaction above goes through pointer events, and `openSheet` was only ever
+   reachable via `elementFromPoint` — so the whole catalog, which is the product, could
+   not be opened at all without a mouse. Arrows move the lens a cell at a time (the lens
+   is what the caption and the hero focus already follow), Enter opens whatever it is
+   over, +/- zoom. Announced through a live region because none of this is visible to a
+   screen reader otherwise. */
+const statusEl = document.getElementById("fieldStatus");
+function announce(){
+  const it = capItem || (prevFocusNode && prevFocusNode._item);
+  statusEl.textContent = it ? [it.brand, it.name, it.price].filter(Boolean).join(", ") : "empty space";
+}
+let KCUR = null;   // wall keyboard cursor: a cell, not a camera. The one-axis clamp pins
+                   // the camera's x, so without this the edge columns would be exactly as
+                   // unreachable by keyboard as they used to be by mouse. Cleared the
+                   // moment a pointer moves — two cursors at once is a fight.
+fieldEl.addEventListener("keydown", e => {
+  const STEP = U;                                        // one lattice cell per press
+  const pan = { ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1] }[e.key];
+  if(pan && WALL){
+    e.preventDefault();
+    if(!KCUR) KCUR = { c: Math.round(cam.x / U), r: Math.round(cam.y / U) };
+    KCUR.c = Math.max(0, Math.min(PX - 1, KCUR.c + pan[0]));
+    KCUR.r = Math.max(0, Math.min(PY - 1, KCUR.r + pan[1]));
+    cam.y = KCUR.r * U; vel.x = vel.y = 0;
+    requestAnimationFrame(announce);
+    return;
+  }
+  if(pan){
+    e.preventDefault();
+    cam.x += pan[0] * STEP; cam.y += pan[1] * STEP;
+    vel.x = vel.y = 0;
+    // The lens sits at the centre for keyboard use: with no pointer there is nothing for
+    // it to follow, and a lens parked in a corner magnifies whatever is in that corner.
+    focusTarget.x = fieldEl.clientWidth / 2; focusTarget.y = fieldEl.clientHeight / 2;
+    requestAnimationFrame(announce);
+    return;
+  }
+  if(e.key === "Enter" || e.key === " "){
+    const it = (WALL && KCUR ? itemAt(KCUR.c, KCUR.r) : null) || capItem || (prevFocusNode && prevFocusNode._item);
+    if(it){ e.preventDefault(); openTile(it); }
+    return;
+  }
+  if(e.key === "+" || e.key === "=" || e.key === "-"){
+    e.preventDefault();
+    const mid = { x: fieldEl.clientWidth / 2, y: fieldEl.clientHeight / 2 };
+    zoomAt(mid, e.key === "-" ? 1/1.2 : 1.2);
+  }
+});
+fieldEl.addEventListener("pointerleave", e => {
+  pointerOver = false;
+  if(!down){ const W = fieldEl.clientWidth, H = fieldEl.clientHeight; focusTarget.x = W/2; focusTarget.y = H/2; }
+});
+fieldEl.addEventListener("wheel", e => {
+  WALLFLY = null;
+  e.preventDefault();
+  zoomAt(localPt(e), e.deltaY < 0 ? 1.12 : 1/1.12);
+}, { passive:false });
+
+function zoomAt(p, factor){
+  const W = fieldEl.clientWidth, H = fieldEl.clientHeight, cx = W/2, cy = H/2;
+  const nz = Math.min(ZMAX, Math.max(zmin(), zoom * factor));
+  const wx = cam.x + (p.x - cx) / zoom, wy = cam.y + (p.y - cy) / zoom;   // world pt under pointer
+  zoom = nz;
+  cam.x = wx - (p.x - cx) / zoom; cam.y = wy - (p.y - cy) / zoom;         // keep it under the pointer
+}
 
 /* ---- detail sheet ---- */
 const sheet = document.getElementById("sheet"), backdrop = document.getElementById("backdrop");
@@ -2555,7 +2969,106 @@ chatIn.addEventListener("input", () => {                    // grow with the tex
 });
 
 /* ---- static chrome (header line + bottom bar) ---- */
+let regionPillEl = null;
+function buildWallChrome(){
+  document.getElementById("loaded").textContent =
+    WALL.count.toLocaleString("en") + " pieces · " + WALL.names.size + " regions · arranged by similarity";
 
+  capEl = document.createElement("div");
+  capEl.className = "cap";
+  capEl.innerHTML = `<span class="b"></span><span class="p"></span>`;
+  fieldEl.appendChild(capEl);
+
+  const bar = document.createElement("div");
+  bar.className = "bar";
+  bar.innerHTML =
+    `<span class="pill dark" id="regionPill">—</span>` +
+    `<span class="pill val" id="askPill">✦ Ask</span>` +
+    `<span class="fav">♥ <span class="n" id="favCount">${String(favs.size).padStart(2, "0")}</span></span>`;
+  fieldEl.appendChild(bar);
+  favCountEl = bar.querySelector("#favCount");
+  regionPillEl = bar.querySelector("#regionPill");
+  bar.querySelector("#askPill").addEventListener("click", () => openChat(capItem));
+
+  const hint = document.createElement("div");
+  hint.className = "hint";
+  hint.textContent = "one direction — just scroll · tap a piece for details";
+  fieldEl.appendChild(hint);
+
+  wallLabels = WALL.labels.map(l => {
+    const el = document.createElement("div");
+    el.className = "wlab"; el.textContent = l.name;
+    fieldEl.appendChild(el);
+    return { el, wx: l.wx, wy: l.wy };
+  });
+}
+
+function buildChrome(){
+  const prices = ITEMS.map(i => i._p).sort((a, b) => a - b);
+  const lo = prices[Math.floor(prices.length * 0.05)] || 0;
+  const hi = prices[Math.floor(prices.length * 0.8)] || 0;
+  // The horizontal axis is a currency conversion. When the rates behind it are stale, the
+  // axis is still useful — seven months does not move a currency 3.7x — but saying so is
+  // not optional, and the place to say it is next to the thing it qualifies.
+  const stale = FX && FX.stale ? ` · rates ${FX.as_of}` : "";
+  const el = document.getElementById("loaded");
+  el.textContent =
+    // "loaded" counted a slice of the catalog and read as coverage. The grid is now a
+    // selection — the exporter weighed 14,749 buyable pieces and kept the best-evidenced
+    // few — so the header says how many *deals*, not how many items happen to be here.
+    `${new Set(ITEMS.map(i=>i.brand)).size} brands · ${ITEMS.length} deals · price × formality${stale}`;
+  if(FX && FX.caveat) el.title = FX.caveat;
+
+  capEl = document.createElement("div");
+  capEl.className = "cap";
+  capEl.innerHTML = `<span class="b"></span><span class="p"></span>`;
+  fieldEl.appendChild(capEl);
+
+  // Every tile is a deal now, so counting deals would print 240 and mean nothing. What
+  // still separates them is who vouches for the saving: `cheapest_seller` is the only kind
+  // a second shop corroborates. The pill counts and filters to those.
+  const verified = ITEMS.filter(i => i._verified).length;
+  const dealCount = verified || ITEMS.filter(i => (i._value ?? 0) >= DEAL).length;
+  const bar = document.createElement("div");
+  bar.className = "bar";
+  bar.innerHTML =
+    `<span class="pill val" id="valPill" title="${verified ? "Confirmed sold by another shop for more — the only saving a second party corroborates. Never influenced by who pays us." : "Cheaper than comparable pieces in the same category — never influenced by who pays us."}">◆ ${verified ? "Confirmed cheaper" : "Best value"} <span class="n">${String(dealCount).padStart(2,"0")}</span></span>` +
+    `<span class="pill">Colour <span class="dots">` +
+      `<i style="background:#1a1712"></i><i style="background:#4c5b3c"></i><i style="background:#2f4c73"></i>` +
+    `</span></span>` +
+    `<span class="pill">Brand <span class="n">${String(new Set(ITEMS.map(i=>i.brand)).size).padStart(2,"0")}</span></span>` +
+    `<span class="pill"><span class="n">${MONEY(lo, CATALOG_CURRENCY())}–${MONEY(hi, CATALOG_CURRENCY())}</span></span>` +
+    `<span class="pill dark">Tops <span class="n">${String(ITEMS.filter(i=>i.cat==="Tops").length).padStart(2,"0")}</span></span>` +
+    `<span class="pill val" id="askPill">✦ Ask</span>` +
+    `<span class="fav">♥ <span class="n" id="favCount">${String(favs.size).padStart(2,"0")}</span></span>`;
+  fieldEl.appendChild(bar);
+  favCountEl = bar.querySelector("#favCount");
+
+  const DEFAULT_HINT = "move to warp · drag to pan · tap for details";
+  const hint = document.createElement("div");
+  hint.className = "hint"; hint.textContent = DEFAULT_HINT;
+  fieldEl.appendChild(hint);
+
+  bar.querySelector("#askPill").addEventListener("click", () => openChat(capItem));
+
+  bar.querySelector("#valPill").addEventListener("click", e => {
+    valueMode = !valueMode;
+    fieldEl.classList.toggle("values", valueMode);
+    e.currentTarget.classList.toggle("on", valueMode);
+    hint.textContent = valueMode
+      ? (verified
+          ? "confirmed = another shop sells this exact piece for more · never pay-to-rank"
+          : "value = cheaper than comparable pieces · never pay-to-rank")
+      : DEFAULT_HINT;
+  });
+
+  // axis labels — position now encodes price (x) and formality (y)
+  [["t","dressy"],["b","casual"],["l","cheap"],["r","premium"]].forEach(([side, txt])=>{
+    const e = document.createElement("div");
+    e.className = "edge " + side; e.textContent = txt;
+    fieldEl.appendChild(e);
+  });
+}
 
 /* ---- the feed: a standard site over the wall's order --------------------------------
    Pages of the clustered strip, appended when the bottom nears. The browser owns the
@@ -2889,6 +3402,7 @@ async function bootFeed(){
   FEED.cols = first.cols || 16;
   FEED.regions = first.regions || [];
   FEED.names = new Map(FEED.regions.map(r => [r.region, r.name]));
+  fieldEl.style.display = "none";
   FEED.el.hidden = false;
   paintCount();
   // A shared filtered link opens mid-question: the home block yields to the answer.
@@ -3289,10 +3803,11 @@ function decorate(i){
 }
 
 function prep(list){
-  // A piece with no image gets the placeholder treatment instead of being dropped, which
-  // is a state the tile already knows how to render. This used to `filter` them out, and
-  // the three-item `FALLBACK` stub it silently emptied — every entry `img:null` — is gone
-  // with the boot path that read it.
+  // `img` is required because a tile is an image — but the FALLBACK stub has none, so
+  // this filter silently emptied it and `boot()` returned before building any chrome.
+  // The documented "then to a 3-item stub" was a blank cream rectangle with no error in
+  // the console. A piece with no image gets the placeholder treatment instead of being
+  // dropped, which is a state the tile already knows how to render.
   return (Array.isArray(list) ? list : [])
     .filter(i => i && (i.img || i.brand) && !JUNK.test(i.name || ""))
     .map(decorate);
@@ -3773,8 +4288,8 @@ async function boot(){
     up = await bootFeed();
   }
   if(up){
-    // No `#bootRetry` cleanup here: nothing in this page has ever created that id, so the
-    // lookup answered null on every boot and the remove() never ran.
+    const stale = document.getElementById("bootRetry");
+    if(stale) stale.remove();
     if(started) return;
     started = true;
   }
