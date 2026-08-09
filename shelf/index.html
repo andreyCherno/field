@@ -721,9 +721,15 @@
 <div class="wrap">
   <div class="card">
     <div class="head">
-      <a class="brandmark" href="/" style="text-decoration:none;color:inherit">field<span style="color:var(--acc)">.</span></a>
+      <!-- `../`, not `/`. The site is served from a project path (/field/shelf/), so an
+           absolute `/` left it entirely and answered 404 on the domain root — the same
+           shape as the `fetch("/activities")` that kept the kits tab loading for ever.
+           Relative reaches the home page wherever the folder is mounted. -->
+      <a class="brandmark" href="../" style="text-decoration:none;color:inherit">field<span style="color:var(--acc)">.</span></a>
       <nav aria-label="Site" style="display:inline-flex;align-items:center;gap:8px;margin-left:8px">
-        <a href="/" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Home</a>
+        <a href="../" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Home</a>
+        <a href="brands.html" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Brands</a>
+        <a href="super-sales.html" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--card);background:var(--acc);border:1px solid var(--acc);padding:6px 14px">Super Sales</a>
         <button id="activityKitsBtn" style="cursor:pointer;background:var(--ink);color:var(--card);border:none;padding:6px 14px;border-radius:0;font:700 12px var(--mono);display:inline-flex;align-items:center;gap:6px;">Activity Kits</button>
       </nav>
       <span class="tag">Every piece, priced by what it costs delivered. Colour of the frame is what it costs.</span>

@@ -224,11 +224,20 @@ function card(b){
   const foot = [
     `<span class="vf ${esc(b.verification)}">${esc(b.verification)}</span>`,
     b.url ? `<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">official shop</a>` : "",
+    // Stockists, for the labels that have no shop of their own — which is most of the
+    // mainland-China list, where a brand sells through Tmall, an incubator or a boutique
+    // and never registers a domain. Only the ones carrying a URL become links; a store
+    // named without one stays a name, on the same rule as the official shop above.
+    ...(b.stores || []).filter(s => s.url).map(s =>
+      `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">at ${esc(s.store)}</a>`),
     // Both figures come from the same export the shelf filter reads, so this link cannot
     // land on an empty result — which is why it is a link at all. It was plain text while
     // the count came from the items table, where 16 of 22 brands had no shelf presence.
     b.liveItems ? `<a href="index.html?brand=${encodeURIComponent(b.slug)}">`
                 + `${b.liveItems} on the shelf &rarr;</a>` : "",
+    // medianPrice + medianCurrency, not medianUsd: the export prices one destination and
+    // its figures are shekels. The other side of this merge still read `medianUsd`, which
+    // export_brands stopped emitting — it would have rendered nothing at all.
     b.medianPrice ? `<span>median ${SYMBOL[b.medianCurrency] || ""}${b.medianPrice}`
                   + `${SYMBOL[b.medianCurrency] ? "" : " " + esc(b.medianCurrency || "")}</span>` : "",
   ].filter(Boolean).join("");
