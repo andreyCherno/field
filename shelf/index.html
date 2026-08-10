@@ -78,6 +78,14 @@
   .pc .pr i{font:700 9px var(--mono);font-style:normal;color:#b3403f;margin-left:5px;
             background:rgba(179,64,63,.09);border-radius:5px;padding:1px 4px}
   .pc.pulse{animation:qpulse 1.15s ease-in-out 2}
+  /* A row read off a shop's own sale page in a browser rather than priced by the engine:
+     no delivered total, no ship-to verdict, and a price nobody re-checked. Marked on the
+     tile because the sheet behind it cannot be seen from the grid, and an unmarked tile
+     among 31,000 priced ones is a claim of the same confidence. Dotted rather than
+     coloured: it is a statement about what is known, not a warning. */
+  .pc .sn{font:700 8.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;
+          color:var(--ink-soft);border-top:1px dotted var(--line);margin-top:3px;
+          padding-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .feed .rh{grid-column:1/-1;font:800 12px var(--mono);letter-spacing:.16em;text-transform:uppercase;
             color:var(--ink-soft);padding:22px 2px 0}
   .feed .fmore{text-align:center;color:var(--dim);font:11px var(--mono);padding:22px}
@@ -2580,7 +2588,12 @@ const FILTERS = { sel: new Map(), min: null, max: null, sale: false, disc: 0, op
    URL rather than rebuilding it. */
 const URL_FACETS = ["garment_family", "garment", "color", "category", "price_band",
                     "material", "brand", "fit", "gender",
-                    "size", "shop", "collab", "origin", "season", "stores"];
+                    "size", "shop", "collab", "origin", "season", "stores",
+                    // `feed` or `snapshot` — how the row was read. The ten browser-only
+                    // shops cannot be priced delivered, so being able to ask for the rest
+                    // is the difference between a mixed shelf and a mixed shelf you can
+                    // separate.
+                    "source"];
 (() => {
   const q = new URLSearchParams(location.search);
   for(const facet of URL_FACETS){
@@ -2695,6 +2708,17 @@ function feedCard(raw){
   el.querySelector(".b").textContent = raw.brand_slug || "";
   el.querySelector(".nm").textContent = raw.title || "";
   paintCardPrice(el, raw);
+  // The snapshot marking. `textContent`, so a shop name out of a scraped row can never be
+  // markup. It also carries the shop, which is the only thing on the tile identifying a
+  // piece whose brand the product name never stated — about one snapshot row in ten.
+  if(raw.source === "hunt"){
+    const mark = document.createElement("div");
+    mark.className = "sn";
+    mark.textContent = raw.retailer ? `snapshot · ${raw.retailer}` : "snapshot";
+    mark.title = "Read off the shop's own sale page and not re-checked — no delivered "
+               + "cost and no ship-to verdict. Open it for what is and is not known.";
+    el.querySelector(".m").appendChild(mark);
+  }
   el.addEventListener("click", () => openById(raw.id));
   el._id = raw.id;
   el._raw = raw;
@@ -3391,6 +3415,10 @@ function staticRow(item, index){
     price_cents: cents, base_cents: cents, currency: item.currency,
     was_cents: staticWasCents(item.wasPrice),
     region: item.cat || "Other", grid_y: index,
+    // Which reader produced this row, and the shop it was read at. Both travel because
+    // the card marks a browser-read snapshot as one — see `feedCard`. The live API sends
+    // neither: its rows all come from the engine, so the marker simply never applies.
+    source: item.source || null, retailer: item.retailer || null,
     // Only when another shop is actually on file. `showStores` reads this to decide
     // whether to ask at all, and a product_id on a piece with one seller would make it
     // promise a comparison it cannot make.
