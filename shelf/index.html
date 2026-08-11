@@ -1011,7 +1011,34 @@ function toggleFav(it){
   // map: `active` was its node pool, always empty, and `favCountEl` was only ever assigned
   // by the chrome builders. The feed repaints favourites through FILTERS._paint below.
   if(typeof FILTERS !== "undefined" && FILTERS._paint) FILTERS._paint();
+  syncFavs();
   return favs.has(k);
+}
+
+/* A copy of the kept list, to the LOCAL agent dashboard and nowhere else.
+   `localStorage` stays the source of truth; this exists so `backend/hunter.py` can build a
+   taste vector, which it cannot do from a browser it has no access to, and so a cleared
+   browser does not take the list with it — `data/` is excluded from git and Postgres is
+   what the nightly backup covers.
+   Not sent to the catalogue API: that one answers every origin with `*` because the shelf
+   is public read-only data, and a world-writable list feeding a taste vector authenticates
+   nobody. 8790 is loopback-only, which is the same reason the hunt lives there.
+   Fire-and-forget and silent: on the published site there is no dashboard to reach, and a
+   console full of failed connections would be noise about a feature that is working
+   exactly as designed. */
+const AGENT = "http://127.0.0.1:8790";
+let favSyncTimer = null;
+function syncFavs(){
+  clearTimeout(favSyncTimer);
+  // Debounced: hearting six things in a row is one list, not six writes.
+  favSyncTimer = setTimeout(() => {
+    const ids = [...favs].filter(k => !k.includes("|") && !k.startsWith("http"));
+    if(!ids.length) return;
+    fetch(`${AGENT}/api/favourites`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    }).catch(() => {});
+  }, 1500);
 }
 
 /* An outbound click, told to the server the same way a heart is: fire-and-forget,
@@ -3362,9 +3389,14 @@ async function loadPlane(){
       body: JSON.stringify({
         seed: SEED,
         per_column: PY,
-        // Anonymous personalisation: the favourites this browser already holds. No
-        // account, no sign-up — the server builds a taste vector per request from them.
-        favourite_ids: [...favs].filter(k => !k.includes("|") && !k.startsWith("http")),
+        // No `favourite_ids`. It was sent here for a server that read it, and that
+        // server is gone: `user_events` and `user_taste` were dropped with the map
+        // (schema.sql §5), and `serve._resolve` never looks at the parsed fields at
+        // all. The comment that used to sit on this line said the server "builds a
+        // taste vector per request from them", which stopped being true and went on
+        // being read as a description of how the page works. Sending a payload
+        // nothing consumes is how that survives — so it stops here, and comes back
+        // when there is a reader to come back to.
       }),
     });
     if(!r.ok) return null;
@@ -3417,7 +3449,10 @@ function staticRow(item, index){
     region: item.cat || "Other", grid_y: index,
     // Which reader produced this row, and the shop it was read at. Both travel because
     // the card marks a browser-read snapshot as one — see `feedCard`. The live API sends
-    // neither: its rows all come from the engine, so the marker simply never applies.
+    // `source` too now: `hunt_offers` puts browser-read rows through the same pipeline as
+    // the feed, so they are in Postgres and `GRID_COLUMNS` carries the column. This block
+    // stays because the static shelf builds its rows here rather than from `/grid`, and
+    // both surfaces must mark the same piece the same way.
     source: item.source || null, retailer: item.retailer || null,
     // Only when another shop is actually on file. `showStores` reads this to decide
     // whether to ask at all, and a product_id on a piece with one seller would make it
