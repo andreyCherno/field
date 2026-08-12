@@ -1337,6 +1337,23 @@ const countryName = cc => {
    The client-side policy map (`shipping-policies.json`), for countries the server's
    stamps don't answer. Absent, every lookup honestly answers unknown. */
 let SHIP_POLICIES_DATA = (typeof window !== "undefined" && window.SHIP_POLICIES) || null;
+
+// The prose in every landed block, shipped once and referenced by index — see
+// `intern_landed_text` in backend/export_items.py. 9 labels, 22 caveats and 6,075 notes
+// were being written out per item: 0.08 MB of text as 36.6 MB of items.json, against a
+// 100 MB per-file limit that stops the site being published at all.
+let LANDED_TEXT = [];
+
+// Resolves either spelling. The exporter and this page are deployed as separate events —
+// that has already been wrong in both directions on one day — so a page that met an old
+// export must render the string it finds, and an old page meeting a new export must not
+// print "4213" where a sentence belongs. An index with no table loaded renders as
+// nothing, which is the honest answer to "I could not read the text".
+function landedText(value){
+  if(typeof value === "number") return LANDED_TEXT[value] || "";
+  return value || "";
+}
+
 const POLICIES = () => SHIP_POLICIES_DATA || { retailers: {} };
 
 /* ---- manual ship-to verdicts ------------------------------------------------------
@@ -1399,6 +1416,14 @@ async function initCountry(){
         const r = await fetch("shipping-policies.json", { cache: "no-store" });
         if(r.ok){ const j = await r.json(); if(j && j.retailers) SHIP_POLICIES_DATA = j; }
       }catch{ /* file:// or offline — verdicts fall back to unknown, which is the truth */ }
+    })());
+  }
+  if(!LANDED_TEXT.length){
+    jobs.push((async () => {
+      try{
+        const r = await fetch("landed-text.json", { cache: "no-store" });
+        if(r.ok){ const j = await r.json(); if(Array.isArray(j)) LANDED_TEXT = j; }
+      }catch{ /* see landedText(): an index with no table renders as nothing */ }
     })());
   }
   await Promise.all(jobs);
@@ -1593,6 +1618,7 @@ function renderLanded(it, el = document.getElementById("sheetLanded")){
   // alone. So when delivery is unknown the stated total is the item side only, and
   // summing every visible line into it would overstate it by the VAT and the clearance
   // fee shown directly underneath.
+  const T = landedText;
   const perGroup = { item: 0, shipping: 0, import: 0 };
   const rows = [];
   for(const g of ["item","shipping","import"]){
@@ -1605,10 +1631,11 @@ function renderLanded(it, el = document.getElementById("sheetLanded")){
       // *because nobody knows it* must not render as a confident 0: every item in the
       // catalog carries `Shipping … NOT INCLUDED — unknown for this retailer`, and with
       // a right-aligned "₪0" beside it that reads as free shipping.
-      const unknown = l.amount === 0 && /not included|unknown/i.test(l.note || "");
+      const noteText = T(l.note), labelText = T(l.label);
+      const unknown = l.amount === 0 && /not included|unknown/i.test(noteText);
       if(!unknown) perGroup[g] += Math.round(l.amount);
-      const note = l.note ? `<span class="note"> ${esc(l.note)}</span>` : "";
-      rows.push(`<div class="row"><span>${esc(l.label)}${note}</span>`
+      const note = noteText ? `<span class="note"> ${esc(noteText)}</span>` : "";
+      rows.push(`<div class="row"><span>${esc(labelText)}${note}</span>`
               + `<span${unknown ? ' class="unknown"' : ""}>`
               + `${unknown ? "—" : MONEY(l.amount, L.currency)}</span></div>`);
     }
@@ -1624,7 +1651,8 @@ function renderLanded(it, el = document.getElementById("sheetLanded")){
       + `not a complete total — the item price is known, the delivery is not. The import `
       + `charges above are part of delivery and are not in this figure.</div>`;
 
-  const caveats = (L.caveats || []).map(c => `<div class="caveat">! ${esc(c)}</div>`).join("");
+  const caveats = (L.caveats || []).map(T).filter(Boolean)
+    .map(c => `<div class="caveat">! ${esc(c)}</div>`).join("");
   el.innerHTML = `<h4>What it costs delivered</h4>${rows.join("")}${total}${caveats}`;
 }
 
