@@ -1,0 +1,420 @@
+{
+"retailers": {
+"afew": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"aimeleondore": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"amamaniere": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"amazon": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"antaeu": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"antaus": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"antonioli": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"asos": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"asphaltgold": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"blendsus": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"bodega": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"bornxraised": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"capsule": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"concepts": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"deadstock": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"extrabutter": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"feature": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"flannels": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"footdistrict": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"haven": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"huf": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"iherb": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"italist": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"kith": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"lapstone": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"next": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": 7,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"noah": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"norseprojects": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"notre": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"nrml": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"obey": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"oneblockdown": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"onlyny": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"packer": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"pleasures": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"premier": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"razili": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"renarts": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"sauconyil": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"shein": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"shopnicekicks": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"slamjam": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"sneakerpolitics": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"socialstatus": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"story": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"stuartslondon": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"stussy": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"thehundreds": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"undefeated": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"union": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"weshoes": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"wish": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+}
+}
+}

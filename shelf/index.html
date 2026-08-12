@@ -8,6 +8,28 @@
      magnify. WCAG 1.4.4. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Field — streetwear by vibe</title>
+
+<!-- Link previews and search results.
+     Absolute URLs, and that is not a style choice: the scrapers behind WhatsApp, Slack,
+     iMessage, Facebook and Twitter do not resolve relative ones, and none of them runs
+     JavaScript — so `pushItem`'s `document.title` is invisible to every one of them and
+     this static block is the only thing they will ever read off this page.
+
+     No figures here. "25,000+" and "about a fifth" move with every refresh, and a claim
+     that needs a hand edit per export is a claim that goes stale with nobody noticing —
+     the same reason the landing page states no exact count. What is described instead is
+     the mechanism, which does not move. -->
+<meta name="description" content="Streetwear on sale, ranked by what a piece costs delivered — shipping, duty and import VAT included, not the number on the tag. Where the delivered cost cannot be known, the piece says so.">
+<link rel="canonical" href="https://andreycherno.github.io/field/shelf/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Field">
+<meta property="og:title" content="Field — streetwear by vibe">
+<meta property="og:description" content="Streetwear on sale, ranked by what a piece costs delivered — shipping, duty and import VAT included, not the number on the tag.">
+<meta property="og:url" content="https://andreycherno.github.io/field/shelf/">
+<meta property="og:image" content="https://andreycherno.github.io/field/shelf/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap');
@@ -105,6 +127,8 @@
   .home .dirlabel{font:700 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;
                   color:var(--ink-soft);margin:22px 0 8px}
   .home .dir{display:flex;flex-wrap:wrap;gap:7px}
+  .home .disclose{font:400 11px var(--font);line-height:1.5;color:var(--dim);
+                  max-width:62ch;margin:18px 0 2px}
   .buzz .dirlabel{font:700 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;
                   color:var(--ink-soft);margin:0 0 8px}
   .buzzrail{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
@@ -770,6 +794,19 @@
       <section class="home" id="home" style="padding:16px 22px 6px">
         <div class="dirlabel">jump straight to a neighbourhood</div>
         <div class="dir" id="homeDir"></div>
+        <!-- Affiliate disclosure. It sits here rather than in a footer because the feed
+             scrolls forever and a footer below it is a footer nobody reaches.
+
+             Worded to be true in both states. No link on this page earns anything today
+             — `SKIM_ID` is empty and `wrapOut` is the identity function — so "may" is
+             the accurate word, and it stays accurate on the day an application is
+             approved without anyone having to remember to come back and edit it. The
+             second sentence is the one that matters and it is not marketing: the sort
+             runs on the server before any href is written, and no wrap is an input to
+             it. See `wrapOut` and the note above it. -->
+        <p class="disclose">Some links out to a retailer may earn Field a commission.
+          It never affects the ranking — pieces are ordered by what they cost delivered,
+          and that order is decided before any link is written.</p>
       </section>
       <!-- What the press is writing about, matched to what is actually on the shelf.
            Hidden entirely when nothing matches: an empty "buzz" rail would imply the
@@ -1047,8 +1084,48 @@ function syncFavs(){
    wrapped one: the measurement is about where people went, `wrapped` records whether a
    redirector carried them. This is the "Open brand clicks" number the research plan
    names and nothing was counting. */
+/* Measurement, and why there are two of them.
+   `recordOut` below was written against a backend that owns a `clicks` table, and on the
+   published shelf there is no backend: `API` resolves to `""` — "same origin, relative
+   URLs" — for any page that is not `file://`, so on GitHub Pages every outbound click
+   posted to `https://andreycherno.github.io/out` and collected a 404 that nothing looked
+   at. The code ran, the table existed, and the number was always zero.
+
+   So the counter is a second, independent path rather than a replacement: a hosted
+   counter can answer "did anyone come, and did anyone leave through a retailer link" off
+   a static host, and the POST stays for the day a real API is serving this page.
+
+   `GC_ENDPOINT` empty means nothing is loaded and nothing is counted — the same bargain
+   `SKIM_ID` makes above. Fill in the `/count` URL a GoatCounter account gives you and
+   both the page view and the outbound events start arriving; until then this is inert
+   and says so, rather than pretending to measure. */
+const GC_ENDPOINT = "";                 // e.g. "https://<code>.goatcounter.com/count"
+
+function countBoot(){
+  // Not a hardcoded <script> tag: the file has to open from file://, where a
+  // protocol-relative or cross-origin script is either blocked or resolves against the
+  // disk. Injected only when there is an endpoint AND a real origin to report from.
+  if(!GC_ENDPOINT || !/^https?:$/.test(location.protocol)) return;
+  const s = document.createElement("script");
+  s.async = true;
+  s.src = "https://gc.zgo.at/count.js";
+  s.setAttribute("data-goatcounter", GC_ENDPOINT);
+  document.head.appendChild(s);
+}
+
+/* An event, not a pageview — `path` is a label here, not a URL anyone can visit. Silent
+   when the counter never loaded, which is the offline case and the not-configured case
+   and the blocked-by-an-extension case, and none of them is worth an error. */
+function countEvent(label){
+  try{ window.goatcounter?.count?.({ path: label, title: label, event: true }); }
+  catch{ /* the measurement is never allowed to break the click it measures */ }
+}
+
 function recordOut(source, itemId, retailer, href){
-  if(API === null || !href) return;
+  if(!href) return;
+  countEvent(`out-${source}-${String(retailer || "unknown").toLowerCase()}`);
+  // Nothing is listening on a static host, and a POST into a 404 is not measurement.
+  if(API === null || STATIC.on) return;
   fetch(`${API}/out`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ item_id: itemId || null, retailer: retailer || null,
@@ -1206,6 +1283,29 @@ const safeUrl = raw => {
     return (url.protocol === "http:" || url.protocol === "https:") ? url.href : "";
   } catch { return ""; }
 };
+
+/* Card-sized images, asked for at card size.
+   Almost every row hotlinks the shop's own CDN, and the shops serve their zoom asset:
+   measured over ten random rows, 5.19 MB of originals for ten 148px cells, of which two
+   Amplience assets were 2.0 MB and 1.2 MB on their own. Both CDNs resize from the URL,
+   so the fix is a query parameter and not a second copy of the picture — one URL in the
+   payload keeps serving the sheet its full-size asset.
+
+     original          5,192,822 B
+     &width=320          173,117 B     (-97%)
+
+   Thumbs only. The detail sheet and the product page deliberately keep the full URL:
+   that is the one place somebody is looking at the garment rather than scanning past it.
+   Unknown hosts and local `img/` paths pass through untouched — a resize parameter a CDN
+   does not understand is at best ignored and at worst a 404, so it is never guessed. */
+const cdnThumb = (url, w) => {
+  if(!url || !/^https?:/i.test(url)) return url;         // local img/<shop>/<hash>
+  const sep = url.includes("?") ? "&" : "?";
+  if(url.includes("cdn.shopify.com")) return `${url}${sep}width=${w}`;
+  if(url.includes("amplience.net"))   return `${url}${sep}w=${w}`;
+  return url;
+};
+const THUMB_W = 320;                                     // 2x the 148px grid cell
 
 /* Affiliate wrapping, and the line it must never cross: the ranking is the product's
    whole claim, so the wrap happens here — at href render, after the server has already
@@ -1413,7 +1513,7 @@ async function initCountry(){
   if(!SHIP_POLICIES_DATA){
     jobs.push((async () => {
       try{
-        const r = await fetch("shipping-policies.json", { cache: "no-store" });
+        const r = await fetch("shipping-policies.json");   // see loadJSON on `no-store`
         if(r.ok){ const j = await r.json(); if(j && j.retailers) SHIP_POLICIES_DATA = j; }
       }catch{ /* file:// or offline — verdicts fall back to unknown, which is the truth */ }
     })());
@@ -1421,7 +1521,7 @@ async function initCountry(){
   if(!LANDED_TEXT.length){
     jobs.push((async () => {
       try{
-        const r = await fetch("landed-text.json", { cache: "no-store" });
+        const r = await fetch("landed-text.json");        // see loadJSON on `no-store`
         if(r.ok){ const j = await r.json(); if(Array.isArray(j)) LANDED_TEXT = j; }
       }catch{ /* see landedText(): an index with no table renders as nothing */ }
     })());
@@ -1822,7 +1922,7 @@ function simRow(n, href){
   const was = n.was_cents && n.was_cents > n.price_cents
     ? `<span class="was">${PMONEY(n.was_cents, n.currency)}</span>` : "";
   return `<a class="simrow" href="${esc(href)}" data-item="${esc(n.id)}">`
-    + `<img alt="" loading="lazy" src="${esc(safeUrl(n.img) || "")}">`
+    + `<img alt="" loading="lazy" src="${esc(cdnThumb(safeUrl(n.img), THUMB_W) || "")}">`
     + `<span class="who"><span class="ttl">${esc(n.title)}</span>`
     + `<span class="meta">${meta}</span></span>`
     + `<span class="amt">${PMONEY(n.price_cents, n.currency)}${was}</span></a>`;
@@ -2758,7 +2858,7 @@ function feedCard(raw){
                  `<div class="m"><div class="b"></div><div class="nm"></div><div class="pr"></div></div>`;
   const img = el.querySelector("img");
   img.addEventListener("load", () => img.classList.add("on"));
-  const src = safeUrl(raw.img);
+  const src = cdnThumb(safeUrl(raw.img), THUMB_W);
   if(src) img.src = src;
   el.querySelector(".b").textContent = raw.brand_slug || "";
   el.querySelector(".nm").textContent = raw.title || "";
@@ -2832,7 +2932,7 @@ function buzzRail(items){
                      `<div class="pr"></div></div>`;
     const img = card.querySelector("img");
     img.addEventListener("load", () => img.classList.add("on"));
-    const src = safeUrl(it.img);
+    const src = cdnThumb(safeUrl(it.img), THUMB_W);
     if(src) img.src = src;
     card.querySelector(".b").textContent = it.brand || "";
     card.querySelector(".nm").textContent = it.name || "";
@@ -3309,7 +3409,7 @@ function wireSearch(){
                        `<span class="n">${esc(row.name)}</span></span><span class="p">${row.price}</span>`;
         if(row.similar) el.title = "similar by look — not a text match for what you typed";
         const img = el.querySelector("img");
-        const src = safeUrl(row.img);
+        const src = cdnThumb(safeUrl(row.img), THUMB_W);
         if(src) img.src = src;
       }
       el.addEventListener("click", () => go(row));
@@ -3382,9 +3482,16 @@ function prep(list){
     .filter(i => i && (i.img || i.brand) && !JUNK.test(i.name || ""))
     .map(decorate);
 }
+/* No `cache: "no-store"`. It forbids the browser from even WRITING the response to
+   cache, so every reload re-fetched the whole catalogue — 6.5 MB gzipped, measured
+   against the live Pages URL — for a file the 07:40 publish rewrites once a day. Pages
+   already answers with `etag` and `cache-control: max-age=600`, so the default policy
+   gives a free hit inside ten minutes and a conditional `304` with no body after that.
+   The freshness this file cares about is the price age each row carries, which is a
+   property of the export and not of the transfer. */
 const loadJSON = async name => {
   try{
-    const r = await fetch(name, { cache: "no-store" });
+    const r = await fetch(name);
     if(r.ok){ const j = await r.json(); if(Array.isArray(j) && j.length) return j; }
   }catch(e){ /* offline / file:// — items.js carries both as globals */ }
   return null;
@@ -3790,7 +3897,7 @@ async function staticLoad(){
      service. Fetched directly, and any failure leaves `kits` null, which the routes below
      already treat as "cannot build a kit". */
   try{
-    const r = await fetch("activities.json", {cache: "no-store"});
+    const r = await fetch("activities.json");       // see loadJSON on `no-store`
     const j = r.ok ? await r.json() : null;
     STATIC.kits = (j && j.climate && Array.isArray(j.activities)) ? j : null;
   }catch{ STATIC.kits = null; }
@@ -3845,6 +3952,7 @@ let bootSettled;
 const BOOT_READY = new Promise(resolve => { bootSettled = resolve; });
 
 async function boot(){
+  countBoot();     // before the awaits: a visit that leaves during the load still counts
   // Two worlds, most-informed first. With an API the page is the wall: the entire
   // catalogue in one full grid, arranged by similarity and priced live. Without one it
   // degrades to the export — every piece, every price, no neighbours — and says so at the
@@ -4124,7 +4232,7 @@ boot().finally(() => bootSettled());     // settled, not "succeeded": a page wit
     return `
       <div class="gal-card" data-id="${esc(item.id)}" data-slot="${esc(slotId)}" style="min-width:172px;max-width:172px;border:2px solid ${isPicked ? 'var(--ink)' : 'var(--line)'};border-radius:0;padding:10px;background:var(--card);display:flex;flex-direction:column;gap:5px;${muted ? 'opacity:.85;' : ''}">
         <a href="${esc(item.url || '#')}" target="_blank" rel="noopener" style="aspect-ratio:1;background:#fff;border-radius:0;overflow:hidden;display:block;">
-          <img src="${esc(item.img || '')}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+          <img src="${esc(cdnThumb(item.img || '', THUMB_W))}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
         </a>
         <div style="font:700 9px var(--mono);color:var(--ink-soft);text-transform:uppercase;">${esc(iBrand(item))}</div>
         <div class="card-title" style="font:700 11px var(--font);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);" title="${esc(iName(item))}">${esc(iName(item))}</div>
