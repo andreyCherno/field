@@ -3246,7 +3246,20 @@ async function wireFilters(){
       const opts = document.createElement("div");
       opts.className = "opts";
       pop.appendChild(opts);
+      /* "best value — vs its peers" is the one sort the static shelf cannot answer, and
+         it was being offered anyway: it ranks on `value_score`, which the export does not
+         carry on any of its 40,064 rows, so picking it silently returned file order under
+         a chip claiming otherwise. It cannot be rescued by computing the figure here —
+         `.claude/agents/frontend.md` forbids exactly that, because a value score is a
+         comparison against a category median the page has no way to know.
+
+         So it is omitted rather than greyed out, which is this codebase's own rule about
+         controls that cannot act, and it comes straight back the moment a live API is
+         answering, because then the score is real. `shelf` and `newest` stay: those fall
+         through to the export's own order, which IS the shelf order, and the chip
+         describes what you get. */
       for(const [key, label] of SORT_LABELS){
+        if(key === "value" && STATIC.on) continue;
         const l = document.createElement("label");
         l.innerHTML = `<input type="radio" name="srt" ${key === SORT ? "checked" : ""}>` +
                       `<span>${esc(label)}</span>`;
@@ -3556,7 +3569,14 @@ async function loadPlane(){
    What the static shelf loses, and says it loses: similar pieces, live prices (an export
    is a timestamp, not a feed), and the similarity clustering — regions here are
    departments, which is a smaller and different claim than "neighbours are kin". */
-const STATIC = { on: false, items: [], byId: new Map(), regions: [], facets: null, kits: null };
+/* `full` and `ready` exist because the shelf now arrives in two pieces.
+   `f/0.json` is 28 KB and holds the first 320 rows plus the counts for the whole
+   catalogue; `f/1.json` is the other 39,744 and lands behind the first paint. Between
+   those two moments the page is showing real rows and has real totals, but a SORT or a
+   FACET computed from 320 rows would be a confident wrong answer — so those wait on
+   `ready` rather than answering early. `full` is what says the wait is over. */
+const STATIC = { on: false, full: false, ready: null,
+                 items: [], byId: new Map(), regions: [], facets: null, kits: null };
 
 // `landed.item` is the integer the exporter already rounded for display, so this is a
 // change of unit rather than a second rounding of a price.
@@ -3611,6 +3631,13 @@ function staticCut(params){
   const max = /^\d+$/.test(params.get("max") || "") ? +params.get("max") : null;
   const sale = params.get("sale") === "1";
   const ids = params.get("ids") ? new Set(params.get("ids").split(",").filter(Boolean)) : null;
+  /* `min_discount` was written into the URL by `filterParams` and read by nobody here.
+     The chip lit up, the count beside it updated — from a cut that had ignored the
+     filter — and the grid came back with the whole shelf in it. A control that reports a
+     number for a question it did not ask is worse than a missing one: the count made it
+     look answered. `staticDiscount` below already computes the figure the sort uses, so
+     the cut and the sort now agree by construction rather than by coincidence. */
+  const disc = /^\d+$/.test(params.get("min_discount") || "") ? +params.get("min_discount") : null;
 
   return STATIC.items.filter(item => {
     if(ids && !ids.has(item.id)) return false;
@@ -3618,6 +3645,7 @@ function staticCut(params){
     const price = item._p;
     if(min !== null && !(price >= min)) return false;
     if(max !== null && !(price <= max)) return false;
+    if(disc !== null && !(staticDiscount(item) * 100 >= disc)) return false;
     for(const [facet, values] of wanted){
       const mine = (item.facets && item.facets[facet]) || [];
       if(!mine.some(v => values.has(v))) return false;
@@ -3658,9 +3686,31 @@ function staticGrid(params){
     if(at >= 0) offset = Math.floor(at / cols) * cols;
   }
 
+  /* The two counts the header renders, and the one moment they can lie.
+
+     Every route that could narrow the shelf waits for shard 1 (see `staticJSON`), so the
+     only call that reaches here early is the opening page — no filter, no sort — and for
+     that one `total` and `grand` are both "how big is the catalogue". `STATIC.grand`
+     comes from shard 0, which carries the count for all 40,064 rows rather than for its
+     own 320. Reading `STATIC.items.length` instead would print "320 pieces" over a shelf
+     that has forty thousand, for as long as the second fetch takes — a smaller, faster
+     version of exactly the overstatement everything else here exists to prevent. */
+  const whole = STATIC.grand || STATIC.items.length;
+  /* `total` is "how many pieces match this cut", and while only shard 0 is in memory
+     that is knowable for exactly one query: the one that cuts nothing. For it the answer
+     is the whole catalogue, which shard 0 states; for any other it would be a count of
+     how much of the FIRST PAGE matched, which is not an answer to the question asked.
+     Those queries wait for shard 1 (see `staticJSON`), so they never arrive here early —
+     but the condition is written on what is actually known rather than on that promise,
+     because a guard that depends on a caller elsewhere behaving is not a guard. Getting
+     this wrong reported 40,064 for a filter that matched nothing, which is the loudest
+     possible version of the mistake and is how the test caught it. */
+  const cutNothing = ordered.length === STATIC.items.length;
   return {
     items: ordered.slice(offset, offset + limit).map(staticRow),
-    total: ordered.length, grand: STATIC.items.length, offset, cols,
+    total: (!STATIC.full && cutNothing) ? whole : ordered.length,
+    grand: whole,
+    offset, cols,
     regions: STATIC.regions,
   };
 }
@@ -3687,12 +3737,29 @@ function staticSearch(query){
   const needle = String(query || "").trim().toLowerCase();
   if(!needle) return {hits: []};
   const hits = [];
-  for(let i = 0; i < STATIC.items.length && hits.length < 20; i++){
+  /* The typeahead offers a brand shortcut above the pieces — "everything by Gramicci"
+     rather than the four Gramicci items that happened to match the string. It reads
+     `data.brands`, and this returned `{hits}` only, so the shortcut was dead on the
+     static shelf while working against the API. Same seam, two answers.
+
+     Counted over the whole shelf, not over the 20 hits: the row says how many pieces the
+     brand has, and a count taken from a truncated scan would understate it — quietly, and
+     differently depending on where the match happened to fall in file order. */
+  const brands = new Map();
+  for(let i = 0; i < STATIC.items.length; i++){
     const item = STATIC.items[i];
-    const hay = `${item.brand || ""} ${item.name || ""} ${item.type || ""}`.toLowerCase();
-    if(hay.includes(needle)) hits.push(staticRow(item, i));
+    const brand = item.brand || "";
+    if(brand.toLowerCase().includes(needle))
+      brands.set(brand, (brands.get(brand) || 0) + 1);
+    if(hits.length < 20){
+      const hay = `${brand} ${item.name || ""} ${item.type || ""}`.toLowerCase();
+      if(hay.includes(needle)) hits.push(staticRow(item, i));
+    }
   }
-  return {hits};
+  return {
+    hits,
+    brands: [...brands].sort((a, b) => b[1] - a[1]).map(([brand, count]) => ({brand, count})),
+  };
 }
 
 function staticProduct(id){
@@ -3873,6 +3940,27 @@ function staticActivityJSON(route, params){
 function staticJSON(path){
   const [route, query] = String(path).split("?");
   const params = new URLSearchParams(query || "");
+  /* The shelf arrives in two pieces, and between them most of these routes would be
+     answering from 320 rows.
+
+     That is not a slower answer, it is a wrong one, and wrong in the way this codebase
+     minds most: `/facets` would report "brand: Nike 6" and `sort=price_asc` would put the
+     cheapest of the first page at the top, both with nothing on the page to say the
+     shelf was still filling. A count is a claim.
+
+     The exception is the first grid call, and it is the only one the page makes before a
+     reader touches anything: the opening page, in shelf order, from offset 0. Shard 0 is
+     a prefix of exactly that, so it is a complete and correct answer to that one
+     question — which is the whole reason the split is cut where it is.
+
+     `staticJSON` may now return a promise. `apiJSON` is already `async` and its callers
+     already `await`, so this costs nothing at the seam. */
+  const firstPage = route === "/grid"
+    && !params.get("sort") && !(+params.get("offset") > 0)
+    && !params.get("around") && !params.get("ids")
+    && ![...params.keys()].some(k => k !== "limit" && k !== "offset");
+  if(!STATIC.full && !firstPage && STATIC.ready)
+    return STATIC.ready.then(() => staticJSON(path));
   if(route === "/grid") return staticGrid(params);
   if(route === "/facets") return staticFacets(params);
   if(route === "/search") return staticSearch(params.get("q"));
@@ -3882,25 +3970,99 @@ function staticJSON(path){
   return null;                                   // /similar and the rest — see the header
 }
 
-async function staticLoad(){
-  if(STATIC.items.length) return true;
-  const raw = await loadJSON("items.json") || window.ITEMS;
-  if(!Array.isArray(raw) || !raw.length) return false;
-  /* The kit vocabulary, written from taxonomy.py by
-     `python3 -m backend.activities.export_taxonomy`. Its absence is survivable and
-     explicitly so: `staticActivityJSON` answers null without it, the kits tab reports that
-     it cannot build one, and the shelf itself is unaffected. A kit assembled from a
-     half-loaded vocabulary would be worse than no kit. */
-  /* Not `loadJSON`: that helper returns null for anything that is not a non-empty ARRAY,
-     which is right for a catalogue and silently wrong for this — the taxonomy is an
-     object, so it loaded, parsed, and was thrown away, and the kits tab reported a missing
-     service. Fetched directly, and any failure leaves `kits` null, which the routes below
-     already treat as "cannot build a kit". */
+/* One page of the shelf, and the counts for all of it.
+
+   `f/0.json` is written by `export_items.write_shards` and is a strict prefix of the
+   same catalogue in the same row shape — not a thinner representation of it. That is
+   what keeps everything downstream unchanged: `staticRow`, `staticProduct` and the
+   detail sheet read a shard-0 row exactly as they read an items.json row, with no fetch
+   and no new failure mode.
+
+   Returns null on anything unexpected, which is the file:// case (fetch of a relative
+   path fails on an opaque origin) and the not-yet-deployed case. Both fall through to
+   the whole-file path below, so a shelf built before this existed still opens. */
+async function loadShard(name){
+  try{
+    const r = await fetch(name);
+    if(!r.ok) return null;
+    const j = await r.json();
+    return (j && Array.isArray(j.rows) && j.rows.length) ? j : null;
+  }catch{ return null; }
+}
+
+/* The kit vocabulary, written from taxonomy.py by
+   `python3 -m backend.activities.export_taxonomy`. Its absence is survivable and
+   explicitly so: `staticActivityJSON` answers null without it, the kits tab reports that
+   it cannot build one, and the shelf itself is unaffected. A kit assembled from a
+   half-loaded vocabulary would be worse than no kit.
+
+   Not `loadJSON`: that helper returns null for anything that is not a non-empty ARRAY,
+   which is right for a catalogue and silently wrong for this — the taxonomy is an object,
+   so it loaded, parsed, and was thrown away, and the kits tab reported a missing service.
+   Fetched directly, and any failure leaves `kits` null, which the routes already treat as
+   "cannot build a kit".
+
+   A function rather than two copies, because `staticLoad` now has two entry paths — the
+   shards and the whole file — and a vocabulary loaded on one of them only is a kits tab
+   whose availability depends on which way the shelf happened to arrive. */
+async function staticKits(){
   try{
     const r = await fetch("activities.json");       // see loadJSON on `no-store`
     const j = r.ok ? await r.json() : null;
     STATIC.kits = (j && j.climate && Array.isArray(j.activities)) ? j : null;
   }catch{ STATIC.kits = null; }
+}
+
+async function staticLoad(){
+  if(STATIC.items.length) return true;
+
+  /* Two-step, and the order matters more than it looks.
+
+     The whole file is 5.44 MB gzipped and `boot` awaited every byte of it — parsed into
+     a 324 MB heap, mapped, sorted and indexed — before the first card was drawn. The
+     first 320 rows are 28 KB. Nothing else measured in this payload came close:
+     minifying the export saves nothing at all once gzip has run, and stripping every
+     field the grid does not read saves 2.1 MB. Sending the first page first saves 5.41
+     of the 5.44.
+
+     So shard 0 paints, and shard 1 is fetched WITHOUT being awaited. `STATIC.ready` is
+     the handle on that second fetch; `staticJSON` holds any question that needs the
+     whole shelf until it settles, and the first grid call — which is the only one the
+     page makes before a reader touches anything — is answerable from shard 0 alone. */
+  const head = await loadShard("f/0.json");
+  if(head){
+    STATIC.items = prep(head.rows);
+    STATIC.byId = new Map(STATIC.items.map(item => [item.id, item]));
+    ITEMS = STATIC.items;
+    // From the shard, not counted from its 320 rows: the header states the size of the
+    // catalogue, and a number computed from the prefix would be confidently wrong for as
+    // long as shard 1 takes to arrive.
+    STATIC.regions = head.regions || [];
+    STATIC.grand = head.total || STATIC.items.length;
+    STATIC.on = true;
+    if(SORT === "value") SORT = "shelf";        // see the note further down
+    STATIC.ready = (async () => {
+      const rest = await loadJSON("f/1.json");
+      // `[]` is a real answer — a shelf smaller than one page — and `loadJSON` returns
+      // null for it, so an empty tail is not an error and not a retry.
+      if(Array.isArray(rest) && rest.length){
+        for(const item of prep(rest)){
+          STATIC.items.push(item);
+          STATIC.byId.set(item.id, item);
+        }
+      }
+      STATIC.full = true;
+    })();
+    await staticKits();
+    return true;
+  }
+
+  const raw = await loadJSON("items.json") || window.ITEMS;
+  if(!Array.isArray(raw) || !raw.length) return false;
+  // Whole-file path: nothing is pending, so nothing waits on `ready`.
+  STATIC.full = true;
+  STATIC.ready = Promise.resolve();
+  await staticKits();
   /* Grouped by department, then in export order. The export's own order is the
      similarity clustering's, and that clustering is not recoverable here — so left
      alone the departments interleave, and the region headers the feed paints every
@@ -3926,6 +4088,13 @@ async function staticLoad(){
     region, name: region, count, row: Math.floor(firstAt.get(region) / 16)}))
     .sort((a, b) => firstAt.get(a.region) - firstAt.get(b.region));
   STATIC.on = true;
+  /* The sort is parsed from the URL long before we know whether an API is answering, so
+     a shared `?sort=value` link arrives with SORT already set to the one option the
+     snapshot cannot honour. Omitting it from the popover closes the door for somebody
+     clicking; this closes it for somebody arriving. Demoted to the shelf order, which is
+     what it would silently have fallen through to anyway — the difference is that the
+     chip now says "the shelf" instead of claiming a ranking that never ran. */
+  if(SORT === "value") SORT = "shelf";
   return true;
 }
 

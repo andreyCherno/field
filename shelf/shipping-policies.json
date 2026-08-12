@@ -72,6 +72,14 @@
 "excludedBrands": []
 }
 },
+"beneunder": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
 "blendsus": {
 "IL": {
 "shipsTo": null,
@@ -99,6 +107,22 @@
 "capsule": {
 "IL": {
 "shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"chinasquad": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"chopsueyclub": {
+"IL": {
+"shipsTo": true,
 "leadTimeDays": null,
 "returnsSupported": null,
 "excludedBrands": []
@@ -152,6 +176,14 @@
 "excludedBrands": []
 }
 },
+"fengchenwang": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
 "flannels": {
 "IL": {
 "shipsTo": false,
@@ -161,6 +193,14 @@
 }
 },
 "footdistrict": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"guerrillagroup": {
 "IL": {
 "shipsTo": true,
 "leadTimeDays": null,
@@ -201,6 +241,14 @@
 }
 },
 "italist": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"kailas": {
 "IL": {
 "shipsTo": true,
 "leadTimeDays": null,
@@ -368,6 +416,14 @@
 "excludedBrands": []
 }
 },
+"rigorer": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
 "sauconyil": {
 "IL": {
 "shipsTo": true,
@@ -448,6 +504,14 @@
 "excludedBrands": []
 }
 },
+"susanfang": {
+"IL": {
+"shipsTo": null,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
 "thehundreds": {
 "IL": {
 "shipsTo": true,
@@ -489,6 +553,14 @@
 }
 },
 "wish": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"yueqiqi": {
 "IL": {
 "shipsTo": true,
 "leadTimeDays": null,
