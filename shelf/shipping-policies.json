@@ -120,7 +120,23 @@
 "excludedBrands": []
 }
 },
+"end": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
 "extrabutter": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"farfetch": {
 "IL": {
 "shipsTo": false,
 "leadTimeDays": null,
@@ -147,6 +163,14 @@
 "footdistrict": {
 "IL": {
 "shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"harveynichols": {
+"IL": {
+"shipsTo": false,
 "leadTimeDays": null,
 "returnsSupported": null,
 "excludedBrands": []
@@ -195,6 +219,46 @@
 "lapstone": {
 "IL": {
 "shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"luisaviaroma": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"modaoperandi": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"mrporter": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"mytheresa": {
+"IL": {
+"shipsTo": false,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"net-a-porter": {
+"IL": {
+"shipsTo": false,
 "leadTimeDays": null,
 "returnsSupported": null,
 "excludedBrands": []
@@ -352,6 +416,14 @@
 "excludedBrands": []
 }
 },
+"ssense": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
 "story": {
 "IL": {
 "shipsTo": true,
@@ -379,6 +451,14 @@
 "thehundreds": {
 "IL": {
 "shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"theoutnet": {
+"IL": {
+"shipsTo": false,
 "leadTimeDays": null,
 "returnsSupported": null,
 "excludedBrands": []
