@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="144mm" height="173mm" viewBox="38 24 144 173">
+  <title>Emblem C — Peak</title>
+  <desc>Single spot colour. User units are millimetres at 100% scale. Bands are 18.4 mm thick measured across the stroke, 12.7 mm apart; the arm ends are cut square to the arm so the art carries no acute corners for the ink to close up.</desc>
+  <g fill="var(--ink,#000000)">
+    <path d="M51,109 L38,96 L110,24 L182,96 L169,109 L110,50 Z"/>
+    <path d="M51,153 L38,140 L110,68 L182,140 L169,153 L110,94 Z"/>
+    <path d="M51,197 L38,184 L110,112 L182,184 L169,197 L110,138 Z"/>
+  </g>
+</svg>

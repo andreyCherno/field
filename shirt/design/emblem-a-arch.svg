@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150mm" height="165mm" viewBox="35 35 150 165">
+  <title>Emblem A — Arch</title>
+  <desc>Single spot colour. User units are millimetres at 100% scale. Minimum mass 26 mm, minimum gap 22 mm.</desc>
+  <g fill="var(--ink,#000000)" fill-rule="evenodd">
+    <!-- arch: outer shell minus inner void, open at the base -->
+    <path d="M35,200 L35,110 A75,75 0 0 1 185,110 L185,200 L157,200 L157,110 A47,47 0 0 0 63,110 L63,200 Z"/>
+    <!-- the sun held inside the opening -->
+    <circle cx="110" cy="104" r="21"/>
+  </g>
+</svg>

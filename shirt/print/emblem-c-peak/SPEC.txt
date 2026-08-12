@@ -1,0 +1,35 @@
+PRINT SPEC — Peak (emblem-c-peak)
+================================================================
+
+ARTWORK
+  Master (vector)      ../../design/emblem-c-peak.svg   1 user unit = 1 mm at 100%
+  Print file (raster)  emblem-c-peak-art-300dpi.png     2244 x 2696 px, 300 dpi, transparent
+  Vector for screens   emblem-c-peak-art.pdf
+  Screen separation    emblem-c-peak-separation.png     1-bit, black = ink
+
+SIZE AND PLACEMENT (front, centre chest)
+  Printed size         190 x 228 mm
+  Horizontal           centred on the front, left-right
+  Vertical             top of the print 110 mm below the collar seam at centre front
+  Small alternative    90 mm wide, left chest, top 70 mm below the shoulder seam
+
+PRINT METHOD
+  Puff (raised / 3D foam) screen print, one colour, one screen.
+  No halftones, no gradients, no second colour anywhere in this file.
+  Cure to the ink maker's schedule; puff must rise evenly with no flat patches.
+
+COLOURWAYS (two samples, same artwork)
+  1. Black garment  PANTONE 19-0303 TCX Jet Black    + white puff  PANTONE 11-0601 TCX Bright White
+  2. Off-white garment, approx #E9E2D4 (send two lab dips) + black puff PANTONE 19-0303 TCX Jet Black
+
+AUDITED LIMITS (measured on the art, not estimated)
+  Thinnest ink at 190 mm wide   over 12.8 mm
+  Tightest gap at 190 mm wide   over 12 mm
+  Thinnest ink at 90 mm wide    10.5 mm
+  Tightest gap at 90 mm wide    7.1 mm
+  Limits assumed: ink 3.2 mm minimum, gap 3.0 mm minimum, for puff expansion of 2-3x.
+
+WHAT MUST NOT BE CHANGED
+  Do not re-draw, re-trace, thicken or outline the artwork.
+  Do not scale the two colourways differently - both are the same size.
+  Do not add any brand name, care symbol or website to the print.

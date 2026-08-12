@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160mm" height="137mm" viewBox="10 15 160 137">
+  <title>Emblem B — Horizon</title>
+  <desc>Single spot colour. User units are millimetres at 100% scale. A solid disc with three slots cut into its lower half, over a ground line. Slots stop 9 mm short of the rim so nothing in the art tapers to a point.</desc>
+  <g fill="var(--ink,#000000)">
+    <path fill-rule="evenodd" d="M90,15 A55,55 0 1 0 90,125 A55,55 0 1 0 90,15 Z
+      M49.5,71.5 L130.5,71.5 A4.5,4.5 0 0 1 130.5,80.5 L49.5,80.5 A4.5,4.5 0 0 1 49.5,71.5 Z
+      M56.5,89.5 L123.5,89.5 A4.5,4.5 0 0 1 123.5,98.5 L56.5,98.5 A4.5,4.5 0 0 1 56.5,89.5 Z
+      M80.5,105.5 L99.5,105.5 A4.5,4.5 0 0 1 99.5,114.5 L80.5,114.5 A4.5,4.5 0 0 1 80.5,105.5 Z"/>
+    <path d="M10,138 L170,138 L170,152 L10,152 Z"/>
+  </g>
+</svg>
