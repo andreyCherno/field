@@ -15,6 +15,18 @@
 - **רף ה־₪70 לנחיתה חוזר לתוקף מלא** — כמו אנברנדד, כי פרמיית מותג אין
 - כל פריט צריך פוסט שמספר את הסיפור (מי המותג, כמה הוא גדול בסין)
 
+## קישורים ישירים — בלי סוכן, מהדפדפן (אומת אוגוסט 2026)
+
+| יעד | קישור | הערות |
+|---|---|---|
+| **60% — המרקטפלייס האסייתי** | [global.sixty-percent.com](https://global.sixty-percent.com/) | פלטפורמה יפנית, 2,500+ מותגים אסייתיים, באנגלית, משלוח בינלאומי, אפליקציה ב־App Store. הכי קרוב ל"ASOS אסייתי" |
+| חנות ROARINGWILD הרשמית ב־60% | [shops/roaringwild](https://global.sixty-percent.com/shops/roaringwild) | החנות הרשמית של המותג בפלטפורמה |
+| LI-NING Official — מדור טי | [store/2097003 · T-shirts](https://lining.aliexpress.com/store/group/T-shirts/2097003_512625705.html) | חנות רשמית באלי אקספרס — מסלול ה"בלי חיכוך" |
+| INXX Store באלי אקספרס | [store/1102278039](https://www.aliexpress.com/store/1102278039) | Top Seller; מעט ביקורות לפריט — QC רגיל |
+| 714street באלי אקספרס | [חיפוש 714 street](https://www.aliexpress.com/w/wholesale-714-street.html) | דרך דף החיפוש אל חנויות המותג |
+| ROARINGWILD גלובלי | [roaringwild.com](https://roaringwild.com/collections/all-men-products) | האתר הרשמי של המותג |
+| CHINASQUAD | [chinasquad.com](https://chinasquad.com/) | מרכז Roaringwild/Randomevent, משלוח ל־40 מדינות — אבל תלונות שירות ב־Trustpilot, זהירות |
+
 ## הערוצים, לפי רמת חיכוך
 
 ### רמה 1 — בלי שום חיכוך: חנויות רשמיות באלי אקספרס
