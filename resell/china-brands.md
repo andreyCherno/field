@@ -101,6 +101,32 @@ QC + מדידות (עולה $1–2 לפריט). זה השלב שבו אתה תו
 המשלוח לכלכלי — הבסיס מתחלק). שווי מוצר מוצהר מתחת ל־$75 = פטור ממע"מ.
 בחר קו שילוח לישראל: EMS/קו כלכלי ~$10–15 לק"ג, 10–21 ימים.
 
+### קיצור הדרך: אל תגלוש — שלח לסוכן בריף sourcing
+
+לסוכנים יש שירות חיפוש: שולחים בריף, מקבלים רשימת מועמדים, רק בוחרים.
+הודעה מוכנה:
+
+```
+Hi! I need sourcing help from Dewu (Poizon) or Tmall flagship stores.
+
+Looking for: heavyweight cotton tees and sweatshirts from Chinese
+streetwear brands — China Li-Ning (中国李宁), INXX, ROARINGWILD,
+RANDOMEVENT, 714street. Solid colors or small graphics preferred.
+
+- Sizes: L-XL (Chinese sizing)
+- Past-season / clearance items only
+- Target: under ¥100 per tee, under ¥180 per hoodie/sweatshirt
+- Total budget: ¥600-800 for 6-8 items
+- Ship to Israel, declared product value under $75
+
+Please send me 10-15 candidate links with photos, prices and size
+charts — I will pick from the list. If this works well, I'll make
+this a monthly order.
+```
+
+ולחיפוש עצמי באפליקציה — מילות מפתח בסינית שחוסכות את הגלילה:
+`重磅 短袖` (טי כבד) · `卫衣` (סווטשירט/הודי) · `纯色` (חלק, בלי גרפיקה).
+
 **סה"כ לו"ז ריאלי: 3–4 שבועות מהקנייה עד הדלת.** עלויות: מחיר הפריט +
 עמלת סוכן 0–5% + QC + משלוח בינלאומי. טי חיסול ¥69–129 נוחת ב־₪45–70.
 
