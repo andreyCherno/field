@@ -807,6 +807,17 @@
         <p class="disclose">Some links out to a retailer may earn Field a commission.
           It never affects the ranking — pieces are ordered by what they cost delivered,
           and that order is decided before any link is written.</p>
+        <!-- Archive notice. The nightly jobs are unloaded and this shelf is no longer
+             refreshed, so every figure on it is frozen at the snapshot below. The date is
+             hardcoded on purpose — the usual rule against hand-edited figures exists
+             because they go stale silently, and this one is a snapshot marker whose whole
+             job is to stop moving. Delete this block if the jobs are ever reloaded. -->
+        <p class="disclose">Snapshot taken 14 August 2026, and not updated since. Prices
+          were read between 0 and 14 days before that date (median 11), so treat every
+          figure here as a record of what a shop asked then, not what it asks now. Two
+          thirds of the shelf has no complete delivered cost — those pieces say so on
+          their own detail sheet. Customs and VAT rules are seed values that have not been
+          re-verified against the tax authorities.</p>
       </section>
       <!-- What the press is writing about, matched to what is actually on the shelf.
            Hidden entirely when nothing matches: an empty "buzz" rail would imply the
@@ -950,7 +961,12 @@
    ============================================================ */
 const RING = { 1:"var(--t1)", 2:"var(--t2)", 3:"var(--t3)" };
 const RING_HEX = { 1:"#2fa869", 2:"#c39a1f", 3:"#d1568a" };
-const JUNK = /insurance|gift ?card|shipping|donation|washcloth|towel|candle|fragrance|incense|bottle|mug|sticker|book|magazine|poster|air ?freshener|soap|lighter|deodor|toothbrush|puzzle|dice/i;
+// The JUNK regex that stood here is gone. It was a character-identical copy of the one in
+// `backend/store.py`, so the rule lived in two languages with nothing comparing them, and
+// the page was the third reader of a list the exporter did not apply at all — 403 rows
+// shipped in a 65 MB file and then dropped by the browser that had just parsed them.
+// `backend/taxonomy.py` holds the list now and the exporter drops them, so anything that
+// reaches here is already meant to be on the shelf.
 const EMPTY_LABELS = ["everyday tops", "heavy outerwear", "considered accessories", "quiet basics", "statement outer"];
 const num = p => parseFloat(String(p).replace(/[^0-9.]/g, "")) || 0;
 // item text/urls come from brand storefronts — escape before any innerHTML
@@ -1059,11 +1075,14 @@ function toggleFav(it){
    what the nightly backup covers.
    Not sent to the catalogue API: that one answers every origin with `*` because the shelf
    is public read-only data, and a world-writable list feeding a taste vector authenticates
-   nobody. 8790 is loopback-only, which is the same reason the hunt lives there.
-   Fire-and-forget and silent: on the published site there is no dashboard to reach, and a
+   nobody. 8793 is loopback-guarded, which is the same reason the hunt lived on 8790 before it.
+   Fire-and-forget and silent: on the published site there is no deck to reach, and a
    console full of failed connections would be noise about a feature that is working
-   exactly as designed. */
-const AGENT = "http://127.0.0.1:8790";
+   exactly as designed.
+   8793 since the hunt dashboard was absorbed. It is the one route there that takes no
+   token, because this page is published and cannot hold a secret — see `OPEN_ROUTES` in
+   backend/deck/serve.py for what bounds it instead. */
+const AGENT = "http://127.0.0.1:8793";
 let favSyncTimer = null;
 function syncFavs(){
   clearTimeout(favSyncTimer);
@@ -1071,7 +1090,7 @@ function syncFavs(){
   favSyncTimer = setTimeout(() => {
     const ids = [...favs].filter(k => !k.includes("|") && !k.startsWith("http"));
     if(!ids.length) return;
-    fetch(`${AGENT}/api/favourites`, {
+    fetch(`${AGENT}/api/deck/favourites`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ids }),
     }).catch(() => {});
@@ -1306,6 +1325,42 @@ const cdnThumb = (url, w) => {
   return url;
 };
 const THUMB_W = 320;                                     // 2x the 148px grid cell
+
+/* The tile prints the brand on its own line and the title under it, and 17,677 of 41,221
+   titles (43%) begin with the brand again — "WEEKDAY / WEEKDAY SQUARE NEC…", "NYX
+   PROFESSIONAL MAKEUP / NYX Professional Makeup Bare With Me Blur Ti…". The repeat is not
+   just noise: the card has room for about thirty characters, so the brand spends them and
+   the ellipsis lands on the part that says what the thing IS. Dropping it turns that first
+   example into "SQUARE NECK BIKINI TOP", which fits whole.
+
+   Compared on alphanumerics only, because the feed and the brand table disagree about
+   punctuation: brand "Levi's" against a title reading "Levis Batwing Slider" is the same
+   word and a literal prefix test misses it. Walking word by word rather than matching a
+   fixed string is what handles the multi-word houses — "ASOS DESIGN", "NYX Professional
+   Makeup" — without a list of them.
+
+   Display only. `name`/`title` is untouched in the payload, so search, the detail sheet,
+   the product page and `document.title` keep the full string a shop published; a piece
+   whose brand only appears in its title is still findable by typing it. And it never
+   returns empty — a title that IS exactly the brand keeps the brand, because a nameless
+   card is worse than a repetitive one. */
+const stripBrand = (brand, title) => {
+  if(!brand || !title) return title || "";
+  const norm = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const want = norm(brand);
+  if(!want) return title;
+  const words = String(title).split(/\s+/);
+  let seen = "";
+  for(let i = 0; i < words.length; i++){
+    seen += norm(words[i]);
+    if(seen === want){
+      const rest = words.slice(i + 1).join(" ").replace(/^[\s\-–—:·|]+/, "").trim();
+      return rest || title;
+    }
+    if(!want.startsWith(seen)) break;   // diverged — the title is not repeating the brand
+  }
+  return title;
+};
 
 /* Affiliate wrapping, and the line it must never cross: the ranking is the product's
    whole claim, so the wrap happens here — at href render, after the server has already
@@ -1836,8 +1891,8 @@ async function openById(id, {replace = false} = {}){
     clearItem();
     return false;
   }
-  // `prep` is the *catalog* filter: it drops pieces with no image and anything JUNK catches,
-  // so the map is not full of gift cards. Running it over one explicitly requested item is
+  // `prep` is the *catalog* filter: it drops pieces with nothing to render in a tile.
+  // Running it over one explicitly requested item is
   // a category error — someone asked for this piece by name, and the filter answered with
   // an empty array, so `openSheet(undefined)` threw inside `pushItem` reading `.id`. A deep
   // link shows what was asked for; only the derived fields are added.
@@ -1938,7 +1993,7 @@ async function showStores(it){
     const shop = it.retailer || (it.detail && it.detail.retailer) || null;
     return row2(
       (safeUrl(it.url)
-        ? `<a href="${esc(safeUrl(it.url))}" target="_blank" rel="noopener">${esc(shop || "the shop")}</a>`
+        ? `<a href="${esc(wrapOut(safeUrl(it.url)))}" target="_blank" rel="noopener">${esc(shop || "the shop")}</a>`
         : esc(shop || "the shop"))
         + ` <span class="dim">(this listing)</span>`
         + ` ${SHIP_BADGE[shipStatus(shop, COUNTRY, it).status]}`,
@@ -1955,7 +2010,7 @@ async function showStores(it){
     if(unc === null){ PANEL.innerHTML = own() + `<span class="dim">Couldn't reach the catalogue service.</span>`; return; }
     if(!unc.length){ PANEL.innerHTML = own() + `<span class="dim">Only this shop, as far as we know — no likely candidate elsewhere either.</span>`; return; }
     PANEL.innerHTML = own() + unc.map(u => row2(
-      `<a href="${esc(safeUrl(u.url))}" target="_blank" rel="noopener">${esc(u.retailer)}</a>`
+      `<a href="${esc(wrapOut(safeUrl(u.url)))}" target="_blank" rel="noopener">${esc(u.retailer)}</a>`
         + ` <span class="dim">(likely match)</span>`
         + ` ${SHIP_BADGE[shipStatus(u.retailer, COUNTRY, u).status]}`,
       PMONEY(u.price_cents, u.currency))).join("")
@@ -2286,7 +2341,7 @@ function openPage(it, {replace = false} = {}){
 
   const v = valueLine(it), ve = document.getElementById("ipageValue");
   ve.className = "value " + v.cls; ve.textContent = v.txt;
-  document.getElementById("ipageOpen").href = safeUrl(it.url) || "#";
+  document.getElementById("ipageOpen").href = wrapOut(safeUrl(it.url)) || "#";
 
   renderLanded(it, document.getElementById("ipageLanded"));
   renderCheaper(it, document.getElementById("ipageCheaper"));
@@ -2356,7 +2411,7 @@ function maybeRow(u){
   const but = (u.conflicts || []).length
     ? ` — differs on ${esc(u.conflicts.join(" · "))}` : "";
   return `<div class="offer"><span class="shop">`
-    + `<a href="${esc(safeUrl(u.url))}" target="_blank" rel="noopener">${esc(u.retailer)}</a>`
+    + `<a href="${esc(wrapOut(safeUrl(u.url)))}" target="_blank" rel="noopener">${esc(u.retailer)}</a>`
     + `<span class="mark maybe">likely match</span>${shipMark(u)}</span>`
     + `<span class="amt">${PMONEY(u.price_cents, u.currency)}</span>`
     + `<span class="sub">as “${esc(u.title)}” · `
@@ -2372,7 +2427,7 @@ async function renderPageShops(it){
   const body = document.getElementById("ipageShopsBody");
   const here = it.retailer || (it.detail && it.detail.retailer) || hostOf(it.url) || "the shop";
   const own = `<div class="offer"><span class="shop">`
-    + (safeUrl(it.url) ? `<a href="${esc(safeUrl(it.url))}" target="_blank" rel="noopener">${esc(here)}</a>` : esc(here))
+    + (safeUrl(it.url) ? `<a href="${esc(wrapOut(safeUrl(it.url)))}" target="_blank" rel="noopener">${esc(here)}</a>` : esc(here))
     + `<span class="mark here">this listing</span></span>`
     + `<span class="amt">${esc(it.price || "")}</span></div>`;
   if(!it.product_id){
@@ -2449,7 +2504,7 @@ async function renderPageShops(it){
         + `</span>`
       : "";
     return `<div class="offer"><span class="shop">`
-      + `<a href="${esc(safeUrl(o.url))}" target="_blank" rel="noopener">${esc(o.retailer)}</a>${marks}</span>`
+      + `<a href="${esc(wrapOut(safeUrl(o.url)))}" target="_blank" rel="noopener">${esc(o.retailer)}</a>${marks}</span>`
       + `<span class="amt">${PMONEY(o.price_cents, o.currency)}</span>`
       + listed + evidence + shipNote(o) + `</div>`;
   }).join("");
@@ -2861,7 +2916,7 @@ function feedCard(raw){
   const src = cdnThumb(safeUrl(raw.img), THUMB_W);
   if(src) img.src = src;
   el.querySelector(".b").textContent = raw.brand_slug || "";
-  el.querySelector(".nm").textContent = raw.title || "";
+  el.querySelector(".nm").textContent = stripBrand(raw.brand_slug, raw.title);
   paintCardPrice(el, raw);
   // The snapshot marking. `textContent`, so a shop name out of a scraped row can never be
   // markup. It also carries the shop, which is the only thing on the tile identifying a
@@ -2935,7 +2990,7 @@ function buzzRail(items){
     const src = cdnThumb(safeUrl(it.img), THUMB_W);
     if(src) img.src = src;
     card.querySelector(".b").textContent = it.brand || "";
-    card.querySelector(".nm").textContent = it.name || "";
+    card.querySelector(".nm").textContent = stripBrand(it.brand, it.name);
     card.querySelector(".pr").textContent = it.price || "";
     card.addEventListener("click", () => openById(it.id));
 
@@ -3492,7 +3547,7 @@ function prep(list){
   // the three-item `FALLBACK` stub it silently emptied — every entry `img:null` — is gone
   // with the boot path that read it.
   return (Array.isArray(list) ? list : [])
-    .filter(i => i && (i.img || i.brand) && !JUNK.test(i.name || ""))
+    .filter(i => i && (i.img || i.brand))
     .map(decorate);
 }
 /* No `cache: "no-store"`. It forbids the browser from even WRITING the response to
