@@ -266,7 +266,7 @@
 },
 "lapstone": {
 "IL": {
-"shipsTo": true,
+"shipsTo": false,
 "leadTimeDays": null,
 "returnsSupported": null,
 "excludedBrands": []
@@ -377,6 +377,14 @@
 }
 },
 "packer": {
+"IL": {
+"shipsTo": true,
+"leadTimeDays": null,
+"returnsSupported": null,
+"excludedBrands": []
+}
+},
+"pettreekor": {
 "IL": {
 "shipsTo": true,
 "leadTimeDays": null,
