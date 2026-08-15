@@ -82,6 +82,10 @@ def main():
     registry = {s["url"].split("//")[1].split("/")[0].removeprefix("www."): s
                 for s in json.load(open(os.path.join(HERE, "registry.json"), encoding="utf-8"))}
     tiers = {k.lower(): v for k, v in CFG["brand_tiers"].items() if not k.startswith("_")}
+    ledger_path = os.path.join(HERE, "ledger.json")
+    if os.path.exists(ledger_path):   # ledger is the main tier source; config overrides win
+        ledger = json.load(open(ledger_path, encoding="utf-8"))["brands"]
+        tiers = {**{k.lower(): v["tier"] for k, v in ledger.items()}, **tiers}
 
     feed = []
     for it in items:
