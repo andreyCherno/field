@@ -63,8 +63,11 @@ def publish(identity, offers):
     manual = [o for o in offers if o.get("manual")]
     rows = ""
     for o in priced:
+        thumb = (f'<img src="{o["img"]}" alt="" loading="lazy" '
+                 'style="width:56px;height:56px;object-fit:cover;border:1px solid #111">'
+                 if o.get("img") else "")
         rows += (f'<a class="row" href="{o["url"]}" target="_blank" rel="noopener">'
-                 f'<span class="price">${landed(o["price"])}</span>'
+                 f'<span class="price">${landed(o["price"])}</span>{thumb}'
                  f'<span class="store">{o["store"]}<br><small>{o.get("title","")} · sticker ${o["price"]}</small></span>'
                  f'<span class="st {o.get("status","")}">{o.get("status","?")}</span></a>')
     for o in manual:

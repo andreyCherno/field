@@ -47,6 +47,16 @@
   .anchor{font:12px var(--mono);color:var(--dim);text-decoration:line-through}
   .off{display:inline-block;font:700 12px var(--mono);background:var(--acc);color:#fff;padding:2px 7px;margin-top:3px}
 
+  #huntform{display:flex;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+  #huntform input[type=text]{flex:1;min-width:220px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 12px;font-size:14px}
+  #huntform label{font-size:12px;color:var(--ink-soft);display:flex;gap:5px;align-items:center}
+  #huntform button{background:var(--acc);color:#fff;border:none;padding:9px 20px;font:700 14px var(--display);cursor:pointer}
+  #huntform button:disabled{opacity:.5}
+  #live{padding:10px 18px;border-bottom:1px solid var(--line);font:12px var(--mono);color:var(--ink-soft)}
+  #coverage{border-bottom:1px solid var(--line);padding:8px 18px 12px}
+  #coverage h3{font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0}
+  .cov{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);padding:3px 8px;margin:3px 4px 3px 0;font:11px var(--mono)}
+  .cov b.ok{color:var(--good)} .cov b.no{color:var(--dim)} .cov b.err{color:#b0433a}
   .empty{padding:48px 18px;text-align:center}
   .empty h2{font:700 20px var(--display);margin:0 0 8px}
   .empty p{color:var(--ink-soft);max-width:52ch;margin:6px auto;line-height:1.6;font-size:14px}
@@ -70,13 +80,55 @@
     <a href="../shelf/">← shelf</a>
     <a href="../index.html">field home</a>
   </nav>
+
+  <form id="huntform" dir="rtl">
+    <input type="text" id="q" placeholder="מה לצוד? שם מוצר או מק״ט — salomon xt-6 / DV1748-101">
+    <label><input type="checkbox" id="deep"> חיפוש עמוק (LLM על חנויות קשות)</label>
+    <button type="submit" id="go">צא לצוד</button>
+  </form>
+  <div id="live" hidden></div>
+  <div id="coverage" hidden></div>
+
   <div id="hunts"></div>
   <div id="feed"></div>
   <footer>score = discount vs anchor × brand tier × drop bonus · gates: tier A/B only, size in stock, budget cap, ≥30% real discount</footer>
 </div></div>
 <script>
+// The hunt form talks to serve.py's /api/hunt. Under plain http.server it
+// fails gracefully with a hint to use START-HUNTER / serve.py.
+const F=id=>document.getElementById(id);
+F("huntform").onsubmit=async e=>{
+  e.preventDefault();
+  const q=F("q").value.trim(); if(!q) return;
+  F("go").disabled=true; F("live").hidden=false; F("coverage").hidden=true;
+  F("live").textContent="צד… עובר חנות-חנות, זה לוקח עד שתי דקות ⏳";
+  try{
+    const r=await fetch("/api/hunt",{method:"POST",
+      headers:{"content-type":"application/json"},
+      body:JSON.stringify({query:q,deep:F("deep").checked})});
+    if(r.status===404) throw new Error("השרת הפשוט לא יודע לצוד — הפעל דרך START-HUNTER.command או: python3 hunter/serve.py");
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||r.status);
+    const id=d.identity, priced=d.offers.filter(o=>o.price).length;
+    F("live").innerHTML=`זוהה: <b>${id.brand||""} ${id.product||id.query}</b>`+
+      (id.sku?` · מק״ט ${id.sku}`:"")+` · ${priced} הצעות מחיר → <a href="${d.page}">לדף הפריט המלא</a>`;
+    F("coverage").hidden=false;
+    F("coverage").innerHTML="<h3>איפה חיפשתי</h3>"+d.report.map(s=>{
+      const b=s.error&&s.error.startsWith("skipped")?`<b class="no">עמוק בלבד</b>`
+            :s.error?`<b class="err">שגיאה: ${s.error}</b>`
+            :s.hits?`<b class="ok">✓ ${s.hits} תוצאות</b>`
+            :s.method==="search-url"?`<b class="no">קישור ידני</b>`:`<b class="no">לא נמצא</b>`;
+      return `<span class="cov">${s.store} ${b}</span>`;
+    }).join("")+`<div style="font:11px var(--mono);color:var(--dim);margin-top:6px">
+      להוסיף חנות: קובץ חדש ב-hunter/playbooks/ (העתק דוגמה קיימת ושנה domain) — או בקש מ-Claude</div>`;
+    loadHunts();
+  }catch(err){F("live").textContent="✗ "+err.message}
+  F("go").disabled=false;
+};
+
 // Targeted hunts (hunt.py runs) — listed above the daily feed when any exist.
-fetch("items/index.json").then(r=>r.ok?r.json():[]).then(hunts=>{
+function loadHunts(){
+fetch("items/index.json",{cache:"no-store"}).then(r=>r.ok?r.json():[]).then(hunts=>{
   if(!hunts.length) return;
   document.getElementById("hunts").innerHTML =
     `<div class="head" style="border-top:1px solid var(--line)"><span class="brandmark">hunts</span>
@@ -90,6 +142,8 @@ fetch("items/index.json").then(r=>r.ok?r.json():[]).then(hunts=>{
         <span class="nums">${h.cheapest_landed?`<div class="landed">$${h.cheapest_landed}</div><div class="anchor">cheapest landed</div>`:""}</span>
       </a>`).join("");
 }).catch(()=>{});
+}
+loadHunts();
 const feedEl = document.getElementById("feed");
 function empty(msg, sub){
   Promise.all([
