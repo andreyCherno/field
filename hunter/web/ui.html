@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunter</title>
+<style>
+:root{--bg:#f0eee9;--panel:#e8e5dc;--line:#111;--ink:#111;--soft:#555;--dim:#888;--acc:#e8442e;--good:#156b3b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:14px}
+.card{border:1px solid var(--line);background:var(--bg);box-shadow:0 2px 8px rgba(30,25,15,.06)}
+.head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.head b{font-size:18px;letter-spacing:-.02em}.head b i{color:var(--acc);font-style:normal}
+.head small{color:var(--soft)}
+.gear{margin-inline-start:auto;cursor:pointer;background:none;border:1px solid var(--line);padding:4px 10px;font-size:12px}
+form{display:flex;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+input[type=text],input[type=password]{flex:1;min-width:200px;border:1px solid var(--line);background:#fff;padding:10px 12px;font-size:15px}
+button.go{background:var(--acc);color:#fff;border:none;padding:10px 22px;font-weight:700;font-size:15px;cursor:pointer}
+label.deep{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--soft)}
+.settings{padding:14px 18px;border-bottom:1px solid var(--line);background:var(--panel)}
+.settings p{margin:4px 0 10px;font-size:13px;color:var(--soft);line-height:1.5}
+.settings .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.status{padding:12px 18px;font:12px ui-monospace,monospace;color:var(--soft)}
+.offer{display:flex;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.offer:hover{background:var(--panel)}
+.price{font-weight:800;font-size:18px;min-width:88px;direction:ltr;text-align:left}
+.price small{display:block;font-weight:400;font-size:11px;color:var(--dim)}
+.info{flex:1;min-width:0}.info b{font-size:14px}
+.info .t{font-size:13px;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font:600 9px ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);padding:2px 6px}
+.tag.manual{color:var(--dim)}
+.err{padding:14px 18px;color:#b0433a;font-size:14px}
+footer{padding:10px 18px;font:11px ui-monospace,monospace;color:var(--dim)}
+[hidden]{display:none!important}
+.spin{display:inline-block;animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <div class="head"><b>field<i>/hunter</i></b><small>מוצאים איפה הכי זול, עד הדלת</small>
+    <button class="gear" id="gear">⚙ הגדרות</button></div>
+
+  <div class="settings" id="settings" hidden>
+    <p>הצייד משתמש במפתח Anthropic <b>שלך</b> — הוא נשמר רק בדפדפן הזה ומשמש רק לבקשות שלך.
+       משיגים מפתח ב-console.anthropic.com (עלות שימוש טיפוסית: סנטים בודדים לחיפוש).</p>
+    <div class="row"><input type="password" id="key" placeholder="sk-ant-..." dir="ltr"></div>
+    <div class="row"><input type="password" id="code" placeholder="קוד גישה (אם קיבלת)" dir="ltr">
+      <button class="go" id="save">שמירה</button></div>
+  </div>
+
+  <form id="f">
+    <input type="text" id="q" placeholder="שם מוצר או מק״ט — למשל: salomon xt-6 או DV1748-101" autofocus>
+    <label class="deep"><input type="checkbox" id="deep">חיפוש עמוק</label>
+    <button class="go" id="go">חפש</button>
+  </form>
+
+  <div class="status" id="status" hidden></div>
+  <div id="results"></div>
+  <footer>המחיר הגדול = עד הדלת בישראל (כולל מדרגות מס יבוא אישי) · מחיר מדבקה מתחתיו</footer>
+</div></div>
+<script>
+const $=id=>document.getElementById(id);
+const store={get k(){return localStorage.getItem("hk")||""},set k(v){localStorage.setItem("hk",v)},
+             get c(){return localStorage.getItem("hc")||""},set c(v){localStorage.setItem("hc",v)}};
+$("gear").onclick=()=>{$("settings").hidden=!$("settings").hidden;$("key").value=store.k;$("code").value=store.c};
+$("save").onclick=e=>{e.preventDefault();store.k=$("key").value.trim();store.c=$("code").value.trim();$("settings").hidden=true};
+if(!store.k)$("settings").hidden=false;
+
+$("f").onsubmit=async e=>{
+  e.preventDefault();
+  const q=$("q").value.trim(); if(!q)return;
+  if(!store.k){$("settings").hidden=false;return}
+  $("results").innerHTML="";$("status").hidden=false;
+  $("status").innerHTML='<span class="spin">◌</span> מזהה את המוצר ועובר על החנויות… (עד דקה)';
+  $("go").disabled=true;
+  try{
+    const r=await fetch("/api/hunt",{method:"POST",
+      headers:{"content-type":"application/json","x-anthropic-key":store.k,"x-access-code":store.c},
+      body:JSON.stringify({query:q,deep:$("deep").checked})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||r.status);
+    const id=d.identity;
+    $("status").textContent=`${id.brand||""} ${id.product||id.query}`+(id.sku?` · מק״ט ${id.sku}`:"")+` · נסרקו ${d.stores_searched} חנויות`;
+    const priced=d.offers.filter(o=>o.price),manual=d.offers.filter(o=>o.manual);
+    $("results").innerHTML=
+      priced.map(o=>`<a class="offer" href="${o.url}" target="_blank" rel="noopener">
+        <span class="price">$${o.landed}<small>מדבקה $${o.price}</small></span>
+        <span class="info"><b>${o.store}</b><div class="t">${o.title||""}</div></span>
+        <span class="tag">הזמנה ↗</span></a>`).join("")+
+      manual.map(o=>`<a class="offer" href="${o.url}" target="_blank" rel="noopener">
+        <span class="price">?</span>
+        <span class="info"><b>${o.store}</b><div class="t">פתח את החיפוש בחנות</div></span>
+        <span class="tag manual">ידני ↗</span></a>`).join("")||
+      '<div class="err">לא נמצא כלום — נסה חיפוש עמוק או ניסוח אחר</div>';
+  }catch(err){$("status").hidden=true;$("results").innerHTML=`<div class="err">שגיאה: ${err.message}</div>`}
+  $("go").disabled=false;
+};
+</script>
+</body>
+</html>
