@@ -1,0 +1,11 @@
+{
+  "_doc": "One playbook per store: how to search it. The agent reads this before entering the store, logs what worked to data/attempts.jsonl, and learn.py rewrites the playbook from that log. Fields:",
+  "domain": "store domain, e.g. endclothing.com",
+  "method": "shopify-suggest | search-url | llm-parse",
+  "search_url": "template with {q}, used by search-url and llm-parse, e.g. https://x.com/search?q={q}",
+  "accepts_sku": "true if searching the raw style code works in this store",
+  "query_tips": "free text the agent reads, e.g. 'strip hyphens from Nike SKUs here'",
+  "price_selector": "for llm-parse: hint where the price lives (CSS-ish or prose)",
+  "rate_limit_s": "seconds to wait between requests to this store",
+  "stats": {"attempts": 0, "hits": 0, "last_success": null}
+}

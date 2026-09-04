@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunter — today's catch</title>
+<meta name="description" content="The deal hunter's daily feed: known brands only, sized, priced to the door, ranked against their real price history.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap');
+  :root{
+    --bg:#f0eee9; --panel:#e8e5dc; --line:#111111;
+    --ink:#111111; --ink-soft:#555555; --dim:#888888;
+    --acc:#e8442e; --good:#156b3b;
+    --font:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --display:'Space Grotesk',var(--font);
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+  a{color:var(--ink)}
+  .wrap{max-width:1000px;margin:0 auto;padding:14px}
+  .card{border:1px solid var(--line);background:var(--bg);box-shadow:0 2px 8px rgba(30,25,15,.06)}
+  .head{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 14px;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .brandmark{font:800 17px var(--display);letter-spacing:-.02em}
+  .brandmark b{color:var(--acc)}
+  .tag{flex:1;min-width:180px;font:13px var(--font);color:var(--ink-soft)}
+  .stamp{font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+  nav{display:flex;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  nav a{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
+        border:1px solid var(--line);padding:5px 10px}
+  nav a:hover{background:var(--panel)}
+
+  .deal{display:grid;grid-template-columns:64px 96px 1fr auto;gap:0 14px;align-items:center;
+        padding:14px 18px;border-bottom:1px solid var(--line);text-decoration:none}
+  .deal:hover{background:var(--panel)}
+  .rank{font:800 26px var(--display);color:var(--dim)}
+  .deal:first-of-type .rank{color:var(--acc)}
+  .thumb{width:96px;height:96px;object-fit:cover;border:1px solid var(--line);background:var(--panel)}
+  .info{min-width:0}
+  .brand{font:700 14px var(--display)}
+  .tier{font:600 9px var(--mono);letter-spacing:.12em;border:1px solid var(--line);padding:1px 5px;margin-inline-start:6px;vertical-align:2px}
+  .title{font:13px var(--font);color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .why{font:11px var(--mono);color:var(--dim);margin-top:4px}
+  .why .drop{color:var(--good);font-weight:600}
+  .nums{text-align:right;font-variant-numeric:tabular-nums}
+  .landed{font:800 20px var(--display)}
+  .anchor{font:12px var(--mono);color:var(--dim);text-decoration:line-through}
+  .off{display:inline-block;font:700 12px var(--mono);background:var(--acc);color:#fff;padding:2px 7px;margin-top:3px}
+
+  #huntform{display:flex;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+  #huntform input[type=text]{flex:1;min-width:220px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 12px;font-size:14px}
+  #huntform label{font-size:12px;color:var(--ink-soft);display:flex;gap:5px;align-items:center}
+  #huntform button{background:var(--acc);color:#fff;border:none;padding:9px 20px;font:700 14px var(--display);cursor:pointer}
+  #huntform button:disabled{opacity:.5}
+  #live{padding:10px 18px;border-bottom:1px solid var(--line);font:12px var(--mono);color:var(--ink-soft)}
+  #coverage{border-bottom:1px solid var(--line);padding:8px 18px 12px}
+  #coverage h3{font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0}
+  .cov{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);padding:3px 8px;margin:3px 4px 3px 0;font:11px var(--mono)}
+  .cov b.ok{color:var(--good)} .cov b.no{color:var(--dim)} .cov b.err{color:#b0433a}
+  .empty{padding:48px 18px;text-align:center}
+  .empty h2{font:700 20px var(--display);margin:0 0 8px}
+  .empty p{color:var(--ink-soft);max-width:52ch;margin:6px auto;line-height:1.6;font-size:14px}
+  .empty code{font:12px var(--mono);background:var(--panel);border:1px solid var(--line);padding:2px 6px}
+  .stats{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+  .stat{border:1px solid var(--line);padding:10px 16px;min-width:110px}
+  .stat b{display:block;font:800 22px var(--display)}
+  .stat span{font:600 9px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+  footer{padding:12px 18px;font:11px var(--mono);color:var(--dim)}
+  @media (max-width:640px){.deal{grid-template-columns:34px 64px 1fr auto}.thumb{width:64px;height:64px}.rank{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <div class="head">
+    <span class="brandmark">field<b>/hunter.</b></span>
+    <span class="tag">Today's catch — known brands, your size, priced to the door, measured against their real history.</span>
+    <span class="stamp" id="generated">no run yet</span>
+  </div>
+  <nav>
+    <a href="../shelf/">← shelf</a>
+    <a href="../index.html">field home</a>
+  </nav>
+
+  <form id="huntform" dir="rtl">
+    <input type="text" id="q" placeholder="מה לצוד? שם מוצר או מק״ט — salomon xt-6 / DV1748-101">
+    <label><input type="checkbox" id="deep"> חיפוש עמוק (LLM על חנויות קשות)</label>
+    <button type="submit" id="go">צא לצוד</button>
+    <button type="button" id="gear" title="הגדרות" style="background:none;border:1px solid var(--line);color:var(--ink);padding:8px 12px;cursor:pointer">⚙</button>
+  </form>
+  <div id="settings" dir="rtl" hidden style="padding:12px 18px;border-bottom:1px solid var(--line);background:var(--panel)">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+      <label style="font-size:12px">המידות שלי<br><input id="s_sizes" type="text" style="border:1px solid var(--line);padding:6px 8px" placeholder="M, L"></label>
+      <label style="font-size:12px">תקרה לחולצה ($)<br><input id="s_shirt" type="number" style="border:1px solid var(--line);padding:6px 8px;width:90px"></label>
+      <label style="font-size:12px">תקרה כללית ($)<br><input id="s_def" type="number" style="border:1px solid var(--line);padding:6px 8px;width:90px"></label>
+      <label style="font-size:12px">הנחה מינימלית (%)<br><input id="s_disc" type="number" style="border:1px solid var(--line);padding:6px 8px;width:90px"></label>
+      <button id="s_save" style="background:var(--accent);color:var(--accent-ink);border:none;padding:8px 18px;font-weight:700;cursor:pointer">שמירה</button>
+    </div>
+  </div>
+  <div id="live" hidden></div>
+  <div id="coverage" hidden></div>
+
+  <div id="hunts"></div>
+  <div id="feed"></div>
+  <footer>score = discount vs anchor × brand tier × drop bonus · gates: tier A/B only, size in stock, budget cap, ≥30% real discount</footer>
+</div></div>
+<script>
+// The hunt form talks to serve.py's /api/hunt. Under plain http.server it
+// fails gracefully with a hint to use START-HUNTER / serve.py.
+const F=id=>document.getElementById(id);
+F("gear").onclick=async()=>{
+  const p=F("settings"); p.hidden=!p.hidden;
+  if(!p.hidden){try{
+    const c=await (await fetch("/api/config")).json();
+    F("s_sizes").value=(c.sizes||[]).join(", ");
+    F("s_shirt").value=c.budget_caps_usd?.shirt??"";
+    F("s_def").value=c.budget_caps_usd?.default??"";
+    F("s_disc").value=Math.round((c.min_discount??0.3)*100);
+  }catch(e){}}
+};
+F("s_save").onclick=async()=>{
+  const caps={shirt:+F("s_shirt").value||25,"t-shirt":+F("s_shirt").value||25,default:+F("s_def").value||60};
+  await fetch("/api/config",{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({sizes:F("s_sizes").value.split(",").map(s=>s.trim()).filter(Boolean),
+      budget_caps_usd:caps,min_discount:(+F("s_disc").value||30)/100})});
+  F("settings").hidden=true;
+};
+F("huntform").onsubmit=async e=>{
+  e.preventDefault();
+  const q=F("q").value.trim(); if(!q) return;
+  F("go").disabled=true; F("live").hidden=false; F("coverage").hidden=true;
+  F("live").textContent="צד… עובר חנות-חנות, זה לוקח עד שתי דקות ⏳";
+  try{
+    const r=await fetch("/api/hunt",{method:"POST",
+      headers:{"content-type":"application/json"},
+      body:JSON.stringify({query:q,deep:F("deep").checked})});
+    if(r.status===404) throw new Error("השרת הפשוט לא יודע לצוד — הפעל דרך START-HUNTER.command או: python3 hunter/serve.py");
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||r.status);
+    const id=d.identity, priced=d.offers.filter(o=>o.price).length;
+    F("live").innerHTML=`זוהה: <b>${id.brand||""} ${id.product||id.query}</b>`+
+      (id.sku?` · מק״ט ${id.sku}`:"")+` · ${priced} הצעות מחיר → <a href="${d.page}">לדף הפריט המלא</a>`;
+    F("coverage").hidden=false;
+    F("coverage").innerHTML="<h3>איפה חיפשתי</h3>"+d.report.map(s=>{
+      const b=s.error&&s.error.startsWith("skipped")?`<b class="no">עמוק בלבד</b>`
+            :s.error?`<b class="err">שגיאה: ${s.error}</b>`
+            :s.hits?`<b class="ok">✓ ${s.hits} תוצאות</b>`
+            :s.method==="search-url"?`<b class="no">קישור ידני</b>`:`<b class="no">לא נמצא</b>`;
+      return `<span class="cov">${s.store} ${b}</span>`;
+    }).join("")+`<div style="font:11px var(--mono);color:var(--dim);margin-top:6px">
+      להוסיף חנות: קובץ חדש ב-hunter/playbooks/ (העתק דוגמה קיימת ושנה domain) — או בקש מ-Claude</div>`;
+    loadHunts();
+  }catch(err){F("live").textContent="✗ "+err.message}
+  F("go").disabled=false;
+};
+
+// Targeted hunts (hunt.py runs) — listed above the daily feed when any exist.
+function loadHunts(){
+fetch("items/index.json",{cache:"no-store"}).then(r=>r.ok?r.json():[]).then(hunts=>{
+  if(!hunts.length) return;
+  document.getElementById("hunts").innerHTML =
+    `<div class="head" style="border-top:1px solid var(--line)"><span class="brandmark">hunts</span>
+     <span class="tag">targeted searches — one page per item, every store that has it</span></div>` +
+    hunts.map(h=>`
+      <a class="deal" href="items/${h.slug}.html">
+        <span class="rank">→</span><span class="thumb"></span>
+        <span class="info"><span class="brand">${h.title}</span>
+          <div class="title">${h.sku||""}</div>
+          <div class="why">hunted ${h.hunted} · ${h.offers} priced offers · ${h.manual} manual links</div></span>
+        <span class="nums">${h.cheapest_landed?`<div class="landed">$${h.cheapest_landed}</div><div class="anchor">cheapest landed</div>`:""}</span>
+      </a>`).join("");
+}).catch(()=>{});
+}
+loadHunts();
+const feedEl = document.getElementById("feed");
+function empty(msg, sub){
+  Promise.all([
+    fetch("registry.json").then(r=>r.json()).catch(()=>[]),
+    fetch("ledger.json").then(r=>r.json()).catch(()=>({brands:{}})),
+  ]).then(([reg, led])=>{
+    const tiers = Object.values(led.brands||{});
+    feedEl.innerHTML = `<div class="empty">
+      <h2>${msg}</h2><p>${sub}</p>
+      <div class="stats">
+        <div class="stat"><b>${reg.length||0}</b><span>shops in registry</span></div>
+        <div class="stat"><b>${tiers.length}</b><span>brands rated</span></div>
+        <div class="stat"><b>${tiers.filter(t=>t.tier==="A").length}</b><span>tier A — buy blind</span></div>
+      </div></div>`;
+  });
+}
+fetch("data/feed.json")
+  .then(r=>{ if(!r.ok) throw 0; return r.json(); })
+  .then(d=>{
+    document.getElementById("generated").textContent = "run " + (d.generated||"?") + " · " + d.candidates + " candidates";
+    if(!d.feed || !d.feed.length){ empty("The hunt came back empty",
+      "Every item was stopped at a gate — wrong tier, wrong size, over budget, or under the discount bar. That is the system working, not failing."); return; }
+    feedEl.innerHTML = d.feed.map((x,i)=>`
+      <a class="deal" href="${x.url}" target="_blank" rel="noopener">
+        <span class="rank">${String(i+1).padStart(2,"0")}</span>
+        ${x.img?`<img class="thumb" src="${x.img}" alt="" loading="lazy">`:`<span class="thumb"></span>`}
+        <span class="info">
+          <span class="brand">${x.brand}<span class="tier">${x.tier}</span></span>
+          <div class="title">${x.title} · ${x.size}</div>
+          <div class="why">anchor $${x.anchor} @${x.shop}${x.dropped_now?` · <span class="drop">↓ dropped since last run</span>`:""}</div>
+        </span>
+        <span class="nums">
+          <div class="landed">$${x.landed}</div>
+          <div class="anchor">$${x.anchor}</div>
+          <div class="off">−${Math.round(x.discount*100)}%</div>
+        </span>
+      </a>`).join("");
+  })
+  .catch(()=> empty("No feed yet — the hunter hasn't run",
+    "On the machine that runs the pipeline: <code>python3 check_platforms.py</code> once, then <code>python3 shopify_adapter.py</code> and <code>python3 score.py</code> daily. The first run creates <code>data/feed.json</code> and this page comes alive."));
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+ "sizes": [
+  "M",
+  "L",
+  "Medium",
+  "Large"
+ ],
+ "budget_caps_usd": {
+  "shirt": 25,
+  "t-shirt": 25,
+  "default": 60
+ },
+ "min_discount": 0.3,
+ "compare_at_trust": 0.85,
+ "compare_at_max_ratio": 6.0,
+ "top_n": 10,
+ "vat_rate": 0.18,
+ "tax_free_under_usd": 75,
+ "customs_over_usd": 500,
+ "brand_tiers": {
+  "_comment": "A = buy blind, B = buy after checking, anything absent = ignored. Seeded later by the brand ledger step.",
+  "Carhartt WIP": "A",
+  "Stone Island": "A",
+  "Our Legacy": "A"
+ },
+ "llm": {
+  "daily_cap_usd": 1.5,
+  "models": {
+   "parse": "claude-haiku-4-5",
+   "reason": "claude-sonnet-5"
+  }
+ }
+}

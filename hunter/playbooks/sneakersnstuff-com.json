@@ -1,0 +1,13 @@
+{
+ "domain": "sneakersnstuff.com",
+ "method": "search-url",
+ "search_url": "https://sneakersnstuff.com/search?q={q}",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ }
+}
