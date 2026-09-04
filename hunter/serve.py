@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
-VERSION = 5   # bump on every server change; the UI warns when it sees a stale server
+VERSION = 6   # bump on every server change; the UI warns when it sees a stale server
 lock = threading.Lock()   # one hunt at a time — the stores thank us
 
 class Handler(SimpleHTTPRequestHandler):
@@ -94,11 +94,16 @@ class Handler(SimpleHTTPRequestHandler):
             from hunt import publish, landed
             # a previous hunt may still be finishing — tell the user instead of
             # silently hanging, and abort it fast when its client is gone
+            print(f"[hunt] start: {query!r} deep={deep}", flush=True)
             if not lock.acquire(timeout=0.1):
                 emit({"type": "status", "message": "ציד קודם עדיין מסיים — ממתין לתור…"})
+                print("[hunt] waiting for lock", flush=True)
                 lock.acquire()
             try:
+                emit({"type": "status", "message": "מזהה את המוצר (שרת)…"})
+                print("[hunt] identifying", flush=True)
                 identity = identify(query)
+                print(f"[hunt] identity: {identity}", flush=True)
                 if not emit({"type": "identity", "identity": identity}):
                     raise ClientGone()
                 all_offers = []
@@ -117,7 +122,9 @@ class Handler(SimpleHTTPRequestHandler):
                             o["usd"] = to_usd(o["price"], o.get("currency"))
                             o["landed"] = landed(o["usd"], o.get("currency"))
                     all_offers.extend(store_offers)
+                    print(f"[hunt] {row['store']}: hits={row['hits']} err={row['error']}", flush=True)
                     if not emit({"type": "store", "report": row, "offers": store_offers}):
+                        print("[hunt] client gone — aborting", flush=True)
                         raise ClientGone()   # browser left — stop hunting, free the lock
 
                 run_search(identity, deep=deep, skip=skip, on_store=on_store)

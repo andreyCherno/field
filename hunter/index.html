@@ -121,7 +121,7 @@
 // The hunt form talks to serve.py's /api/hunt. Under plain http.server it
 // fails gracefully with a hint to use START-HUNTER / serve.py.
 const F=id=>document.getElementById(id);
-const UI_NEEDS_SERVER=5;   // keep equal to serve.py VERSION
+const UI_NEEDS_SERVER=6;   // keep equal to serve.py VERSION
 fetch("/api/version").then(r=>r.json()).then(v=>{
   let warn="";
   if((v.version||0)<UI_NEEDS_SERVER)
