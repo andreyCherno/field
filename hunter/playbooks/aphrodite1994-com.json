@@ -1,0 +1,12 @@
+{
+ "domain": "aphrodite1994.com",
+ "method": "shopify-suggest",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ }
+}

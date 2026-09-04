@@ -1,0 +1,13 @@
+{
+ "domain": "razili.co.il",
+ "method": "search-url",
+ "search_url": "https://razili.co.il/search?q={q}",
+ "accepts_sku": false,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ }
+}

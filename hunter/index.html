@@ -85,7 +85,17 @@
     <input type="text" id="q" placeholder="מה לצוד? שם מוצר או מק״ט — salomon xt-6 / DV1748-101">
     <label><input type="checkbox" id="deep"> חיפוש עמוק (LLM על חנויות קשות)</label>
     <button type="submit" id="go">צא לצוד</button>
+    <button type="button" id="gear" title="הגדרות" style="background:none;border:1px solid var(--line);color:var(--ink);padding:8px 12px;cursor:pointer">⚙</button>
   </form>
+  <div id="settings" dir="rtl" hidden style="padding:12px 18px;border-bottom:1px solid var(--line);background:var(--panel)">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+      <label style="font-size:12px">המידות שלי<br><input id="s_sizes" type="text" style="border:1px solid var(--line);padding:6px 8px" placeholder="M, L"></label>
+      <label style="font-size:12px">תקרה לחולצה ($)<br><input id="s_shirt" type="number" style="border:1px solid var(--line);padding:6px 8px;width:90px"></label>
+      <label style="font-size:12px">תקרה כללית ($)<br><input id="s_def" type="number" style="border:1px solid var(--line);padding:6px 8px;width:90px"></label>
+      <label style="font-size:12px">הנחה מינימלית (%)<br><input id="s_disc" type="number" style="border:1px solid var(--line);padding:6px 8px;width:90px"></label>
+      <button id="s_save" style="background:var(--accent);color:var(--accent-ink);border:none;padding:8px 18px;font-weight:700;cursor:pointer">שמירה</button>
+    </div>
+  </div>
   <div id="live" hidden></div>
   <div id="coverage" hidden></div>
 
@@ -97,6 +107,23 @@
 // The hunt form talks to serve.py's /api/hunt. Under plain http.server it
 // fails gracefully with a hint to use START-HUNTER / serve.py.
 const F=id=>document.getElementById(id);
+F("gear").onclick=async()=>{
+  const p=F("settings"); p.hidden=!p.hidden;
+  if(!p.hidden){try{
+    const c=await (await fetch("/api/config")).json();
+    F("s_sizes").value=(c.sizes||[]).join(", ");
+    F("s_shirt").value=c.budget_caps_usd?.shirt??"";
+    F("s_def").value=c.budget_caps_usd?.default??"";
+    F("s_disc").value=Math.round((c.min_discount??0.3)*100);
+  }catch(e){}}
+};
+F("s_save").onclick=async()=>{
+  const caps={shirt:+F("s_shirt").value||25,"t-shirt":+F("s_shirt").value||25,default:+F("s_def").value||60};
+  await fetch("/api/config",{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({sizes:F("s_sizes").value.split(",").map(s=>s.trim()).filter(Boolean),
+      budget_caps_usd:caps,min_discount:(+F("s_disc").value||30)/100})});
+  F("settings").hidden=true;
+};
 F("huntform").onsubmit=async e=>{
   e.preventDefault();
   const q=F("q").value.trim(); if(!q) return;

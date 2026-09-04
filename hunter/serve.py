@@ -32,6 +32,9 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        if self.path == "/api/config":
+            return self.send_json(json.load(open(os.path.join(HERE, "config.json"),
+                                                 encoding="utf-8")))
         if self.path == "/api/stores":
             stores = []
             for p in sorted(glob.glob(os.path.join(HERE, "playbooks", "*.json"))):
@@ -43,7 +46,18 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(stores)
         return super().do_GET()
 
+    EDITABLE = {"sizes", "budget_caps_usd", "min_discount", "top_n"}
+
     def do_POST(self):
+        if self.path == "/api/config":
+            length = int(self.headers.get("Content-Length", 0))
+            changes = json.loads(self.rfile.read(length))
+            path = os.path.join(HERE, "config.json")
+            cfg = json.load(open(path, encoding="utf-8"))
+            cfg.update({k: v for k, v in changes.items() if k in self.EDITABLE})
+            json.dump(cfg, open(path, "w", encoding="utf-8"),
+                      ensure_ascii=False, indent=1)
+            return self.send_json(cfg)
         if self.path != "/api/hunt":
             return self.send_json({"error": "not found"}, 404)
         try:

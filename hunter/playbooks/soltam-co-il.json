@@ -1,0 +1,13 @@
+{
+ "domain": "soltam.co.il",
+ "method": "search-url",
+ "search_url": "https://soltam.co.il/?s={q}&post_type=product",
+ "accepts_sku": false,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ }
+}

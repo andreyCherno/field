@@ -1,0 +1,13 @@
+{
+ "domain": "outletim.co.il",
+ "method": "search-url",
+ "search_url": "https://outletim.co.il/?s={q}",
+ "accepts_sku": false,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ }
+}
