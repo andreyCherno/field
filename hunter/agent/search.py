@@ -111,10 +111,14 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None):
                     hits = [h for h in run_llm_parse(pb, q) if h.get("price")]
                     for h in hits:
                         h["store"] = pb["domain"]
-                else:  # search-url: no parser — record the URL for the browser
-                    hits = [{"store": pb["domain"], "title": None, "price": None,
-                             "url": pb["search_url"].format(q=urllib.parse.quote(q)),
-                             "manual": True}]
+                else:  # search-url: open it in a real browser like a human would
+                    url = pb["search_url"].format(q=urllib.parse.quote(q))
+                    from agent import browser
+                    if browser.available():
+                        hits = browser.search(pb, url, q, deep=deep)
+                    if not hits:   # no browser installed, or page gave nothing
+                        hits = [{"store": pb["domain"], "title": None, "price": None,
+                                 "url": url, "manual": True}]
             except Exception as e:
                 err = type(e).__name__
             log_attempt({"store": pb["domain"], "method": method, "query": q,
