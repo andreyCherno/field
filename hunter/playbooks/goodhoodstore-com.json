@@ -8,5 +8,6 @@
   "attempts": 0,
   "hits": 0,
   "last_success": null
- }
+ },
+ "currency": "GBP"
 }

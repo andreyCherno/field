@@ -121,7 +121,7 @@
 // The hunt form talks to serve.py's /api/hunt. Under plain http.server it
 // fails gracefully with a hint to use START-HUNTER / serve.py.
 const F=id=>document.getElementById(id);
-const UI_NEEDS_SERVER=4;   // keep equal to serve.py VERSION
+const UI_NEEDS_SERVER=5;   // keep equal to serve.py VERSION
 fetch("/api/version").then(r=>r.json()).then(v=>{
   let warn="";
   if((v.version||0)<UI_NEEDS_SERVER)
@@ -176,7 +176,7 @@ function addOffers(offers){
     const a=document.createElement("a");
     a.className="g"; a.href=o.url; a.target="_blank"; a.rel="noopener";
     a.innerHTML=(o.img?`<img src="${o.img}" alt="" loading="lazy">`:"")+
-      `<div class="gi"><div class="gp">$${o.landed}<small>מדבקה $${o.price}</small></div>
+      `<div class="gi"><div class="gp">$${o.landed}<small>${o.price} ${o.currency||"USD"}</small></div>
        <div class="gs">${o.store}</div><div class="gt">${o.title||""}</div></div>`;
     // cheapest-first insertion
     const kids=[...g.children];

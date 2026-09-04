@@ -21,10 +21,12 @@ from agent.verify import verify_all
 
 CFG = json.load(open(os.path.join(HERE, "config.json"), encoding="utf-8"))
 
-def landed(price):
+def landed(price, currency=None):
+    """USD price -> to-the-door price. An ILS price came from an Israeli shop:
+    VAT is already inside it and no import steps apply."""
     if price is None:
         return None
-    if price <= CFG["tax_free_under_usd"]:
+    if (currency or "").upper() == "ILS" or price <= CFG["tax_free_under_usd"]:
         return round(price, 2)
     if price <= CFG["customs_over_usd"]:
         return round(price * (1 + CFG["vat_rate"]), 2)
@@ -59,16 +61,28 @@ def publish(identity, offers):
     os.makedirs(items_dir, exist_ok=True)
     title = " ".join(filter(None, [identity.get("brand"), identity.get("product")])) or identity["query"]
     slug = slugify(identity.get("sku") or title)
-    priced = sorted([o for o in offers if o.get("price")], key=lambda o: o["price"])
-    manual = [o for o in offers if o.get("manual")]
+    from agent.fx import to_usd
+    seen = set()
+    priced, manual = [], []
+    for o in offers:   # dedupe by product URL across query variants
+        if o["url"] in seen:
+            continue
+        seen.add(o["url"])
+        if o.get("price"):
+            o["usd"] = o.get("usd") or to_usd(o["price"], o.get("currency"))
+            priced.append(o)
+        elif o.get("manual"):
+            manual.append(o)
+    priced.sort(key=lambda o: o["usd"])
     rows = ""
     for o in priced:
         thumb = (f'<img src="{o["img"]}" alt="" loading="lazy" '
                  'style="width:56px;height:56px;object-fit:cover;border:1px solid #111">'
                  if o.get("img") else "")
         rows += (f'<a class="row" href="{o["url"]}" target="_blank" rel="noopener">'
-                 f'<span class="price">${landed(o["price"])}</span>{thumb}'
-                 f'<span class="store">{o["store"]}<br><small>{o.get("title","")} · sticker ${o["price"]}</small></span>'
+                 f'<span class="price">${landed(o["usd"], o.get("currency"))}</span>{thumb}'
+                 f'<span class="store">{o["store"]}<br><small>{o.get("title","")} · '
+                 f'{o["price"]} {o.get("currency","USD")}</small></span>'
                  f'<span class="st {o.get("status","")}">{o.get("status","?")}</span></a>')
     for o in manual:
         rows += (f'<a class="row" href="{o["url"]}" target="_blank" rel="noopener">'
@@ -85,7 +99,7 @@ def publish(identity, offers):
     idx = [e for e in idx if e["slug"] != slug]
     idx.insert(0, {"slug": slug, "title": title, "sku": identity.get("sku"),
                    "hunted": ts, "offers": len(priced), "manual": len(manual),
-                   "cheapest_landed": landed(priced[0]["price"]) if priced else None})
+                   "cheapest_landed": landed(priced[0]["usd"], priced[0].get("currency")) if priced else None})
     json.dump(idx, open(idx_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return path
 

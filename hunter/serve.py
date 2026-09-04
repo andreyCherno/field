@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
-VERSION = 4   # bump on every server change; the UI warns when it sees a stale server
+VERSION = 5   # bump on every server change; the UI warns when it sees a stale server
 lock = threading.Lock()   # one hunt at a time — the stores thank us
 
 class Handler(SimpleHTTPRequestHandler):
@@ -103,11 +103,19 @@ class Handler(SimpleHTTPRequestHandler):
                     raise ClientGone()
                 all_offers = []
 
+                from agent.fx import to_usd
+
                 def on_store(row, store_offers):
                     for o in store_offers:
                         if o.get("price"):
-                            o.update(verify_offer(o))     # link is live before it's shown
-                            o["landed"] = landed(o["price"])
+                            # shopify suggest data is seconds old — trust it and
+                            # keep the stream fast; verify the riskier sources
+                            if row.get("method") != "shopify-suggest":
+                                o.update(verify_offer(o))
+                            else:
+                                o["status"] = "live"
+                            o["usd"] = to_usd(o["price"], o.get("currency"))
+                            o["landed"] = landed(o["usd"], o.get("currency"))
                     all_offers.extend(store_offers)
                     if not emit({"type": "store", "report": row, "offers": store_offers}):
                         raise ClientGone()   # browser left — stop hunting, free the lock

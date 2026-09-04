@@ -125,6 +125,8 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None):
                          "hits": len([h for h in hits if not h.get("manual")]),
                          "error": err, "ms": int((time.time() - t0) * 1000),
                          "item": identity.get("sku") or identity["query"]})
+            for h in hits:   # every offer knows its currency (store's, unless page said)
+                h.setdefault("currency", pb.get("currency", "USD"))
             offers += hits
             store_offers += hits
             store_hits += len([h for h in hits if not h.get("manual")])
