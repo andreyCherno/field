@@ -121,6 +121,18 @@
 // The hunt form talks to serve.py's /api/hunt. Under plain http.server it
 // fails gracefully with a hint to use START-HUNTER / serve.py.
 const F=id=>document.getElementById(id);
+const UI_NEEDS_SERVER=4;   // keep equal to serve.py VERSION
+fetch("/api/version").then(r=>r.json()).then(v=>{
+  let warn="";
+  if((v.version||0)<UI_NEEDS_SERVER)
+    warn="⚠️ השרת מריץ קוד ישן — כדי לטעון את העדכון הרץ בטרמינל: <code>launchctl kickstart -k gui/$(id -u)/com.field.hunter</code> (או דאבל-קליק על START-HUNTER)";
+  else{
+    if(!v.api_key) warn+="⚠️ לשרת אין מפתח API — זיהוי לפי שם לא יעבוד (מק״טים כן). ";
+    if(!v.browser) warn+="⚠️ דפדפן הציד לא מותקן — <code>pip3 install playwright && playwright install chromium</code> ואז ריסטרט לשירות.";
+  }
+  if(warn){F("live").hidden=false;F("live").innerHTML=warn;}
+}).catch(()=>{F("live").hidden=false;
+  F("live").textContent="⚠️ זה שרת סטטי בלבד — ציד מהדפדפן לא יעבוד. הפעל דרך START-HUNTER.command";});
 F("storesbtn").onclick=()=>showStores();
 F("gear").onclick=async()=>{
   const p=F("settings"); p.hidden=!p.hidden;

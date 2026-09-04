@@ -17,6 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
+VERSION = 4   # bump on every server change; the UI warns when it sees a stale server
 lock = threading.Lock()   # one hunt at a time — the stores thank us
 
 class Handler(SimpleHTTPRequestHandler):
@@ -32,6 +33,15 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        if self.path == "/api/version":
+            try:
+                from agent import browser
+                pw = browser.available()
+            except Exception:
+                pw = False
+            return self.send_json({"version": VERSION,
+                                   "api_key": bool(os.environ.get("ANTHROPIC_API_KEY")),
+                                   "browser": pw})
         if self.path.startswith("/api/hunt/stream"):
             return self.stream_hunt()
         if self.path == "/api/config":
