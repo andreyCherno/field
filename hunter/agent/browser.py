@@ -315,11 +315,61 @@ SEARCH_TOGGLES = [
 ]
 
 
+# A consent dialog has its own search box ("Cookie list search" on OneTrust
+# sites). Typing a product name into a privacy preferences panel is not a
+# search — it is interacting with a consent UI, which this never does.
+CONSENT_HINT = re.compile(r"cookie|consent|onetrust|gdpr|privacy|\bot-", re.I)
+
+
+def _press(el):
+    """Click an element even when a consent overlay is floating above it.
+
+    A normal click is refused by Playwright because the banner would receive
+    it — and clicking a consent banner is exactly what this must never do.
+    dispatch_event delivers the click to the search button itself, so the
+    banner is neither accepted, dismissed, nor touched; it is simply not
+    answered, and the site's own no-consent default stands."""
+    try:
+        el.click(timeout=2500)
+        return True
+    except Exception:
+        pass
+    try:
+        el.dispatch_event("click")
+        return True
+    except Exception:
+        return False
+
+
+def _type_into(page, el, text):
+    """Put text in the box and submit, overlay or no overlay."""
+    try:
+        el.click(timeout=2000)
+        el.fill(text)
+    except Exception:
+        try:
+            el.evaluate("e => e.focus()")
+        except Exception:
+            return False
+        page.keyboard.type(text, delay=15)
+    page.keyboard.press("Enter")
+    return True
+
+
+def _is_consent(el):
+    try:
+        blob = " ".join(filter(None, (el.get_attribute(a) for a in
+                                      ("id", "name", "aria-label", "class"))))
+    except Exception:
+        return False
+    return bool(CONSENT_HINT.search(blob or ""))
+
+
 def _first_visible(page, selectors):
     for sel in selectors:
         try:
-            for el in page.query_selector_all(sel)[:4]:
-                if el.is_visible() and el.is_enabled():
+            for el in page.query_selector_all(sel)[:6]:
+                if el.is_visible() and el.is_enabled() and not _is_consent(el):
                     return el
         except Exception:
             continue
@@ -360,21 +410,23 @@ def _do_type_search(br, domain, query, wait_ms, timeout_ms):
         page.wait_for_timeout(1200)
 
         box = _first_visible(page, SEARCH_INPUTS)
-        if box is None:                       # search hides behind an icon
-            toggle = _first_visible(page, SEARCH_TOGGLES)
-            if toggle is not None:
-                try:
-                    toggle.click(timeout=4000)
-                    page.wait_for_timeout(800)
-                except Exception:
-                    pass
-            box = _first_visible(page, SEARCH_INPUTS)
+        if box is None:
+            # The box is behind a magnifier icon and is rendered only after the
+            # click, so look again *after waiting* — and give it two goes,
+            # because the first click often just opens a drawer.
+            for _ in range(2):
+                toggle = _first_visible(page, SEARCH_TOGGLES)
+                if toggle is None or not _press(toggle):
+                    break
+                page.wait_for_timeout(1500)
+                box = _first_visible(page, SEARCH_INPUTS)
+                if box is not None:
+                    break
         if box is None:
             raise RuntimeError("no search box on the page")
 
-        box.click(timeout=5000)
-        box.fill(query)
-        page.keyboard.press("Enter")
+        if not _type_into(page, box, query):
+            raise RuntimeError("search box would not accept text")
         try:
             page.wait_for_load_state("domcontentloaded", timeout=timeout_ms)
         except Exception:
