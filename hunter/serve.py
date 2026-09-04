@@ -11,7 +11,7 @@ terminal. Needs ANTHROPIC_API_KEY in the environment for name identification
 and deep parsing (SKU-shaped hunts work without it).
 """
 import glob, json, os, sys, threading
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -32,6 +32,8 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        if self.path.startswith("/api/hunt/stream"):
+            return self.stream_hunt()
         if self.path == "/api/config":
             return self.send_json(json.load(open(os.path.join(HERE, "config.json"),
                                                  encoding="utf-8")))
@@ -47,6 +49,54 @@ class Handler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
     EDITABLE = {"sizes", "budget_caps_usd", "min_discount", "top_n"}
+
+    def stream_hunt(self):
+        """Server-sent events: identity first, then one event per store the
+        moment it answers (offers verified so links are live), then done."""
+        from urllib.parse import urlparse, parse_qs
+        qs = parse_qs(urlparse(self.path).query)
+        query = (qs.get("q") or [""])[0].strip()
+        deep = (qs.get("deep") or ["0"])[0] == "1"
+        skip = [d for d in (qs.get("skip") or [""])[0].split(",") if d]
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+
+        def emit(obj):
+            try:
+                self.wfile.write(f"data: {json.dumps(obj, ensure_ascii=False)}\n\n".encode())
+                self.wfile.flush()
+                return True
+            except (BrokenPipeError, ConnectionResetError):
+                return False   # browser left — hunt keeps quietly finishing
+
+        if not query:
+            return emit({"type": "error", "error": "empty query"})
+        try:
+            from agent.identify import identify
+            from agent.search import hunt as run_search
+            from agent.verify import verify_offer
+            from hunt import publish, landed
+            with lock:
+                identity = identify(query)
+                emit({"type": "identity", "identity": identity})
+                all_offers = []
+
+                def on_store(row, store_offers):
+                    for o in store_offers:
+                        if o.get("price"):
+                            o.update(verify_offer(o))     # link is live before it's shown
+                            o["landed"] = landed(o["price"])
+                    all_offers.extend(store_offers)
+                    emit({"type": "store", "report": row, "offers": store_offers})
+
+                run_search(identity, deep=deep, skip=skip, on_store=on_store)
+                page = publish(identity, all_offers)
+            emit({"type": "done", "page": "/hunter/items/" + os.path.basename(page),
+                  "priced": len([o for o in all_offers if o.get("price")])})
+        except Exception as e:
+            emit({"type": "error", "error": f"{type(e).__name__}: {e}"})
 
     def do_POST(self):
         if self.path == "/api/config":
@@ -93,4 +143,4 @@ if __name__ == "__main__":
     print(f"hunter control panel: http://localhost:{port}/hunter/")
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("note: ANTHROPIC_API_KEY not set — name identification and deep search are off")
-    HTTPServer(("127.0.0.1", port), Handler).serve_forever()
+    ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()

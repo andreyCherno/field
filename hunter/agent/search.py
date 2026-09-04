@@ -77,18 +77,31 @@ def run_llm_parse(pb, q):
         + (f" Store hint: {hint}" if hint else ""),
         f"Query: {q}\nPage from {pb['domain']}:\n{html}", max_tokens=3000)
 
-def hunt(identity, deep=False, report=None):
+def hunt(identity, deep=False, report=None, skip=None, on_store=None):
     """Collect offers; if `report` is a list, append one row per store:
-    {store, method, hits, error} — the coverage view the UI shows."""
+    {store, method, hits, error} — the coverage view the UI shows.
+    `skip`: domains to leave out. `on_store(row, store_offers)` fires the
+    moment each store finishes — the live-progress hook."""
     offers = []
+    skip = set(skip or [])
     for path, pb in playbooks():
         method = pb.get("method", "search-url")
-        if method == "llm-parse" and not deep:
+        if pb["domain"] in skip:
+            row = {"store": pb["domain"], "method": method, "hits": 0, "error": "skipped (by you)"}
             if report is not None:
-                report.append({"store": pb["domain"], "method": method,
-                               "hits": 0, "error": "skipped (needs deep)"})
+                report.append(row)
+            if on_store:
+                on_store(row, [])
             continue
-        store_hits, store_err = 0, None
+        if method == "llm-parse" and not deep:
+            row = {"store": pb["domain"], "method": method,
+                   "hits": 0, "error": "skipped (needs deep)"}
+            if report is not None:
+                report.append(row)
+            if on_store:
+                on_store(row, [])
+            continue
+        store_hits, store_err, store_offers = 0, None, []
         for q in queries_for(identity, pb):
             t0, hits, err = time.time(), [], None
             try:
@@ -109,14 +122,18 @@ def hunt(identity, deep=False, report=None):
                          "error": err, "ms": int((time.time() - t0) * 1000),
                          "item": identity.get("sku") or identity["query"]})
             offers += hits
+            store_offers += hits
             store_hits += len([h for h in hits if not h.get("manual")])
             store_err = store_err or err
             if hits and not all(h.get("manual") for h in hits):
                 break   # this store answered — next store
             time.sleep(pb.get("rate_limit_s", 1))
+        row = {"store": pb["domain"], "method": method,
+               "hits": store_hits, "error": store_err}
         if report is not None:
-            report.append({"store": pb["domain"], "method": method,
-                           "hits": store_hits, "error": store_err})
+            report.append(row)
+        if on_store:
+            on_store(row, store_offers)
     return offers
 
 if __name__ == "__main__":
