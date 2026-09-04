@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunter — today's catch</title>
+<meta name="description" content="The deal hunter's daily feed: known brands only, sized, priced to the door, ranked against their real price history.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap');
+  :root{
+    --bg:#f0eee9; --panel:#e8e5dc; --line:#111111;
+    --ink:#111111; --ink-soft:#555555; --dim:#888888;
+    --acc:#e8442e; --good:#156b3b;
+    --font:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --display:'Space Grotesk',var(--font);
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+  a{color:var(--ink)}
+  .wrap{max-width:1000px;margin:0 auto;padding:14px}
+  .card{border:1px solid var(--line);background:var(--bg);box-shadow:0 2px 8px rgba(30,25,15,.06)}
+  .head{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 14px;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .brandmark{font:800 17px var(--display);letter-spacing:-.02em}
+  .brandmark b{color:var(--acc)}
+  .tag{flex:1;min-width:180px;font:13px var(--font);color:var(--ink-soft)}
+  .stamp{font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+  nav{display:flex;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  nav a{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
+        border:1px solid var(--line);padding:5px 10px}
+  nav a:hover{background:var(--panel)}
+
+  .deal{display:grid;grid-template-columns:64px 96px 1fr auto;gap:0 14px;align-items:center;
+        padding:14px 18px;border-bottom:1px solid var(--line);text-decoration:none}
+  .deal:hover{background:var(--panel)}
+  .rank{font:800 26px var(--display);color:var(--dim)}
+  .deal:first-of-type .rank{color:var(--acc)}
+  .thumb{width:96px;height:96px;object-fit:cover;border:1px solid var(--line);background:var(--panel)}
+  .info{min-width:0}
+  .brand{font:700 14px var(--display)}
+  .tier{font:600 9px var(--mono);letter-spacing:.12em;border:1px solid var(--line);padding:1px 5px;margin-inline-start:6px;vertical-align:2px}
+  .title{font:13px var(--font);color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .why{font:11px var(--mono);color:var(--dim);margin-top:4px}
+  .why .drop{color:var(--good);font-weight:600}
+  .nums{text-align:right;font-variant-numeric:tabular-nums}
+  .landed{font:800 20px var(--display)}
+  .anchor{font:12px var(--mono);color:var(--dim);text-decoration:line-through}
+  .off{display:inline-block;font:700 12px var(--mono);background:var(--acc);color:#fff;padding:2px 7px;margin-top:3px}
+
+  .empty{padding:48px 18px;text-align:center}
+  .empty h2{font:700 20px var(--display);margin:0 0 8px}
+  .empty p{color:var(--ink-soft);max-width:52ch;margin:6px auto;line-height:1.6;font-size:14px}
+  .empty code{font:12px var(--mono);background:var(--panel);border:1px solid var(--line);padding:2px 6px}
+  .stats{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+  .stat{border:1px solid var(--line);padding:10px 16px;min-width:110px}
+  .stat b{display:block;font:800 22px var(--display)}
+  .stat span{font:600 9px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+  footer{padding:12px 18px;font:11px var(--mono);color:var(--dim)}
+  @media (max-width:640px){.deal{grid-template-columns:34px 64px 1fr auto}.thumb{width:64px;height:64px}.rank{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <div class="head">
+    <span class="brandmark">field<b>/hunter.</b></span>
+    <span class="tag">Today's catch — known brands, your size, priced to the door, measured against their real history.</span>
+    <span class="stamp" id="generated">no run yet</span>
+  </div>
+  <nav>
+    <a href="../shelf/">← shelf</a>
+    <a href="../index.html">field home</a>
+  </nav>
+  <div id="feed"></div>
+  <footer>score = discount vs anchor × brand tier × drop bonus · gates: tier A/B only, size in stock, budget cap, ≥30% real discount</footer>
+</div></div>
+<script>
+const feedEl = document.getElementById("feed");
+function empty(msg, sub){
+  Promise.all([
+    fetch("registry.json").then(r=>r.json()).catch(()=>[]),
+    fetch("ledger.json").then(r=>r.json()).catch(()=>({brands:{}})),
+  ]).then(([reg, led])=>{
+    const tiers = Object.values(led.brands||{});
+    feedEl.innerHTML = `<div class="empty">
+      <h2>${msg}</h2><p>${sub}</p>
+      <div class="stats">
+        <div class="stat"><b>${reg.length||0}</b><span>shops in registry</span></div>
+        <div class="stat"><b>${tiers.length}</b><span>brands rated</span></div>
+        <div class="stat"><b>${tiers.filter(t=>t.tier==="A").length}</b><span>tier A — buy blind</span></div>
+      </div></div>`;
+  });
+}
+fetch("data/feed.json")
+  .then(r=>{ if(!r.ok) throw 0; return r.json(); })
+  .then(d=>{
+    document.getElementById("generated").textContent = "run " + (d.generated||"?") + " · " + d.candidates + " candidates";
+    if(!d.feed || !d.feed.length){ empty("The hunt came back empty",
+      "Every item was stopped at a gate — wrong tier, wrong size, over budget, or under the discount bar. That is the system working, not failing."); return; }
+    feedEl.innerHTML = d.feed.map((x,i)=>`
+      <a class="deal" href="${x.url}" target="_blank" rel="noopener">
+        <span class="rank">${String(i+1).padStart(2,"0")}</span>
+        ${x.img?`<img class="thumb" src="${x.img}" alt="" loading="lazy">`:`<span class="thumb"></span>`}
+        <span class="info">
+          <span class="brand">${x.brand}<span class="tier">${x.tier}</span></span>
+          <div class="title">${x.title} · ${x.size}</div>
+          <div class="why">anchor $${x.anchor} @${x.shop}${x.dropped_now?` · <span class="drop">↓ dropped since last run</span>`:""}</div>
+        </span>
+        <span class="nums">
+          <div class="landed">$${x.landed}</div>
+          <div class="anchor">$${x.anchor}</div>
+          <div class="off">−${Math.round(x.discount*100)}%</div>
+        </span>
+      </a>`).join("");
+  })
+  .catch(()=> empty("No feed yet — the hunter hasn't run",
+    "On the machine that runs the pipeline: <code>python3 check_platforms.py</code> once, then <code>python3 shopify_adapter.py</code> and <code>python3 score.py</code> daily. The first run creates <code>data/feed.json</code> and this page comes alive."));
+</script>
+</body>
+</html>
