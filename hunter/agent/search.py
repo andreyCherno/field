@@ -125,8 +125,8 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None):
             store_offers += hits
             store_hits += len([h for h in hits if not h.get("manual")])
             store_err = store_err or err
-            if hits and not all(h.get("manual") for h in hits):
-                break   # this store answered — next store
+            if hits:
+                break   # this store answered (a manual link counts) — next store
             time.sleep(pb.get("rate_limit_s", 1))
         row = {"store": pb["domain"], "method": method,
                "hits": store_hits, "error": store_err}

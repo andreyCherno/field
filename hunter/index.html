@@ -196,7 +196,9 @@ F("huntform").onsubmit=e=>{
   es=new EventSource(`/api/hunt/stream?q=${encodeURIComponent(q)}&deep=${F("deep").checked?1:0}&skip=${[...skipSet].join(",")}`);
   es.onmessage=ev=>{
     const d=JSON.parse(ev.data);
-    if(d.type==="identity"){
+    if(d.type==="status"){
+      F("live").textContent="⏳ "+d.message;
+    }else if(d.type==="identity"){
       const id=d.identity;
       F("live").innerHTML=`🎯 <b>${id.brand||""} ${id.product||id.query}</b>`+
         (id.sku?` · מק״ט ${id.sku}`:"")+` — <span id="prog">עובר על החנויות…</span>`;

@@ -73,14 +73,24 @@ class Handler(SimpleHTTPRequestHandler):
 
         if not query:
             return emit({"type": "error", "error": "empty query"})
+
+        class ClientGone(Exception):
+            pass
+
         try:
             from agent.identify import identify
             from agent.search import hunt as run_search
             from agent.verify import verify_offer
             from hunt import publish, landed
-            with lock:
+            # a previous hunt may still be finishing — tell the user instead of
+            # silently hanging, and abort it fast when its client is gone
+            if not lock.acquire(timeout=0.1):
+                emit({"type": "status", "message": "ציד קודם עדיין מסיים — ממתין לתור…"})
+                lock.acquire()
+            try:
                 identity = identify(query)
-                emit({"type": "identity", "identity": identity})
+                if not emit({"type": "identity", "identity": identity}):
+                    raise ClientGone()
                 all_offers = []
 
                 def on_store(row, store_offers):
@@ -89,12 +99,17 @@ class Handler(SimpleHTTPRequestHandler):
                             o.update(verify_offer(o))     # link is live before it's shown
                             o["landed"] = landed(o["price"])
                     all_offers.extend(store_offers)
-                    emit({"type": "store", "report": row, "offers": store_offers})
+                    if not emit({"type": "store", "report": row, "offers": store_offers}):
+                        raise ClientGone()   # browser left — stop hunting, free the lock
 
                 run_search(identity, deep=deep, skip=skip, on_store=on_store)
                 page = publish(identity, all_offers)
+            finally:
+                lock.release()
             emit({"type": "done", "page": "/hunter/items/" + os.path.basename(page),
                   "priced": len([o for o in all_offers if o.get("price")])})
+        except ClientGone:
+            pass
         except Exception as e:
             emit({"type": "error", "error": f"{type(e).__name__}: {e}"})
 
