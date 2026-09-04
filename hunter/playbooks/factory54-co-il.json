@@ -1,0 +1,13 @@
+{
+ "domain": "factory54.co.il",
+ "method": "search-url",
+ "search_url": "https://www.factory54.co.il/search?q={q}",
+ "accepts_sku": false,
+ "query_tips": "Hebrew or brand-name searches; prices include VAT",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ }
+}

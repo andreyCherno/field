@@ -1,0 +1,14 @@
+{
+ "domain": "tres-bien.com",
+ "method": "llm-parse",
+ "search_url": "https://www.tres-bien.com/catalogsearch/result/?q={q}",
+ "accepts_sku": true,
+ "query_tips": "",
+ "price_selector": "prices in EUR in product tiles",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "domain": "asos.com",
+ "method": "search-url",
+ "search_url": "https://www.asos.com/search/?q={q}",
+ "accepts_sku": false,
+ "query_tips": "ASOS search works by product name only, not style codes",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ }
+}
