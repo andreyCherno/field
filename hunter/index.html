@@ -70,10 +70,26 @@
     <a href="../shelf/">← shelf</a>
     <a href="../index.html">field home</a>
   </nav>
+  <div id="hunts"></div>
   <div id="feed"></div>
   <footer>score = discount vs anchor × brand tier × drop bonus · gates: tier A/B only, size in stock, budget cap, ≥30% real discount</footer>
 </div></div>
 <script>
+// Targeted hunts (hunt.py runs) — listed above the daily feed when any exist.
+fetch("items/index.json").then(r=>r.ok?r.json():[]).then(hunts=>{
+  if(!hunts.length) return;
+  document.getElementById("hunts").innerHTML =
+    `<div class="head" style="border-top:1px solid var(--line)"><span class="brandmark">hunts</span>
+     <span class="tag">targeted searches — one page per item, every store that has it</span></div>` +
+    hunts.map(h=>`
+      <a class="deal" href="items/${h.slug}.html">
+        <span class="rank">→</span><span class="thumb"></span>
+        <span class="info"><span class="brand">${h.title}</span>
+          <div class="title">${h.sku||""}</div>
+          <div class="why">hunted ${h.hunted} · ${h.offers} priced offers · ${h.manual} manual links</div></span>
+        <span class="nums">${h.cheapest_landed?`<div class="landed">$${h.cheapest_landed}</div><div class="anchor">cheapest landed</div>`:""}</span>
+      </a>`).join("");
+}).catch(()=>{});
 const feedEl = document.getElementById("feed");
 function empty(msg, sub){
   Promise.all([
