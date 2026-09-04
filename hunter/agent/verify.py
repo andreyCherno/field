@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
-"""Step 3 of a hunt: before offers are published, confirm each link is alive
-and the price on the live page matches what we recorded. Verified offers get a
-timestamp; broken ones are flagged, never silently dropped.
+"""The no-browser fallback for inspect.py.
+
+A plain HTTP GET and a regex over the raw bytes: no JavaScript, no rendering,
+and no idea which of the five `"price":` matches on the page belongs to the
+product rather than to the recommendation carousel. That is exactly why
+inspect.py exists and drives a real browser instead.
+
+This file is still reached on a machine with no Playwright installed, so the
+hunter degrades instead of breaking — it just learns much less. Nothing here
+checks the *name*, so it cannot tell a Gel-Kayano 14 from a Gel-Kayano 31.
 """
 import json, re, urllib.request
 from datetime import datetime, timezone

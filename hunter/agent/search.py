@@ -37,14 +37,12 @@ def playbooks():
         yield path, json.load(open(path, encoding="utf-8"))
 
 def queries_for(identity, pb):
-    qs = []
-    if identity.get("sku") and pb.get("accepts_sku", True):
-        qs.append(identity["sku"])
-    if identity.get("product"):
-        qs.append(f'{identity.get("brand") or ""} {identity["product"]}'.strip())
-    qs += identity.get("aliases", [])
-    if not qs:
-        qs = [identity["query"]]
+    """The phrases this store gets asked — the same list the confirmation card
+    showed you, minus the style code at shops whose search chokes on one."""
+    from agent.identify import search_terms
+    qs = search_terms(identity)
+    if identity.get("sku") and not pb.get("accepts_sku", True):
+        qs = [q for q in qs if q != identity["sku"]] or [identity["query"]]
     return qs[:3]
 
 def run_shopify_suggest(pb, q):
@@ -77,14 +75,19 @@ def run_llm_parse(pb, q):
         + (f" Store hint: {hint}" if hint else ""),
         f"Query: {q}\nPage from {pb['domain']}:\n{html}", max_tokens=3000)
 
-def hunt(identity, deep=False, report=None, skip=None, on_store=None):
+def hunt(identity, deep=False, report=None, skip=None, on_store=None,
+         should_stop=None):
     """Collect offers; if `report` is a list, append one row per store:
     {store, method, hits, error} — the coverage view the UI shows.
     `skip`: domains to leave out. `on_store(row, store_offers)` fires the
-    moment each store finishes — the live-progress hook."""
+    moment each store finishes — the live-progress hook. `should_stop()` is
+    checked before every store and every query, so the stop button lands within
+    one page load instead of at the end of the sweep."""
     offers = []
     skip = set(skip or [])
     for path, pb in playbooks():
+        if should_stop and should_stop():
+            break
         method = pb.get("method", "search-url")
         if pb["domain"] in skip:
             row = {"store": pb["domain"], "method": method, "hits": 0, "error": "skipped (by you)"}
@@ -103,6 +106,8 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None):
             continue
         store_hits, store_err, store_offers = 0, None, []
         for q in queries_for(identity, pb):
+            if should_stop and should_stop():
+                break
             t0, hits, err = time.time(), [], None
             try:
                 if method == "shopify-suggest":

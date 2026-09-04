@@ -29,5 +29,18 @@
    "parse": "claude-haiku-4-5",
    "reason": "claude-sonnet-5"
   }
+ },
+ "match": {
+  "_comment": "gates between a search hit and something you are shown. candidate_min: worth opening the product page for. accept_min: the page confirmed it. inspect_per_store: how many pages to walk into per store.",
+  "candidate_min": 0.45,
+  "accept_min": 0.6,
+  "inspect_per_store": 3,
+  "price_tolerance": 0.02,
+  "fx_price_tolerance": 0.1
+ },
+ "browser": {
+  "_comment": "Shopify Markets and most boutiques price by the requesting IP/locale, and never name the currency. This is the identity the hunter's browser presents, so it decides WHICH market's price you are shown. en-US reads US-market prices; he-IL reads what you would actually pay from Israel, but some stores geo-block or hide stock. Every inspected offer records the locale it was read under.",
+  "locale": "en-US",
+  "timezone": "Asia/Jerusalem"
  }
 }

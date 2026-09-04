@@ -68,6 +68,35 @@
   .g .gt{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .storechip{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);padding:2px 7px;margin:2px 3px 2px 0;font:11px var(--mono);cursor:pointer;user-select:none}
   .storechip.off{opacity:.4;text-decoration:line-through}
+  #confirm{padding:14px 18px;border-bottom:1px solid var(--line);background:var(--panel)}
+  #confirm h3{font:800 15px var(--display);margin:0 0 10px}
+  .cf{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .cf img{width:104px;height:104px;object-fit:cover;border:1px solid var(--line);background:var(--card)}
+  .cfields{flex:1;min-width:240px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .cfields label{font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+  .cfields input{width:100%;border:1px solid var(--line);background:#fff;padding:7px 9px;font-size:14px;margin-top:3px}
+  .terms{font:12px var(--mono);color:var(--ink-soft);margin:10px 0 0;line-height:1.7}
+  .terms b{background:var(--card);border:1px solid var(--line);padding:2px 7px;margin-inline-end:5px;display:inline-block}
+  .nocode{color:#b0433a;font:12px var(--mono)}
+  .cbtns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .cbtns button{border:1px solid var(--line);padding:9px 20px;font:700 14px var(--display);cursor:pointer}
+  .cbtns .yes{background:var(--good);color:#fff;border-color:var(--good)}
+  .cbtns .no{background:none;color:var(--ink)}
+  .picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px}
+  .pick{border:1px solid var(--line);background:var(--card);cursor:pointer;text-align:start;padding:0;font:inherit;color:inherit}
+  .pick:hover{background:var(--bg);outline:2px solid var(--acc)}
+  .pick img{width:100%;height:96px;object-fit:cover;border-bottom:1px solid var(--line);background:var(--chip)}
+  .pick .pb{padding:6px 8px}
+  .pick .pn{font-size:11px;line-height:1.35;height:29px;overflow:hidden}
+  .pick .pc{font:600 10px var(--mono);color:var(--ink-soft);margin-top:3px}
+  .badge{display:inline-block;font:600 9px var(--mono);letter-spacing:.08em;text-transform:uppercase;
+         border:1px solid var(--line);padding:1px 5px;margin-inline-end:4px}
+  .badge.verified{background:var(--good);color:#fff;border-color:var(--good)}
+  .badge.sold-out,.badge.price-changed,.badge.unpriced{background:#b8862b;color:#fff;border-color:#b8862b}
+  .badge.price-unconfirmed,.badge.dead{background:#d12a6a;color:#fff;border-color:#d12a6a}
+  .g.gone{opacity:.5}
+  .g .gw{font:10px var(--mono);color:var(--dim);padding:0 10px 8px;line-height:1.4}
+  #stop{background:#d12a6a;color:#fff;border:none;padding:9px 20px;font:700 14px var(--display);cursor:pointer}
   .empty{padding:48px 18px;text-align:center}
   .empty h2{font:700 20px var(--display);margin:0 0 8px}
   .empty p{color:var(--ink-soft);max-width:52ch;margin:6px auto;line-height:1.6;font-size:14px}
@@ -95,7 +124,8 @@
   <form id="huntform" dir="rtl">
     <input type="text" id="q" placeholder="מה לצוד? שם מוצר או מק״ט — salomon xt-6 / DV1748-101">
     <label><input type="checkbox" id="deep"> חיפוש עמוק (LLM על חנויות קשות)</label>
-    <button type="submit" id="go">צא לצוד</button>
+    <button type="submit" id="go">בדוק פריט</button>
+    <button type="button" id="stop" hidden>■ עצור</button>
     <button type="button" id="gear" title="הגדרות" style="background:none;border:1px solid var(--line);color:var(--ink);padding:8px 12px;cursor:pointer">⚙</button>
     <button type="button" id="storesbtn" title="חנויות" style="background:none;border:1px solid var(--line);color:var(--ink);padding:8px 12px;cursor:pointer">🏬</button>
   </form>
@@ -108,6 +138,7 @@
       <button id="s_save" style="background:var(--accent);color:var(--accent-ink);border:none;padding:8px 18px;font-weight:700;cursor:pointer">שמירה</button>
     </div>
   </div>
+  <div id="confirm" dir="rtl" hidden></div>
   <div id="live" hidden></div>
   <div id="gallery" dir="rtl" hidden></div>
   <div id="coverage" hidden></div>
@@ -115,20 +146,21 @@
 
   <div id="hunts"></div>
   <div id="feed"></div>
-  <footer>score = discount vs anchor × brand tier × drop bonus · gates: tier A/B only, size in stock, budget cap, ≥30% real discount</footer>
+  <footer>every price here was read off the store's own product page · score = discount vs anchor × brand tier × drop bonus · gates: tier A/B only, size in stock, budget cap, ≥30% real discount</footer>
 </div></div>
 <script>
 // The hunt form talks to serve.py's /api/hunt. Under plain http.server it
 // fails gracefully with a hint to use START-HUNTER / serve.py.
 const F=id=>document.getElementById(id);
-const UI_NEEDS_SERVER=5;   // keep equal to serve.py VERSION
+const UI_NEEDS_SERVER=6;   // keep equal to serve.py VERSION
 fetch("/api/version").then(r=>r.json()).then(v=>{
   let warn="";
   if((v.version||0)<UI_NEEDS_SERVER)
     warn="⚠️ השרת מריץ קוד ישן — כדי לטעון את העדכון הרץ בטרמינל: <code>launchctl kickstart -k gui/$(id -u)/com.field.hunter</code> (או דאבל-קליק על START-HUNTER)";
   else{
-    if(!v.api_key) warn+="⚠️ לשרת אין מפתח API — זיהוי לפי שם לא יעבוד (מק״טים כן). ";
-    if(!v.browser) warn+="⚠️ דפדפן הציד לא מותקן — <code>pip3 install playwright && playwright install chromium</code> ואז ריסטרט לשירות.";
+    if(!v.browser) warn+="⚠️ דפדפן הציד לא מותקן — בלעדיו אי אפשר להיכנס לעמודי המוצר: <code>pip3 install playwright && playwright install chromium</code> ואז ריסטרט לשירות. ";
+    if(!v.shelf) warn+="⚠️ המדף (shelf/items.json) לא נטען — זיהוי הפריטים יסתמך על ה-LLM בלבד. ";
+    else if(!v.api_key) warn+=`ℹ️ אין מפתח API — הזיהוי מסתמך על ${v.shelf.toLocaleString()} הפריטים שבמדף שלך. `;
   }
   if(warn){F("live").hidden=false;F("live").innerHTML=warn;}
 }).catch(()=>{F("live").hidden=false;
@@ -168,72 +200,157 @@ async function showStores(){
 }
 
 let gallerySeen;
+const STATUS={verified:["מאומת","הדף מאשר את השם ואת המחיר"],
+ "price-changed":["המחיר זז","הדף גובה סכום אחר ממה שהופיע בתוצאות"],
+ "price-unconfirmed":["מחיר לא ודאי","המחיר נגרד מטקסט חופשי ולא תואם"],
+ "sold-out":["אזל","הפריט הנכון — פשוט לא ניתן לקנייה"],
+ unpriced:["בלי מחיר","הפריט הנכון, אין מחיר על הדף"],
+ live:["חי","פיד מובנה של החנות, בן שניות"],
+ manual:["ידני","פתח את חיפוש החנות בעצמך"], dead:["מת","הדף לא נפתח"]};
+
 function addOffers(offers){
   const g=F("gallery"); g.hidden=false;
   for(const o of offers){
     if(!o.price||gallerySeen.has(o.url)) continue;
     gallerySeen.add(o.url);
+    const [lbl,why]=STATUS[o.status]||[o.status||"?",""];
+    const gone=["sold-out","unpriced","dead"].includes(o.status);
     const a=document.createElement("a");
-    a.className="g"; a.href=o.url; a.target="_blank"; a.rel="noopener";
+    a.className="g"+(gone?" gone":""); a.href=o.url; a.target="_blank"; a.rel="noopener"; a.title=why;
     a.innerHTML=(o.img?`<img src="${o.img}" alt="" loading="lazy">`:"")+
       `<div class="gi"><div class="gp">$${o.landed}<small>${o.price} ${o.currency||"USD"}</small></div>
-       <div class="gs">${o.store}</div><div class="gt">${o.title||""}</div></div>`;
-    // cheapest-first insertion
-    const kids=[...g.children];
+       <div class="gs"><span class="badge ${o.status||""}">${lbl}</span>${o.store}</div>
+       <div class="gt">${o.page_name||o.title||""}</div></div>
+       <div class="gw">${o.match_why||""}</div>`;
+    const kids=[...g.children];               // cheapest-first insertion
     const before=kids.find(k=>+k.dataset.landed>o.landed);
     a.dataset.landed=o.landed;
     before?g.insertBefore(a,before):g.appendChild(a);
   }
 }
 function covChip(s){
+  const off=s.off_target?` <span style="color:var(--dim)">(${s.off_target} לא רלוונטי)</span>`:"";
   const b=s.error==="skipped (by you)"?`<b class="no">דילגת</b>`
         :s.error&&s.error.startsWith("skipped")?`<b class="no">עמוק בלבד</b>`
         :s.error?`<b class="err">${s.error}</b>`
         :s.hits?`<b class="ok">✓ ${s.hits}</b>`
         :s.method==="search-url"?`<b class="no">ידני</b>`:`<b class="no">—</b>`;
-  return `<span class="cov">${s.store} ${b}</span>`;
+  return `<span class="cov">${s.store} ${b}${off}</span>`;
 }
 
+// ---- step 1: וידוא פריט — nothing is searched until you say yes ----
+let proposal=null;
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function showConfirm(p){
+  proposal=p;
+  const i=p.identity, c=F("confirm"); c.hidden=false;
+  const code=i.sku?`<span style="font:600 12px var(--mono)">${esc(i.sku)}</span>`
+                  :`<span class="nocode">אין מק״ט — ההתאמה תהיה לפי שם בלבד, פחות בטוחה</span>`;
+  c.innerHTML=`<h3>🔎 זה הפריט שאתה מחפש?</h3>
+    <div class="cf">
+      ${i.img?`<img src="${esc(i.img)}" alt="">`:""}
+      <div style="flex:1;min-width:240px">
+        <div class="cfields">
+          <div><label>מותג</label><input id="c_brand" value="${esc(i.brand||"")}"></div>
+          <div><label>דגם</label><input id="c_product" value="${esc(i.product||"")}"></div>
+          <div><label>מק״ט</label><input id="c_sku" value="${esc(i.sku||"")}"></div>
+        </div>
+        <div class="terms">מקור הזיהוי: <b>${esc(i.source)}</b>${i.note?" · "+esc(i.note):""}</div>
+        <div class="terms">${code}</div>
+        <div class="terms">החנויות יישאלו: ${p.search_terms.map(t=>`<b>${esc(t)}</b>`).join("")}</div>
+        <div class="cbtns">
+          <button class="yes" id="c_go">✓ כן, צא לצוד</button>
+          <button class="no" id="c_no">ביטול</button>
+        </div>
+      </div>
+    </div>`+
+    (p.candidates?.length?`<div class="terms" style="margin-top:14px">או אחד מאלה מהמדף שלך
+      (${(p.catalog_size||0).toLocaleString()} פריטים) — לחיצה בוחרת:</div>
+      <div class="picks">`+p.candidates.map((x,n)=>`
+        <button class="pick" data-n="${n}">
+          ${x.img?`<img src="${esc(x.img)}" alt="">`:""}
+          <div class="pb"><div class="pn">${esc(x.name)}</div>
+          <div class="pc">${esc(x.style_code||"אין מק״ט")} · ${esc(x.price||"")}</div>
+          <div class="pc">@${esc(x.retailer||"")}</div></div>
+        </button>`).join("")+`</div>`:"");
+  c.querySelectorAll(".pick").forEach(b=>b.onclick=()=>{
+    const x=p.candidates[+b.dataset.n];
+    F("c_brand").value=x.brand||""; F("c_product").value=(x.name||"").replace(new RegExp("^"+(x.brand||"")+"\\s+","i"),"");
+    F("c_sku").value=x.style_code||"";
+    c.querySelector(".cf img")?.setAttribute("src",x.img||"");
+  });
+  F("c_no").onclick=()=>{c.hidden=true;F("go").disabled=false;F("live").hidden=true;};
+  F("c_go").onclick=()=>{
+    c.hidden=true;
+    startHunt({...i,brand:F("c_brand").value.trim()||null,
+                    product:F("c_product").value.trim()||null,
+                    sku:F("c_sku").value.trim()||null,
+                    query:i.query||F("q").value.trim()});
+  };
+}
+
+// ---- step 2: the hunt itself ----
 let es=null;
-F("huntform").onsubmit=e=>{
-  e.preventDefault();
-  const q=F("q").value.trim(); if(!q) return;
+function endHunt(){ if(es){es.close();es=null;} F("go").disabled=false; F("stop").hidden=true; }
+
+function startHunt(identity){
   if(es) es.close();
   gallerySeen=new Set();
-  F("go").disabled=true; F("live").hidden=false;
+  F("go").disabled=true; F("stop").hidden=false; F("live").hidden=false;
   F("gallery").hidden=true; F("gallery").innerHTML="";
   F("coverage").hidden=false; F("coverage").innerHTML="<h3>איפה חיפשתי — חי</h3>";
-  F("live").textContent="⏳ מזהה את המוצר…";
-  let checked=0;
-  es=new EventSource(`/api/hunt/stream?q=${encodeURIComponent(q)}&deep=${F("deep").checked?1:0}&skip=${[...skipSet].join(",")}`);
+  let checked=0, rejected=0;
+  es=new EventSource(`/api/hunt/stream?identity=${encodeURIComponent(JSON.stringify(identity))}`+
+    `&deep=${F("deep").checked?1:0}&skip=${[...skipSet].join(",")}`);
   es.onmessage=ev=>{
     const d=JSON.parse(ev.data);
     if(d.type==="status"){
       F("live").textContent="⏳ "+d.message;
     }else if(d.type==="identity"){
       const id=d.identity;
-      F("live").innerHTML=`🎯 <b>${id.brand||""} ${id.product||id.query}</b>`+
-        (id.sku?` · מק״ט ${id.sku}`:"")+` — <span id="prog">עובר על החנויות…</span>`;
+      F("live").innerHTML=`🎯 <b>${esc(id.brand||"")} ${esc(id.product||id.query)}</b>`+
+        (id.sku?` · מק״ט ${esc(id.sku)}`:"")+` — <span id="prog">נכנס לחנויות…</span>`;
     }else if(d.type==="store"){
-      checked++;
+      checked++; rejected+=d.report.off_target||0;
       F("coverage").insertAdjacentHTML("beforeend",covChip(d.report));
       addOffers(d.offers||[]);
       const p=document.getElementById("prog");
-      if(p)p.textContent=`נבדקו ${checked} חנויות · ${gallerySeen.size} מחירים חיים`;
+      if(p)p.textContent=`נבדקו ${checked} חנויות · ${gallerySeen.size} מחירים מאומתים · ${rejected} תוצאות נפסלו`;
     }else if(d.type==="done"){
-      es.close();es=null;F("go").disabled=false;
+      endHunt();
       const p=document.getElementById("prog");
-      if(p)p.innerHTML=`סיימתי — ${d.priced} הצעות · <a href="${d.page}">דף הפריט השמור</a>`;
+      if(p)p.innerHTML=(d.stopped?"עצרת — ":"סיימתי — ")+
+        `${d.priced} הצעות מאומתות · ${d.off_target||0} נפסלו · <a href="${d.page}">דף הפריט השמור</a>`;
       loadHunts();
     }else if(d.type==="error"){
-      es.close();es=null;F("go").disabled=false;
-      F("live").textContent="✗ "+d.error;
+      endHunt(); F("live").textContent="✗ "+d.error;
     }
   };
-  es.onerror=()=>{
-    if(es){es.close();es=null;F("go").disabled=false;
-      F("live").textContent="✗ החיבור נפל — ודא שהשרת רץ דרך START-HUNTER.command";}
-  };
+  es.onerror=()=>{ if(es){endHunt();
+      F("live").textContent="✗ החיבור נפל — ודא שהשרת רץ דרך START-HUNTER.command";} };
+}
+
+F("stop").onclick=()=>{
+  F("stop").disabled=true;
+  F("live").insertAdjacentHTML("beforeend"," <b>· עוצר…</b>");
+  fetch("/api/hunt/stop").catch(()=>{}).finally(()=>{F("stop").disabled=false;});
+};
+
+F("huntform").onsubmit=async e=>{
+  e.preventDefault();
+  const q=F("q").value.trim(); if(!q) return;
+  F("confirm").hidden=true; F("go").disabled=true;
+  F("live").hidden=false; F("live").textContent="⏳ מזהה את הפריט…";
+  try{
+    const p=await (await fetch("/api/identify?q="+encodeURIComponent(q))).json();
+    if(p.error) throw new Error(p.error);
+    F("live").hidden=true;
+    showConfirm(p);
+  }catch(err){
+    F("go").disabled=false;
+    F("live").textContent="✗ "+err.message;
+  }
 };
 
 // Targeted hunts (hunt.py runs) — listed above the daily feed when any exist.

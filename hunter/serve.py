@@ -2,23 +2,33 @@
 """The hunter's local control panel server. Run from the repo root or hunter/:
 
     python3 hunter/serve.py         # serves the whole site on :8000
-                                    # POST /api/hunt runs a hunt from the browser
-                                    # GET  /api/stores lists the playbooks
+
+A hunt is two steps on purpose:
+
+    GET  /api/identify?q=...        what do you mean? -> a card you confirm
+    GET  /api/hunt/stream?identity= go hunt, streaming one store at a time
+    GET  /api/hunt/stop             abort the running hunt now
+
+Nothing is searched until the identity is confirmed, because a hunt asks ~120
+shops three questions each and the cost of getting the item wrong is 360 wrong
+questions followed by a gallery of the wrong shoe.
 
 Static files come from the repo root, so /hunter/, /shelf/ and the rest all
-work like before — plus the API the hunter UI uses to run hunts without a
-terminal. Needs ANTHROPIC_API_KEY in the environment for name identification
-and deep parsing (SKU-shaped hunts work without it).
+work like before. ANTHROPIC_API_KEY is only needed when the shelf catalogue
+cannot identify the query on its own.
 """
 import glob, json, os, sys, threading
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
-VERSION = 5   # bump on every server change; the UI warns when it sees a stale server
-lock = threading.Lock()   # one hunt at a time — the stores thank us
+VERSION = 6   # bump on every server change; the UI warns when it sees a stale server
+lock = threading.Lock()          # one hunt at a time — the stores thank us
+stop_flag = threading.Event()    # set by /api/hunt/stop; the hunt checks it constantly
+
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
@@ -32,22 +42,37 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def query(self):
+        return parse_qs(urlparse(self.path).query)
+
     def do_GET(self):
-        if self.path == "/api/version":
+        path = urlparse(self.path).path
+        if path == "/api/version":
             try:
-                from agent import browser
-                pw = browser.available()
+                from agent import browser, catalog
+                pw, shelf = browser.available(), len(catalog.items())
             except Exception:
-                pw = False
-            return self.send_json({"version": VERSION,
-                                   "api_key": bool(os.environ.get("ANTHROPIC_API_KEY")),
-                                   "browser": pw})
-        if self.path.startswith("/api/hunt/stream"):
+                pw, shelf = False, 0
+            return self.send_json({"version": VERSION, "browser": pw, "shelf": shelf,
+                                   "api_key": bool(os.environ.get("ANTHROPIC_API_KEY"))})
+        if path == "/api/identify":
+            q = (self.query().get("q") or [""])[0].strip()
+            if not q:
+                return self.send_json({"error": "empty query"}, 400)
+            try:
+                from agent.identify import proposal
+                return self.send_json(proposal(q))
+            except Exception as e:
+                return self.send_json({"error": f"{type(e).__name__}: {e}"}, 500)
+        if path == "/api/hunt/stop":
+            stop_flag.set()
+            return self.send_json({"stopping": True})
+        if path == "/api/hunt/stream":
             return self.stream_hunt()
-        if self.path == "/api/config":
+        if path == "/api/config":
             return self.send_json(json.load(open(os.path.join(HERE, "config.json"),
                                                  encoding="utf-8")))
-        if self.path == "/api/stores":
+        if path == "/api/stores":
             stores = []
             for p in sorted(glob.glob(os.path.join(HERE, "playbooks", "*.json"))):
                 if os.path.basename(p).startswith("_"):
@@ -58,16 +83,16 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(stores)
         return super().do_GET()
 
-    EDITABLE = {"sizes", "budget_caps_usd", "min_discount", "top_n"}
+    EDITABLE = {"sizes", "budget_caps_usd", "min_discount", "top_n", "match"}
 
     def stream_hunt(self):
-        """Server-sent events: identity first, then one event per store the
-        moment it answers (offers verified so links are live), then done."""
-        from urllib.parse import urlparse, parse_qs
-        qs = parse_qs(urlparse(self.path).query)
-        query = (qs.get("q") or [""])[0].strip()
+        """Server-sent events: one event per store the moment it answers, each
+        offer already walked into and read off its own product page."""
+        qs = self.query()
         deep = (qs.get("deep") or ["0"])[0] == "1"
         skip = [d for d in (qs.get("skip") or [""])[0].split(",") if d]
+        raw_identity = (qs.get("identity") or [""])[0]
+        query = (qs.get("q") or [""])[0].strip()
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
@@ -81,50 +106,75 @@ class Handler(SimpleHTTPRequestHandler):
             except (BrokenPipeError, ConnectionResetError):
                 return False   # browser left — hunt keeps quietly finishing
 
-        if not query:
-            return emit({"type": "error", "error": "empty query"})
-
         class ClientGone(Exception):
             pass
 
         try:
-            from agent.identify import identify
+            from agent.identify import identify, save_alias
             from agent.search import hunt as run_search
-            from agent.verify import verify_offer
+            from agent.fx import to_usd
+            from agent import catalog, inspect
             from hunt import publish, landed
-            # a previous hunt may still be finishing — tell the user instead of
-            # silently hanging, and abort it fast when its client is gone
+
+            if raw_identity:
+                identity = json.loads(raw_identity)      # the card you confirmed
+                identity.setdefault("query", query or identity.get("product") or "")
+            elif query:
+                identity = identify(query)               # unconfirmed: CLI-style
+            else:
+                return emit({"type": "error", "error": "empty query"})
+
+            # a previous hunt may still be finishing — say so instead of hanging
             if not lock.acquire(timeout=0.1):
                 emit({"type": "status", "message": "ציד קודם עדיין מסיים — ממתין לתור…"})
                 lock.acquire()
+            stopped = False
             try:
-                identity = identify(query)
+                stop_flag.clear()
+                if raw_identity and identity.get("query"):
+                    try:
+                        save_alias(identity["query"], identity)   # never ask twice
+                    except Exception:
+                        pass
                 if not emit({"type": "identity", "identity": identity}):
                     raise ClientGone()
-                all_offers = []
+                all_offers, off_total = [], 0
 
-                from agent.fx import to_usd
-
-                def on_store(row, store_offers):
-                    for o in store_offers:
+                def on_store(row, store_offers, limit=inspect.PER_STORE):
+                    nonlocal off_total
+                    kept, off = inspect.confirm_store(
+                        store_offers, identity, should_stop=stop_flag.is_set, limit=limit)
+                    for o in kept:
                         if o.get("price"):
-                            # shopify suggest data is seconds old — trust it and
-                            # keep the stream fast; verify the riskier sources
-                            if row.get("method") != "shopify-suggest":
-                                o.update(verify_offer(o))
-                            else:
-                                o["status"] = "live"
                             o["usd"] = to_usd(o["price"], o.get("currency"))
                             o["landed"] = landed(o["usd"], o.get("currency"))
-                    all_offers.extend(store_offers)
-                    if not emit({"type": "store", "report": row, "offers": store_offers}):
+                    off_total += off
+                    row["off_target"] = off
+                    row["hits"] = sum(1 for o in kept if o.get("price"))
+                    all_offers.extend(kept)
+                    if not emit({"type": "store", "report": row, "offers": kept}):
                         raise ClientGone()   # browser left — stop hunting, free the lock
 
-                run_search(identity, deep=deep, skip=skip, on_store=on_store)
+                # your own shelf first: 1,334 of its items already carry a
+                # cross-retailer `sellers` list, so those leads cost nothing to
+                # find. They still get walked into like any other lead.
+                seed = catalog.seed_offers(identity)
+                if seed and not stop_flag.is_set():
+                    on_store({"store": f"המדף שלך ({len(seed)} מוכרים ידועים)",
+                              "method": "shelf", "hits": 0, "error": None},
+                             seed, limit=len(seed))
+                    skip = list(skip) + [urlparse("https://" + (o["url"].split("//")[-1]))
+                                         .netloc.replace("www.", "") for o in seed]
+
+                run_search(identity, deep=deep, skip=skip, on_store=on_store,
+                           should_stop=stop_flag.is_set)
+                stopped = stop_flag.is_set()
                 page = publish(identity, all_offers)
             finally:
+                stop_flag.clear()
                 lock.release()
-            emit({"type": "done", "page": "/hunter/items/" + os.path.basename(page),
+            emit({"type": "done", "stopped": stopped, "off_target": off_total,
+                  "page": "/hunter/items/" + os.path.basename(page),
                   "priced": len([o for o in all_offers if o.get("price")])})
         except ClientGone:
             pass
@@ -141,39 +191,16 @@ class Handler(SimpleHTTPRequestHandler):
             json.dump(cfg, open(path, "w", encoding="utf-8"),
                       ensure_ascii=False, indent=1)
             return self.send_json(cfg)
-        if self.path != "/api/hunt":
-            return self.send_json({"error": "not found"}, 404)
-        try:
-            length = int(self.headers.get("Content-Length", 0))
-            req = json.loads(self.rfile.read(length))
-            query, deep = req.get("query", "").strip(), bool(req.get("deep"))
-            if not query:
-                return self.send_json({"error": "empty query"}, 400)
-            from agent.identify import identify
-            from agent.search import hunt as run_search
-            from agent.verify import verify_all
-            from hunt import publish, landed
-            with lock:
-                identity = identify(query)
-                report = []
-                offers = verify_all(run_search(identity, deep=deep, report=report))
-                page = publish(identity, offers)
-            for o in offers:
-                if o.get("price"):
-                    o["landed"] = landed(o["price"])
-            offers.sort(key=lambda o: o.get("landed") or 1e9)
-            self.send_json({"identity": identity, "offers": offers, "report": report,
-                            "page": "/hunter/items/" + os.path.basename(page)})
-        except Exception as e:
-            self.send_json({"error": f"{type(e).__name__}: {e}"}, 500)
+        return self.send_json({"error": "not found"}, 404)
 
     def log_message(self, fmt, *args):   # keep the terminal quiet
         if "/api/" in (args[0] if args else ""):
             super().log_message(fmt, *args)
 
+
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
     print(f"hunter control panel: http://localhost:{port}/hunter/")
     if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("note: ANTHROPIC_API_KEY not set — name identification and deep search are off")
+        print("note: ANTHROPIC_API_KEY not set — the shelf catalogue still identifies items")
     ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
