@@ -34,7 +34,31 @@ def playbooks():
     for path in sorted(glob.glob(os.path.join(ROOT, "playbooks", "*.json"))):
         if os.path.basename(path).startswith("_"):
             continue
-        yield path, json.load(open(path, encoding="utf-8"))
+        pb = json.load(open(path, encoding="utf-8"))
+        pb["_path"] = path          # so a lesson can be written back to it
+        yield path, pb
+
+
+def remember_search_url(pb, landed_url, q):
+    """Write a search url we *observed* back into the playbook, replacing the
+    one that was guessed. Playbooks are files in git, so every lesson this
+    learns arrives as a reviewable diff rather than as hidden state."""
+    path = pb.get("_path")
+    if not path or not landed_url:
+        return
+    tpl = landed_url
+    for form in (urllib.parse.quote(q), urllib.parse.quote_plus(q), q):
+        tpl = tpl.replace(form, "{q}")
+    if "{q}" not in tpl or tpl == pb.get("search_url"):
+        return
+    try:
+        saved = json.load(open(path, encoding="utf-8"))
+        saved["search_url"] = tpl
+        saved["search_url_source"] = "observed: typed into the shop's own search box"
+        json.dump(saved, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        pb["search_url"] = tpl
+    except OSError:
+        pass
 
 def queries_for(identity, pb):
     """The phrases this store gets asked — the same list the confirmation card
@@ -46,7 +70,10 @@ def queries_for(identity, pb):
     return qs[:3]
 
 def run_shopify_suggest(pb, q):
-    url = (f'https://{pb["domain"]}/search/suggest.json?q={urllib.parse.quote(q)}'
+    # `host` is the hostname that actually answers (some shops only serve the
+    # www twin); `domain` stays the identity used for display and skip lists
+    url = (f'https://{pb.get("host") or pb["domain"]}/search/suggest.json'
+           f'?q={urllib.parse.quote(q)}'
            "&resources[type]=product&resources[limit]=10")
     data = json.loads(fetch(url))
     out = []
@@ -58,8 +85,53 @@ def run_shopify_suggest(pb, q):
         out.append({"store": pb["domain"], "title": p.get("title", ""),
                     "brand": p.get("vendor", ""), "price": price,
                     "img": p.get("image", "") or p.get("featured_image", "") or "",
-                    "url": f'https://{pb["domain"]}{p.get("url","")}'.split("?")[0]})
+                    "url": f'https://{pb.get("host") or pb["domain"]}'
+                           f'{p.get("url","")}'.split("?")[0]})
     return out
+
+def url_variants(pb, q):
+    """The playbook's search url, plus its www / no-www twin.
+
+    80 of the 100 search-url playbooks were seeded with a guessed
+    https://{domain}/search?q={q} template and no www, and a large share of
+    those 404 on the missing prefix alone — which is most of why nearly every
+    store used to come back as a manual link."""
+    base = pb["search_url"].format(q=urllib.parse.quote(q))
+    twin = (base.replace("://www.", "://", 1) if "://www." in base
+            else base.replace("://", "://www.", 1))
+    return [base, twin] if twin != base else [base]
+
+
+def browser_search(pb, identity, q, deep):
+    """Open this store's results page for real. Returns (leads, error).
+    error is None when the page was genuinely read — even if nothing on it
+    matched, which is a real answer and must not be reported as 'manual'."""
+    from agent import browser
+    err = None
+    for u in url_variants(pb, q):
+        try:
+            offers, v = browser.search(pb, u, identity, deep=deep)
+        except Exception as e:
+            err = type(e).__name__
+            continue
+        if offers:
+            return offers, None
+        if v.get("status") and v["status"] < 400:
+            return [], None          # page read fine, this shop has nothing
+        err = f'HTTP {v.get("status")}'
+
+    # The url template was a guess and it is wrong, or the shop refuses direct
+    # search links. Walk in the front door and use its own search box — which
+    # is what a person would have done in the first place.
+    try:
+        v = browser.type_search(pb["domain"], q)
+    except Exception as e:
+        return [], err or type(e).__name__
+    offers = browser.harvest(v.get("collected"), pb["domain"], identity)
+    if offers:
+        remember_search_url(pb, v.get("url"), q)
+    return offers, None
+
 
 def run_llm_parse(pb, q):
     from agent import llm
@@ -105,7 +177,9 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                 on_store(row, [])
             continue
         store_hits, store_err, store_offers = 0, None, []
-        for q in queries_for(identity, pb):
+        # every browser query is a page load; two phrasings is the honest
+        # ceiling per shop, and the style code goes first
+        for q in queries_for(identity, pb)[:2 if method == "search-url" else 3]:
             if should_stop and should_stop():
                 break
             t0, hits, err = time.time(), [], None
@@ -117,13 +191,17 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                     for h in hits:
                         h["store"] = pb["domain"]
                 else:  # search-url: open it in a real browser like a human would
-                    url = pb["search_url"].format(q=urllib.parse.quote(q))
                     from agent import browser
                     if browser.available():
-                        hits = browser.search(pb, url, q, deep=deep)
-                    if not hits:   # no browser installed, or page gave nothing
+                        hits, err = browser_search(pb, identity, q, deep)
+                        if err:   # could not read the shop at all — hand back a
+                            hits = [{"store": pb["domain"], "title": None,   # link
+                                     "price": None, "manual": True, "why": err,
+                                     "url": url_variants(pb, q)[0]}]
+                    else:
                         hits = [{"store": pb["domain"], "title": None, "price": None,
-                                 "url": url, "manual": True}]
+                                 "url": url_variants(pb, q)[0], "manual": True,
+                                 "why": "no browser installed"}]
             except Exception as e:
                 err = type(e).__name__
             log_attempt({"store": pb["domain"], "method": method, "query": q,

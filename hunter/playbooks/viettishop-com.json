@@ -1,6 +1,6 @@
 {
  "domain": "viettishop.com",
- "method": "search-url",
+ "method": "shopify-suggest",
  "search_url": "https://viettishop.com/search?q={q}",
  "accepts_sku": true,
  "query_tips": "",
@@ -10,5 +10,7 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "EUR"
+ "currency": "EUR",
+ "host": "viettishop.com",
+ "note": "promoted 2026-09-04: /search/suggest.json verified live"
 }

@@ -202,19 +202,29 @@ def inspect_offer(offer, identity, timeout_ms=20000):
 
 
 def shortlist(offers, identity, limit=PER_STORE):
-    """Cheap gate before any page is opened: score the search-result titles and
-    keep only the ones worth the walk. Returns (leads, off_target_count)."""
-    leads, off = [], 0
+    """Cheap gate before any page is opened: score what the results page said
+    and keep only the leads worth the walk. Returns (leads, off_target_count).
+
+    A lead with no price is normal and expected — a harvested product link
+    carries only a url and some anchor text, because price and name are what
+    the page visit is FOR. Requiring a price here is what made link harvesting
+    silently produce nothing."""
+    leads, off, seen = [], 0, set()
     for o in offers:
-        if o.get("manual") or not o.get("price"):
+        if o.get("manual"):
             continue
-        o["match"], o["match_why"] = match.score(
-            o.get("title"), identity, url=o.get("url", ""), brand=o.get("brand", ""))
+        if o.get("match") is None:      # browser.harvest already scored its own
+            o["match"], o["match_why"] = match.score(
+                o.get("title"), identity, url=o.get("url", ""), brand=o.get("brand", ""))
         if o["match"] < CANDIDATE_MIN:
             o["status"] = "off-target"
             off += 1
-        else:
-            leads.append(o)
+            continue
+        key = o.get("url", "").split("?")[0].rstrip("/")   # ?_pos=&_sid= is one page
+        if key in seen:
+            continue
+        seen.add(key)
+        leads.append(o)
     leads.sort(key=lambda o: -o["match"])
     off += max(0, len(leads) - limit)
     return leads[:limit], off
@@ -228,6 +238,7 @@ def confirm_store(store_offers, identity, should_stop=None, limit=PER_STORE):
     for o in kept:
         o["status"] = "manual"
     leads, off = shortlist(store_offers, identity, limit)
+    confirmed = []
     for o in leads:
         if should_stop and should_stop():
             break
@@ -235,8 +246,38 @@ def confirm_store(store_offers, identity, should_stop=None, limit=PER_STORE):
         if o["status"] in ("wrong-item", "dead"):
             off += 1
             continue
-        kept.append(o)
+        confirmed.append(o)
+    kept += collapse(confirmed)
     return kept, off
+
+
+def collapse(offers):
+    """One row per product per shop, cheapest variant winning.
+
+    A results page links the same shoe under several urls — colour swatches,
+    tracking parameters, a grid tile and its title. Left alone they flood the
+    list with the same thing at six prices, which reads as a broken price list
+    even though every row was individually verified."""
+    # a trailing "- 11" or "- White / 7" is the SIZE this page happens to be
+    # showing, not a different product; without this one shoe arrives as six
+    SIZE_TAIL = re.compile(r"(\s*[-\u2013]\s*[^-\u2013]*\b\d{1,2}(?:\.\d)?\b\s*)+$")
+    best = {}
+    for o in offers:
+        raw = SIZE_TAIL.sub("", (o.get("page_name") or o.get("title") or "")).strip()
+        name = re.sub(r"[^a-z0-9]+", "", raw.lower())
+        key = (o.get("store"), name or o.get("url"))
+        cur = best.get(key)
+        if cur is None:
+            best[key] = o
+            continue
+        # keep the cheaper one, but never let a sold-out row hide a buyable one
+        cur_gone = cur.get("status") in ("sold-out", "unpriced")
+        new_gone = o.get("status") in ("sold-out", "unpriced")
+        if cur_gone and not new_gone:
+            best[key] = o
+        elif new_gone == cur_gone and (o.get("price") or 9e9) < (cur.get("price") or 9e9):
+            best[key] = o
+    return list(best.values())
 
 
 if __name__ == "__main__":

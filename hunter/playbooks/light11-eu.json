@@ -1,7 +1,7 @@
 {
  "domain": "light11.eu",
  "method": "search-url",
- "search_url": "https://light11.eu/search?q={q}",
+ "search_url": "https://www.light11.eu/?searchparam={q}&search_phrase=",
  "accepts_sku": true,
  "query_tips": "",
  "rate_limit_s": 2,
@@ -10,5 +10,6 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "EUR"
+ "currency": "EUR",
+ "search_url_source": "observed: typed into the shop's own search box"
 }

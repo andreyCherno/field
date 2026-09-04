@@ -40,21 +40,22 @@ STATUS_LABEL = {
 }
 
 
-def landed(price, currency=None):
-    """USD price -> to-the-door price. An ILS price came from an Israeli shop:
-    VAT is already inside it and no import steps apply.
+def store_domain(url):
+    from urllib.parse import urlparse
+    return re.sub(r"^www\.", "", urlparse(url or "").netloc)
 
-    Deliberately cruder than shelf/items.json's itemised `landed` block (which
-    also carries shipping, a 2% card FX markup, confidences and caveats). That
-    engine lives in the MoneyMachine backend, not here; when it is callable
-    from this repo this function should become a call to it."""
-    if price is None:
-        return None
-    if (currency or "").upper() == "ILS" or price <= CFG["tax_free_under_usd"]:
-        return round(price, 2)
-    if price <= CFG["customs_over_usd"]:
-        return round(price * (1 + CFG["vat_rate"]), 2)
-    return round(price * (1 + CFG["vat_rate"]) * 1.10, 2)
+
+def landed(usd, currency=None, url=None):
+    """USD sticker -> to-the-door price. See agent/landed.py for why the
+    country, not the currency, decides whether anything is imported."""
+    from agent.landed import total
+    return total(usd, store_domain(url), currency)
+
+
+def landed_detail(o):
+    """The itemisation behind one offer's landed number."""
+    from agent.landed import to_door
+    return to_door(o.get("usd"), store_domain(o.get("url")), o.get("currency"))
 
 
 def slugify(s):
@@ -116,7 +117,7 @@ def publish(identity, offers):
         name = o.get("page_name") or o.get("title", "")
         why_match = o.get("match_why", "")
         rows += (f'<a class="row{gone}" href="{o["url"]}" target="_blank" rel="noopener" title="{why}">'
-                 f'<span class="price">${landed(o["usd"], o.get("currency"))}</span>{thumb}'
+                 f'<span class="price">${landed(o["usd"], o.get("currency"), o.get("url"))}</span>{thumb}'
                  f'<span class="store"><b>{o["store"]}</b> · {o["price"]} {o.get("currency","USD")}'
                  f'<div class="pname">{name}</div>'
                  f'<small>{why_match}</small></span>'
@@ -137,8 +138,8 @@ def publish(identity, offers):
     buyable = [o for o in priced if o.get("status") not in ("sold-out", "unpriced")]
     idx.insert(0, {"slug": slug, "title": title, "sku": identity.get("sku"),
                    "hunted": ts, "offers": len(priced), "manual": len(manual),
-                   "cheapest_landed": landed(buyable[0]["usd"], buyable[0].get("currency"))
-                   if buyable else None})
+                   "cheapest_landed": landed(buyable[0]["usd"], buyable[0].get("currency"),
+                                             buyable[0].get("url")) if buyable else None})
     json.dump(idx, open(idx_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return path
 

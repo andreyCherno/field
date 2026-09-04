@@ -114,7 +114,7 @@ class Handler(SimpleHTTPRequestHandler):
             from agent.search import hunt as run_search
             from agent.fx import to_usd
             from agent import catalog, inspect
-            from hunt import publish, landed
+            from hunt import publish, landed, landed_detail
 
             if raw_identity:
                 identity = json.loads(raw_identity)      # the card you confirmed
@@ -147,10 +147,18 @@ class Handler(SimpleHTTPRequestHandler):
                     for o in kept:
                         if o.get("price"):
                             o["usd"] = to_usd(o["price"], o.get("currency"))
-                            o["landed"] = landed(o["usd"], o.get("currency"))
+                            d = landed_detail(o)
+                            o["landed"] = d["total"]
+                            o["landed_lines"] = d["lines"]
+                            o["landed_confidence"] = d["confidence"]
+                            o["landed_note"] = d["note"]
                     off_total += off
                     row["off_target"] = off
                     row["hits"] = sum(1 for o in kept if o.get("price"))
+                    manual = [o for o in kept if o.get("manual")]
+                    row["manual"] = len(manual)
+                    if manual:            # why the shop could not be read
+                        row["why"] = manual[0].get("why")
                     all_offers.extend(kept)
                     if not emit({"type": "store", "report": row, "offers": kept}):
                         raise ClientGone()   # browser left — stop hunting, free the lock

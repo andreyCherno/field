@@ -96,6 +96,9 @@
   .badge.price-unconfirmed,.badge.dead{background:#d12a6a;color:#fff;border-color:#d12a6a}
   .g.gone{opacity:.5}
   .g .gw{font:10px var(--mono);color:var(--dim);padding:0 10px 8px;line-height:1.4}
+  .g .gc{font:10px var(--mono);padding:0 10px 8px}
+  .g .gc.uncertain,.g .gc.unknown{color:#b0433a}
+  .g .gc.medium{color:var(--ink-soft)} .g .gc.high{color:var(--good)}
   #stop{background:#d12a6a;color:#fff;border:none;padding:9px 20px;font:700 14px var(--display);cursor:pointer}
   .empty{padding:48px 18px;text-align:center}
   .empty h2{font:700 20px var(--display);margin:0 0 8px}
@@ -215,12 +218,20 @@ function addOffers(offers){
     gallerySeen.add(o.url);
     const [lbl,why]=STATUS[o.status]||[o.status||"?",""];
     const gone=["sold-out","unpriced","dead"].includes(o.status);
+    const CONF={high:"מחיר סופי ודאי",medium:"ללא משלוח",
+                uncertain:"ייתכן שכולל כבר מס יעד",unknown:"מדינת החנות לא ידועה",
+                none:"—"};
+    // the breakdown lives in the tooltip: a total you cannot decompose is one
+    // you have no reason to trust
+    const bd=(o.landed_lines||[]).map(l=>`${l[0]}: ${l[1]}`).join("\n");
     const a=document.createElement("a");
-    a.className="g"+(gone?" gone":""); a.href=o.url; a.target="_blank"; a.rel="noopener"; a.title=why;
+    a.className="g"+(gone?" gone":""); a.href=o.url; a.target="_blank"; a.rel="noopener";
+    a.title=[why,bd,o.landed_note||""].filter(Boolean).join("\n\n");
     a.innerHTML=(o.img?`<img src="${o.img}" alt="" loading="lazy">`:"")+
       `<div class="gi"><div class="gp">$${o.landed}<small>${o.price} ${o.currency||"USD"}</small></div>
        <div class="gs"><span class="badge ${o.status||""}">${lbl}</span>${o.store}</div>
        <div class="gt">${o.page_name||o.title||""}</div></div>
+       <div class="gc ${o.landed_confidence||""}">${CONF[o.landed_confidence]||""}</div>
        <div class="gw">${o.match_why||""}</div>`;
     const kids=[...g.children];               // cheapest-first insertion
     const before=kids.find(k=>+k.dataset.landed>o.landed);
@@ -230,11 +241,14 @@ function addOffers(offers){
 }
 function covChip(s){
   const off=s.off_target?` <span style="color:var(--dim)">(${s.off_target} לא רלוונטי)</span>`:"";
+  // "ידני" now means the shop could not be READ — not that we did not try.
+  // A shop we read that simply has nothing says so.
   const b=s.error==="skipped (by you)"?`<b class="no">דילגת</b>`
-        :s.error&&s.error.startsWith("skipped")?`<b class="no">עמוק בלבד</b>`
+        :s.error&&String(s.error).startsWith("skipped")?`<b class="no">עמוק בלבד</b>`
         :s.error?`<b class="err">${s.error}</b>`
         :s.hits?`<b class="ok">✓ ${s.hits}</b>`
-        :s.method==="search-url"?`<b class="no">ידני</b>`:`<b class="no">—</b>`;
+        :s.manual?`<b class="err" title="${esc(s.why||"")}">לא נקרא</b>`
+        :`<b class="no">אין התאמה</b>`;
   return `<span class="cov">${s.store} ${b}${off}</span>`;
 }
 
