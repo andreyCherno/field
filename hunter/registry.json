@@ -643,18 +643,6 @@
   "ships_to_israel": "local"
  },
  {
-  "name": "Kicks",
-  "url": "https://www.kicks.co.il",
-  "country": "IL",
-  "category": "fashion",
-  "focus": "Mid-size Israeli sneaker chain with full e-commerce",
-  "brands_sold": "Nike, adidas, New Balance, Converse, Vans",
-  "note": "Good local sale prices on mainstream sneaker brands, VAT included",
-  "platform": "Magento (guess)",
-  "source": "israel",
-  "ships_to_israel": "local"
- },
- {
   "name": "Skate Machine",
   "url": "https://skatemachine.co.il",
   "country": "IL",

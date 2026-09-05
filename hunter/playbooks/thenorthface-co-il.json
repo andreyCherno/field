@@ -1,7 +1,7 @@
 {
  "domain": "thenorthface.co.il",
  "method": "search-url",
- "search_url": "https://thenorthface.co.il/search?q={q}",
+ "search_url": "https://thenorthface.co.il/?s={q}&post_type=product&dgwt_wcas=1",
  "accepts_sku": false,
  "query_tips": "",
  "rate_limit_s": 2,
@@ -10,5 +10,6 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "ILS"
+ "currency": "ILS",
+ "search_url_source": "typed into the shop's own search box; the site navigated here itself"
 }

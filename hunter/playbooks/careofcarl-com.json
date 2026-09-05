@@ -1,7 +1,7 @@
 {
  "domain": "careofcarl.com",
  "method": "search-url",
- "search_url": "https://careofcarl.com/search?q={q}",
+ "search_url": "https://www.careofcarl.com/en/search?q={q}",
  "accepts_sku": true,
  "query_tips": "",
  "rate_limit_s": 2,
@@ -10,5 +10,6 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "SEK"
+ "currency": "SEK",
+ "search_url_source": "typed into the shop's own search box; differentially verified (299 vs 227 results, 24% unique)"
 }

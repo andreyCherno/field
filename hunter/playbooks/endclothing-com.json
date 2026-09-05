@@ -1,7 +1,7 @@
 {
  "domain": "endclothing.com",
  "method": "search-url",
- "search_url": "https://www.endclothing.com/gb/catalogsearch/result/?q={q}",
+ "search_url": "https://www.endclothing.com/gb/catalogsearch/results?q={q}",
  "accepts_sku": true,
  "query_tips": "END accepts style codes directly in search",
  "rate_limit_s": 2,
@@ -10,5 +10,6 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "USD"
+ "currency": "USD",
+ "search_url_source": "observed: typed into the shop's own search box"
 }

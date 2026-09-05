@@ -1,7 +1,7 @@
 {
  "domain": "terminalx.com",
  "method": "search-url",
- "search_url": "https://terminalx.com/search?q={q}",
+ "search_url": "https://www.terminalx.com/catalogsearch/result/?q={q}",
  "accepts_sku": false,
  "query_tips": "",
  "rate_limit_s": 2,
@@ -10,5 +10,6 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "ILS"
+ "currency": "ILS",
+ "search_url_source": "typed into the shop's own search box; the site navigated here itself"
 }

@@ -10,5 +10,6 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "EUR"
+ "currency": "EUR",
+ "search_url_source": "UNRESOLVED 2026-09-05: no search box could be found on the page (JS overlay, no form, no focusable input)"
 }

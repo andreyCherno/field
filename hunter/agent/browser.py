@@ -62,11 +62,18 @@ LINKS_JS = """() => {
 # registry: shopify, magento, woocommerce, salesforce, custom
 PRODUCT_PATH = re.compile(
     r"/(products?|prd|pd|dp|item|itm|style|artikel|art|shop|buy|p)(/|-|_|\.|\?|=|$)", re.I)
-# ...and paths that never are
+# ...and paths that never are. `product-category` and `product-tag` matter:
+# WordPress names its listing pages that, and PRODUCT_PATH happily matches the
+# "product" prefix, so a North Face shop was offering "men's shirts" as a
+# product for a Nike query.
 NOT_PRODUCT = re.compile(
     r"/(cart|account|login|register|checkout|blog|blogs|news|pages?|help|faq|about|"
     r"contact|policy|policies|terms|privacy|shipping|returns|gift|wishlist|compare|"
-    r"search|collections?|category|categories|brands?|c|sitemap|store-locator)(/|$)", re.I)
+    r"search|collections?|category|categories|product-category|product-tag|"
+    r"product_cat|brands?|designers?|magazine|journal|lookbook|stories|guides?|"
+    r"size-guide|c|sitemap|store-locator)(/|$)", re.I)
+# a path segment that really does name one product
+IS_PRODUCT = re.compile(r"/(products?|prd|dp|item|itm)/", re.I)
 
 # A product page is "ready" once schema.org data or a price meta tag exists.
 # Waiting for *that* instead of a flat sleep is what keeps page-by-page
@@ -306,13 +313,22 @@ SEARCH_INPUTS = [
     'input[placeholder*="\u05d7\u05d9\u05e4\u05d5\u05e9"]',
     'input[placeholder*="suche" i]', 'input[placeholder*="ricerca" i]',
     'input[placeholder*="recherche" i]', 'input[placeholder*="buscar" i]',
+    # class-named inputs: modern shops ship <input class="search-input_1ENs">
+    # with no name, no id and no placeholder at all
+    'input[class*="search" i]', 'input[data-testid*="search" i]',
+    '[role="searchbox"]', '[role="combobox"] input',
 ]
-# ...and what you press to make it appear
+# ...and what you press to make it appear. Often a bare <div>, not a button.
 SEARCH_TOGGLES = [
     'button[aria-label*="search" i]', 'a[aria-label*="search" i]',
     '[data-testid*="search" i]', 'button[class*="search" i]',
     'a[class*="search" i]', '[id*="search-toggle" i]', '[class*="search-icon" i]',
+    '[class*="icon-search" i]', 'div[class*="search" i]', 'span[class*="search" i]',
+    '[class*="\u05d7\u05d9\u05e4\u05d5\u05e9"]',
 ]
+# a visible text box that is plainly something else
+NOT_SEARCH = re.compile(r"mail|newsletter|subscribe|zip|postcode|phone|coupon|promo|"
+                        r"discount|qty|quantity|address|name|password", re.I)
 
 
 # A consent dialog has its own search box ("Cookie list search" on OneTrust
@@ -365,6 +381,37 @@ def _is_consent(el):
     return bool(CONSENT_HINT.search(blob or ""))
 
 
+def _focused_input(page):
+    """The box the shop itself focused. Clicking a search icon almost always
+    focuses the search field, which identifies it more reliably than any
+    selector — it needs no name, id, placeholder or class to be found."""
+    try:
+        el = page.evaluate_handle("() => document.activeElement").as_element()
+        if el and el.evaluate("e => e.tagName") in ("INPUT", "TEXTAREA") \
+                and el.is_visible() and el.is_enabled() and not _is_consent(el):
+            return el
+    except Exception:
+        pass
+    return None
+
+
+def _any_text_box(page):
+    """Last resort: a visible text box that is not obviously a newsletter,
+    address or quantity field."""
+    try:
+        for el in page.query_selector_all('input[type="text"], input:not([type])')[:12]:
+            if not (el.is_visible() and el.is_enabled()) or _is_consent(el):
+                continue
+            blob = " ".join(filter(None, (el.get_attribute(a) for a in
+                                          ("name", "id", "placeholder", "aria-label", "class"))))
+            if NOT_SEARCH.search(blob or ""):
+                continue
+            return el
+    except Exception:
+        pass
+    return None
+
+
 def _first_visible(page, selectors):
     for sel in selectors:
         try:
@@ -414,14 +461,24 @@ def _do_type_search(br, domain, query, wait_ms, timeout_ms):
             # The box is behind a magnifier icon and is rendered only after the
             # click, so look again *after waiting* — and give it two goes,
             # because the first click often just opens a drawer.
-            for _ in range(2):
-                toggle = _first_visible(page, SEARCH_TOGGLES)
+            tried = set()
+            for _ in range(3):
+                toggle = None
+                for sel in SEARCH_TOGGLES:
+                    if sel in tried:
+                        continue
+                    cand = _first_visible(page, [sel])
+                    if cand is not None:
+                        toggle, _sel = cand, tried.add(sel)
+                        break
                 if toggle is None or not _press(toggle):
                     break
                 page.wait_for_timeout(1500)
-                box = _first_visible(page, SEARCH_INPUTS)
+                box = _focused_input(page) or _first_visible(page, SEARCH_INPUTS)
                 if box is not None:
                     break
+            if box is None:
+                box = _any_text_box(page)
         if box is None:
             raise RuntimeError("no search box on the page")
 
@@ -489,7 +546,7 @@ def harvest(links, domain, identity, limit=6, floor=HARVEST_FLOOR):
         u = urlparse(href)
         if not _same_site(u.netloc, domain):
             continue
-        if NOT_PRODUCT.search(u.path) and not PRODUCT_PATH.search(u.path):
+        if NOT_PRODUCT.search(u.path) and not IS_PRODUCT.search(u.path):
             continue
         if u.path.strip("/") == "":
             continue          # the results page itself, or the shop's front door
@@ -514,7 +571,7 @@ def harvest(links, domain, identity, limit=6, floor=HARVEST_FLOOR):
     return leads[:limit]
 
 
-def search(pb, url, identity, deep=False, limit=6, floor=CAND_FLOOR):
+def search(pb, url, identity, deep=False, limit=6, floor=HARVEST_FLOOR):
     """Search one store the way a person does: open the results page in a real
     browser, then take the links that actually match what we are hunting.
 

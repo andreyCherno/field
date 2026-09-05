@@ -10,5 +10,6 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "ILS"
+ "currency": "ILS",
+ "search_url_source": "UNRESOLVED 2026-09-05: search results are rendered client-side and the query never appears in the url — there is no template to write"
 }
