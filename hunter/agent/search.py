@@ -101,6 +101,30 @@ def run_shopify_suggest(pb, q):
                            f'{p.get("url","")}'.split("?")[0]})
     return out
 
+def from_index(pb, identity):
+    """Look the item up in this shop's own published product index.
+
+    A sitemap is a list of product urls the shop publishes for crawlers, so we
+    look the item up rather than asking. Leads carry no price; the page visit
+    reads that, exactly as for a search result.
+
+    Unless the shop also refuses its product pages. Three shops here publish a
+    product index and then answer 403 to any automated request for the pages
+    in it, so no price is obtainable without defeating that — which is not
+    something this builds. What the index still buys is worth keeping: an
+    *exact product link* instead of "go and search this shop yourself"."""
+    from agent import sitemap
+    if not sitemap.has_index(pb["domain"]):
+        return []
+    leads = sitemap.find(pb["domain"], identity)
+    if pb.get("pages_blocked"):
+        for l in leads:
+            l["manual"] = True
+            l["why"] = ("found in the shop's own product index — its pages refuse "
+                        "automated requests, so open it yourself for the price")
+    return leads
+
+
 def url_variants(pb, q):
     """The playbook's search url, plus its www / no-www twin.
 
@@ -217,14 +241,21 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                     hits = [h for h in run_llm_parse(pb, q) if h.get("price")]
                     for h in hits:
                         h["store"] = pb["domain"]
+                elif method == "sitemap-index":
+                    # this shop refuses to be searched; read its own index
+                    hits = from_index(pb, identity)
                 else:  # search-url: open it in a real browser like a human would
                     from agent import browser
                     if browser.available():
                         hits, err = browser_search(pb, identity, q, deep)
-                        if err:   # could not read the shop at all — hand back a
-                            hits = [{"store": pb["domain"], "title": None,   # link
-                                     "price": None, "manual": True, "why": err,
-                                     "url": url_variants(pb, q)[0]}]
+                        if err:
+                            # the shop would not be read. Before giving up and
+                            # handing back a link, look in its own index.
+                            hits = from_index(pb, identity)
+                            if not hits:
+                                hits = [{"store": pb["domain"], "title": None,
+                                         "price": None, "manual": True, "why": err,
+                                         "url": url_variants(pb, q)[0]}]
                     else:
                         hits = [{"store": pb["domain"], "title": None, "price": None,
                                  "url": url_variants(pb, q)[0], "manual": True,

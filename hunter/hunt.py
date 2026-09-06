@@ -123,10 +123,13 @@ def publish(identity, offers):
                  f'<small>{why_match}</small></span>'
                  f'<span class="st {status}">{label}</span></a>')
     for o in manual:
+        name = o.get("title") or ""
+        why = o.get("why") or "open the store search in the browser"
         rows += (f'<a class="row" href="{o["url"]}" target="_blank" rel="noopener">'
-                 f'<span class="price">?</span><span class="store"><b>{o["store"]}</b><br>'
-                 f'<small>open the store search in the browser</small></span>'
-                 f'<span class="st manual">manual</span></a>')
+                 f'<span class="price">?</span><span class="store"><b>{o["store"]}</b>'
+                 + (f'<div class="pname">{name[:90]}</div>' if name else "")
+                 + f'<small>{why}</small></span>'
+                 f'<span class="st manual">{"direct link" if o.get("from_index") else "manual"}</span></a>')
     ts = datetime.now(timezone.utc).isoformat(timespec="minutes")
     path = os.path.join(items_dir, slug + ".html")
     open(path, "w", encoding="utf-8").write(PAGE.format(

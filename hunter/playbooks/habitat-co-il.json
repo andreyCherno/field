@@ -1,6 +1,6 @@
 {
  "domain": "habitat.co.il",
- "method": "search-url",
+ "method": "sitemap-index",
  "search_url": "https://habitat.co.il/search?q={q}",
  "accepts_sku": false,
  "query_tips": "",
@@ -11,10 +11,5 @@
   "last_success": null
  },
  "currency": "ILS",
- "search_url_source": "UNRESOLVED 2026-09-05: no search box could be found on the page",
- "skip": {
-  "reason": "no search box could be found on the page",
-  "since": "2026-09-05",
-  "undo": "delete this key to try the shop again"
- }
+ "search_url_source": "search box unreachable; read via its own published sitemap instead"
 }

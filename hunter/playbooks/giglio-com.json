@@ -10,5 +10,10 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "EUR"
+ "currency": "EUR",
+ "skip": {
+  "reason": "robots.txt disallows every localised path (/it-*/, /en-*/ ...), which is every product url on the site — the sitemaps are published but the pages in them are refused",
+  "since": "2026-09-07",
+  "undo": "delete this key only if the shop's robots.txt changes"
+ }
 }

@@ -1,6 +1,6 @@
 {
  "domain": "thecorner.com",
- "method": "search-url",
+ "method": "sitemap-index",
  "search_url": "https://thecorner.com/search?q={q}",
  "accepts_sku": true,
  "query_tips": "",
@@ -11,10 +11,5 @@
   "last_success": null
  },
  "currency": "EUR",
- "search_url_source": "UNRESOLVED 2026-09-05: no search box could be found on the page (JS overlay, no form, no focusable input)",
- "skip": {
-  "reason": "no search box could be found on the page (JS overlay, no form, no focusable input)",
-  "since": "2026-09-05",
-  "undo": "delete this key to try the shop again"
- }
+ "search_url_source": "search box unreachable; read via its own published sitemap instead"
 }

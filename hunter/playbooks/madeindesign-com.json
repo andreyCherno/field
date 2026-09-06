@@ -1,6 +1,6 @@
 {
  "domain": "madeindesign.com",
- "method": "search-url",
+ "method": "sitemap-index",
  "search_url": "https://madeindesign.com/search?q={q}",
  "accepts_sku": true,
  "query_tips": "",
@@ -10,5 +10,8 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "EUR"
+ "currency": "EUR",
+ "search_url_source": "read via the shop's own published sitemap: its search refuses automated requests (HTTP 403), but robots.txt advertises a product index and permits it",
+ "pages_blocked": true,
+ "pages_blocked_note": "verified 2026-09-07: product pages return HTTP 403 to both a real browser and plain HTTP. The sitemap is permitted and gives exact product links; the price is not obtainable without defeating the block."
 }
