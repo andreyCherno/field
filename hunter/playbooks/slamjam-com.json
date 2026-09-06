@@ -5,8 +5,8 @@
  "query_tips": "",
  "rate_limit_s": 1,
  "stats": {
-  "attempts": 0,
-  "hits": 0,
+  "attempts": 14,
+  "hits": 60,
   "last_success": null
  },
  "currency": "USD"

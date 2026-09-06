@@ -38,6 +38,44 @@ TOL = M.get("price_tolerance", 0.02)
 # allow for the fx spread between whenever the lead was priced and now.
 FX_TOL = M.get("fx_price_tolerance", 0.10)
 
+MY_SIZES = CFG.get("sizes") or []
+_SIZE_ALIAS = {"small": "s", "medium": "m", "large": "l", "xlarge": "xl",
+               "x-large": "xl", "xxlarge": "xxl", "xsmall": "xs", "x-small": "xs"}
+
+
+# What a size actually looks like. Without this, JSON-LD variant *skus*
+# (126184, 250760) get read as sizes, because a variant offer often carries no
+# name and the sku is the only label on it.
+SIZE_SHAPE = re.compile(
+    r"^(?:x{0,3}(?:s|l)|m|os|one ?size|u|"
+    r"(?:us|eu|uk|it|fr|jp)? ?\d{1,2}(?:[.,]5)?|\d{2}(?:[.,]5)?[-/]\d{2})$", re.I)
+
+
+def looks_like_size(s):
+    t = str(s or "").strip()
+    return bool(t) and len(t) <= 8 and bool(SIZE_SHAPE.match(t))
+
+
+def size_system(s):
+    """'alpha' (S/M/L) or 'numeric' (9.5, 43) — you cannot compare across the
+    two, and pretending you can is how every sneaker gets told it is not your
+    size because your profile says 'M'."""
+    t = norm_size(s)
+    if re.fullmatch(r"[a-z]{1,4}", t or ""):
+        return "alpha"
+    if re.fullmatch(r"[\d.]+", t or ""):
+        return "numeric"
+    return None
+
+
+def norm_size(s):
+    """'US 9.5' / 'us9.5' / '9,5' all mean one size; 'Medium' and 'M' too."""
+    t = re.sub(r"\s+", "", str(s or "").strip().lower()).replace(",", ".")
+    t = re.sub(r"^(us|eu|uk|fr|it|jp|size)[-_.]?", "", t)
+    t = re.sub(r"\.0$", "", t)
+    return _SIZE_ALIAS.get(t, t)
+
+
 SYMBOL = {"$": "USD", "€": "EUR", "£": "GBP", "₪": "ILS", "¥": "JPY", "₩": "KRW"}
 META_RE = ('<meta[^>]+(?:property|name)=["\']{key}["\'][^>]+content=["\']([^"\']+)["\']',
            '<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\']{key}["\']')
@@ -64,7 +102,7 @@ def read_page(url, timeout_ms=20000):
     Returns None when the page could not be opened at all."""
     try:
         v = browser.visit(url, wait_ms=4000, timeout_ms=timeout_ms,
-                          ready_js=browser.PRODUCT_READY)
+                          ready_js=browser.PRODUCT_READY, collect=browser.SIZES_JS)
     except Exception as e:
         return {"error": type(e).__name__}
     html, text = v["html"], v["text"]
@@ -74,12 +112,13 @@ def read_page(url, timeout_ms=20000):
     tail = want.path.rstrip("/").rsplit("/", 1)[-1]
     moved = bool(tail) and tail not in got.path
     out = {"name": None, "brand": "", "price": None, "currency": None,
-           "in_stock": None, "img": "", "sku": None, "read_by": None,
+           "in_stock": None, "img": "", "sku": None, "read_by": None, "page_sizes": [],
            "status_code": v["status"], "landed_on": v["url"] if moved else None,
            "text": text[:4000]}
     if v["status"] and v["status"] >= 400:
         return {"error": f'HTTP {v["status"]}'}
 
+    out["page_sizes"] = _sizes_from(v.get("collected"), html)
     nodes = browser.jsonld_products(html)
     if nodes:
         # the page's own product is the first Product in document order; if one
@@ -124,6 +163,74 @@ def read_page(url, timeout_ms=20000):
     return out
 
 
+def _sizes_from(dom_sizes, html):
+    """[{size, available}] for this product. JSON-LD variant offers first —
+    they carry real stock state — then what the page renders."""
+    found = {}
+    for m in re.finditer(r'"offers"\s*:\s*(\[.*?\])', html, re.S):
+        try:
+            arr = json.loads(m.group(1))
+        except ValueError:
+            continue
+        for o in arr if isinstance(arr, list) else []:
+            if not isinstance(o, dict):
+                continue
+            label = o.get("name") or o.get("sku") or ""
+            label = re.sub(r"^.*?\b(?:size)\b[\s:]*", "", str(label), flags=re.I).strip()
+            if not looks_like_size(label):
+                continue
+            avail = str(o.get("availability") or "").lower()
+            found[norm_size(label)] = {
+                "size": label,
+                "available": True if "instock" in avail else
+                             False if ("outofstock" in avail or "soldout" in avail) else None}
+    for d in dom_sizes or []:
+        if not looks_like_size(d.get("size")):
+            continue
+        k = norm_size(d.get("size"))
+        if k and k not in found:
+            found[k] = {"size": d.get("size"), "available": d.get("available")}
+    return list(found.values())
+
+
+def size_verdict(sizes):
+    """Do you take one of the sizes this page can actually sell you?
+    Returns (verdict, matched) — 'yes' / 'no' / None when unknowable."""
+    if not sizes or not MY_SIZES:
+        return None, []
+    mine = {norm_size(s) for s in MY_SIZES if str(s).strip()}
+    if not mine:
+        return None, []
+    buyable = [s for s in sizes if s.get("available") is not False]
+    matched = [s["size"] for s in buyable if norm_size(s["size"]) in mine]
+    if matched:
+        return "yes", matched
+    # "no" is only sayable when we are comparing like with like. Your profile
+    # says M and L; a shoe page says 8.5 and 9. That is not a mismatch, it is
+    # a question this configuration cannot answer — so it stays unknown.
+    my_systems = {size_system(s) for s in mine} - {None}
+    page_systems = {size_system(s["size"]) for s in buyable} - {None}
+    if not (my_systems & page_systems):
+        return None, []
+    if buyable:
+        return "no", []
+    return None, []
+
+
+def _colourway(sku, page, url):
+    """'same' / 'different' / None. None means the page never said which."""
+    m = re.match(r"^([A-Za-z0-9]{4,})[-_ ]?(\d{2,3})$", str(sku or "").strip())
+    if not m:
+        return None
+    family, want = m.group(1).lower(), m.group(2)
+    hay = " ".join(filter(None, [page.get("name"), page.get("sku"), url,
+                                 (page.get("text") or "")[:4000]]))
+    found = set(re.findall(rf"{re.escape(family)}[-_ ]?(\d{{2,3}})", hay, re.I))
+    if not found:
+        return None
+    return "same" if want in found else "different"
+
+
 def inspect_offer(offer, identity, timeout_ms=20000):
     """One lead -> one verdict. The page wins every disagreement.
 
@@ -155,7 +262,19 @@ def inspect_offer(offer, identity, timeout_ms=20000):
 
     out["page_name"] = page["name"]
     out["read_by"] = page["read_by"]
+    # `sizes` on the lead is the shelf's list of plain strings; `page_sizes` is
+    # what this page itself offers, with stock state. Two shapes, two keys.
+    out["page_sizes"] = page.get("page_sizes") or []
+    out["your_size"], out["your_sizes"] = size_verdict(out["page_sizes"])
     out["read_locale"] = browser.LOCALE   # which market's price this is
+
+    # A style code names ONE colourway: 1203A740-101 is the ivory, -751 the
+    # cream. Comparing it to the page's own `sku` does not work — shops put
+    # their internal variant id there (126184, "00048184|WHT|7|NA"), which
+    # would mark every offer as a different colour. Look for the
+    # *manufacturer's* code family on the page instead, and stay silent when
+    # it is not there.
+    out["colourway"] = _colourway(identity.get("sku"), page, offer.get("url", ""))
     if page.get("sku"):
         out["page_sku"] = page["sku"]
     if page.get("img") and not out.get("img"):
@@ -265,6 +384,7 @@ def collapse(offers):
     for o in offers:
         raw = SIZE_TAIL.sub("", (o.get("page_name") or o.get("title") or "")).strip()
         name = re.sub(r"[^a-z0-9]+", "", raw.lower())
+        # a declared style code identifies the colourway better than any name
         key = (o.get("store"), name or o.get("url"))
         cur = best.get(key)
         if cur is None:

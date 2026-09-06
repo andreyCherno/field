@@ -4,8 +4,13 @@
     python3 -m agent.search "salomon xt-6"            # level 1-2
     python3 -m agent.search --deep "salomon xt-6"     # level 3: LLM-parse hard stores too
 
+Order and relevance come from agent/stores.py: shops that have actually
+produced hits are asked first, and shops whose whole trade is a different
+world than the item (a chandelier shop asked for sneakers) are not asked at
+all. Both facts were already in the repo and unused.
+
 Levels:
-  1  stores whose playbook already proved productive (stats.hits > 0)
+  1  stores whose playbook already proved productive (data/attempts.jsonl)
   2  every store with a structured method (shopify-suggest / search-url)
   3  --deep: also llm-parse stores — fetch the search page and let the parse
      model extract offers (costs cents; capped by the daily LLM budget)
@@ -54,7 +59,14 @@ def remember_search_url(pb, landed_url, q):
     try:
         saved = json.load(open(path, encoding="utf-8"))
         saved["search_url"] = tpl
-        saved["search_url_source"] = "observed: typed into the shop's own search box"
+        note = "observed: typed into the shop's own search box"
+        was = str(saved.get("search_url_source") or "")
+        # Curated notes carry knowledge nothing can rediscover — that a shop
+        # encodes Hebrew as cp1255, or why it was given up on. Keep them.
+        if was and not was.startswith(("observed", "typed", "differentially")):
+            note += f" | previously: {was}"
+        saved["search_url_source"] = note
+        saved.pop("skip", None)          # it works now
         json.dump(saved, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         pb["search_url"] = tpl
     except OSError:
@@ -155,9 +167,24 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
     moment each store finishes — the live-progress hook. `should_stop()` is
     checked before every store and every query, so the stop button lands within
     one page load instead of at the end of the sweep."""
+    from agent import stores
     offers = []
     skip = set(skip or [])
-    for path, pb in playbooks():
+    queue, off_world = stores.order([pb for _, pb in playbooks()], identity)
+
+    # One chip, not thirty-three: say how many shops were ruled out and why,
+    # without burying the shops that were actually asked.
+    if off_world:
+        row = {"store": f"{len(off_world)} shops not asked",
+               "method": "relevance", "hits": 0,
+               "error": f"skipped — {off_world[0][1]}",
+               "domains": [pb["domain"] for pb, _ in off_world]}
+        if report is not None:
+            report.append(row)
+        if on_store:
+            on_store(row, [])
+
+    for pb in queue:
         if should_stop and should_stop():
             break
         method = pb.get("method", "search-url")

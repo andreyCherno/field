@@ -7,7 +7,7 @@
  "price_selector": "prices in EUR in product tiles",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
+  "attempts": 13,
   "hits": 0,
   "last_success": null
  },

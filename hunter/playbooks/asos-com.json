@@ -6,7 +6,7 @@
  "query_tips": "ASOS search works by product name only, not style codes",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
+  "attempts": 27,
   "hits": 0,
   "last_success": null
  },

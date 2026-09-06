@@ -6,10 +6,15 @@
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
+  "attempts": 17,
   "hits": 0,
   "last_success": null
  },
  "currency": "ILS",
- "search_url_source": "UNRESOLVED 2026-09-05: search results are rendered client-side and the query never appears in the url — there is no template to write"
+ "search_url_source": "UNRESOLVED 2026-09-05: search results are rendered client-side and the query never appears in the url — there is no template to write",
+ "skip": {
+  "reason": "search results are rendered client-side and the query never appears in the url — there i",
+  "since": "2026-09-05",
+  "undo": "delete this key to try the shop again"
+ }
 }

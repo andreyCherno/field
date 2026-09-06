@@ -94,9 +94,12 @@
   .badge.verified{background:var(--good);color:#fff;border-color:var(--good)}
   .badge.sold-out,.badge.price-changed,.badge.unpriced{background:#b8862b;color:#fff;border-color:#b8862b}
   .badge.price-unconfirmed,.badge.dead{background:#d12a6a;color:#fff;border-color:#d12a6a}
+  .badge.other-colour{background:#5b5bd6;color:#fff;border-color:#5b5bd6}
   .g.gone{opacity:.5}
   .g .gw{font:10px var(--mono);color:var(--dim);padding:0 10px 8px;line-height:1.4}
   .g .gc{font:10px var(--mono);padding:0 10px 8px}
+  .g .gz{font:10px var(--mono);padding:0 10px 6px;color:var(--ink-soft)}
+  .g .gz b.yes{color:var(--good)} .g .gz b.no{color:#b0433a}
   .g .gc.uncertain,.g .gc.unknown{color:#b0433a}
   .g .gc.medium{color:var(--ink-soft)} .g .gc.high{color:var(--good)}
   #stop{background:#d12a6a;color:#fff;border:none;padding:9px 20px;font:700 14px var(--display);cursor:pointer}
@@ -229,8 +232,10 @@ function addOffers(offers){
     a.title=[why,bd,o.landed_note||""].filter(Boolean).join("\n\n");
     a.innerHTML=(o.img?`<img src="${o.img}" alt="" loading="lazy">`:"")+
       `<div class="gi"><div class="gp">$${o.landed}<small>${o.price} ${o.currency||"USD"}</small></div>
-       <div class="gs"><span class="badge ${o.status||""}">${lbl}</span>${o.store}</div>
+       <div class="gs"><span class="badge ${o.status||""}">${lbl}</span>${o.colourway==="different"
+          ?`<span class="badge other-colour" title="מק״ט ${esc(o.page_sku||"")} — אותו דגם, צבע אחר">צבע אחר</span>`:""}${o.store}</div>
        <div class="gt">${o.page_name||o.title||""}</div></div>
+       ${sizeLine(o)}
        <div class="gc ${o.landed_confidence||""}">${CONF[o.landed_confidence]||""}</div>
        <div class="gw">${o.match_why||""}</div>`;
     const kids=[...g.children];               // cheapest-first insertion
@@ -239,12 +244,23 @@ function addOffers(offers){
     before?g.insertBefore(a,before):g.appendChild(a);
   }
 }
+function sizeLine(o){
+  const sz=o.page_sizes||[];
+  if(!sz.length) return "";
+  const buy=sz.filter(x=>x.available!==false).map(x=>x.size);
+  if(!buy.length) return `<div class="gz"><b class="no">אין מידות במלאי</b></div>`;
+  const mine=o.your_size==="yes"?`<b class="yes">✓ המידה שלך: ${esc((o.your_sizes||[]).join(", "))}</b> · `
+            :o.your_size==="no"?`<b class="no">לא במידה שלך</b> · `:"";
+  return `<div class="gz">${mine}${buy.length} מידות: ${esc(buy.slice(0,10).join(", "))}</div>`;
+}
 function covChip(s){
   const off=s.off_target?` <span style="color:var(--dim)">(${s.off_target} לא רלוונטי)</span>`:"";
   // "ידני" now means the shop could not be READ — not that we did not try.
   // A shop we read that simply has nothing says so.
-  const b=s.error==="skipped (by you)"?`<b class="no">דילגת</b>`
-        :s.error&&String(s.error).startsWith("skipped")?`<b class="no">עמוק בלבד</b>`
+  const b=s.method==="relevance"?`<b class="no" title="${esc((s.domains||[]).join(", "))}">${esc(String(s.error||"").replace("skipped — ",""))}</b>`
+        :s.error==="skipped (by you)"?`<b class="no">דילגת</b>`
+        :s.error==="skipped (needs deep)"?`<b class="no">עמוק בלבד</b>`
+        :s.error&&String(s.error).startsWith("skipped")?`<b class="no" title="${esc(String(s.error))}">לא נסרקת</b>`
         :s.error?`<b class="err">${s.error}</b>`
         :s.hits?`<b class="ok">✓ ${s.hits}</b>`
         :s.manual?`<b class="err" title="${esc(s.why||"")}">לא נקרא</b>`
@@ -273,7 +289,8 @@ function showConfirm(p){
         <div class="terms">מקור הזיהוי: <b>${esc(i.source)}</b>${i.note?" · "+esc(i.note):""}</div>
         <div class="terms">${code}</div>
         <div class="terms">החנויות יישאלו: ${p.search_terms.map(t=>`<b>${esc(t)}</b>`).join("")}</div>
-        <div class="cbtns">
+        <div class="terms" id="sizehint"></div>
+      <div class="cbtns">
           <button class="yes" id="c_go">✓ כן, צא לצוד</button>
           <button class="no" id="c_no">ביטול</button>
         </div>
@@ -294,6 +311,15 @@ function showConfirm(p){
     F("c_sku").value=x.style_code||"";
     c.querySelector(".cf img")?.setAttribute("src",x.img||"");
   });
+  // a shoe hunt cannot be answered by a profile that only lists M and L
+  (async()=>{try{
+    const c=await (await fetch("/api/config")).json();
+    const sizes=(c.sizes||[]).map(x=>String(x).trim()).filter(Boolean);
+    const numeric=sizes.some(x=>/^\d/.test(x));
+    if((i.category||"").toLowerCase()==="footwear" && !numeric)
+      F("sizehint").innerHTML=`⚠️ המידות שלך (${esc(sizes.join(", ")||"ריק")}) הן מידות ביגוד. `+
+        `כדי שהצייד יגיד לך אם יש במידה שלך, הוסף מידת נעליים ב-⚙ (למשל 43 או 9.5).`;
+  }catch(e){}})();
   F("c_no").onclick=()=>{c.hidden=true;F("go").disabled=false;F("live").hidden=true;};
   F("c_go").onclick=()=>{
     c.hidden=true;

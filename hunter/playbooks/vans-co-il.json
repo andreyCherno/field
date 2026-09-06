@@ -6,8 +6,8 @@
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
-  "hits": 0,
+  "attempts": 14,
+  "hits": 1,
   "last_success": null
  },
  "currency": "ILS"

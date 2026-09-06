@@ -6,10 +6,15 @@
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
+  "attempts": 31,
   "hits": 0,
   "last_success": null
  },
  "currency": "EUR",
- "search_url_source": "UNRESOLVED 2026-09-05: no search box could be found on the page"
+ "search_url_source": "UNRESOLVED 2026-09-05: no search box could be found on the page",
+ "skip": {
+  "reason": "no search box could be found on the page",
+  "since": "2026-09-05",
+  "undo": "delete this key to try the shop again"
+ }
 }

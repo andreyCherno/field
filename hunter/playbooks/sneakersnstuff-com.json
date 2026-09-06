@@ -6,8 +6,8 @@
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
-  "hits": 0,
+  "attempts": 18,
+  "hits": 20,
   "last_success": null
  },
  "currency": "SEK",

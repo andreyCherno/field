@@ -6,10 +6,11 @@
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
+  "attempts": 20,
   "hits": 0,
   "last_success": null
  },
- "currency": "SEK",
- "search_url_source": "typed into the shop's own search box; differentially verified (299 vs 227 results, 24% unique)"
+ "currency": "EUR",
+ "search_url_source": "typed into the shop's own search box; differentially verified (299 vs 227 results, 24% unique)",
+ "currency_source": "verified 2026-09-06: /en/ renders € under the configured locale (was SEK — an 11.5x conversion error)"
 }

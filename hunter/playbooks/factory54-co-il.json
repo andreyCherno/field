@@ -6,8 +6,8 @@
  "query_tips": "Hebrew or brand-name searches; prices include VAT",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
-  "hits": 0,
+  "attempts": 20,
+  "hits": 4,
   "last_success": null
  },
  "currency": "ILS"

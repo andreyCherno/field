@@ -6,10 +6,15 @@
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 0,
+  "attempts": 17,
   "hits": 0,
   "last_success": null
  },
  "currency": "EUR",
- "search_url_source": "UNRESOLVED 2026-09-05: domain redirects to spinnakerboutique.com and no search box could be found"
+ "search_url_source": "UNRESOLVED 2026-09-05: domain redirects to spinnakerboutique.com and no search box could be found",
+ "skip": {
+  "reason": "domain redirects to spinnakerboutique.com and no search box could be found",
+  "since": "2026-09-05",
+  "undo": "delete this key to try the shop again"
+ }
 }

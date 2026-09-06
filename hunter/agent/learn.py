@@ -61,9 +61,21 @@ def main():
                     " supports it; keep the domain and stats untouched.",
                     f"Current playbook:\n{json.dumps(pb, ensure_ascii=False)}\n\n"
                     f"Recent attempts:\n{sample}")
-                revised["domain"], revised["stats"] = pb["domain"], pb["stats"]
-                pb = revised
-                print(f"  {pb['domain']}: playbook revised")
+                # Merge a whitelist, never replace. `pb = revised` dropped
+                # every field the model happened to omit — currency, host, and
+                # the search urls that were observed by driving the shop's own
+                # search box. A playbook is accumulated evidence; a language
+                # model's echo of it is not.
+                allowed = {"method", "search_url", "accepts_sku",
+                           "query_tips", "price_selector", "rate_limit_s"}
+                changed = {k: v for k, v in revised.items()
+                           if k in allowed and v != pb.get(k)}
+                if changed and "search_url" in changed and \
+                        str(pb.get("search_url_source", "")).startswith(("typed", "observed",
+                                                                        "differentially")):
+                    changed.pop("search_url")   # an observed url outranks a guess
+                pb.update(changed)
+                print(f"  {pb['domain']}: playbook revised ({', '.join(changed) or 'no change'})")
             except llm.BudgetExceeded:
                 print("  budget cap reached — stopping LLM revisions")
                 break

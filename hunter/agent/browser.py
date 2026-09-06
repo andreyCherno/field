@@ -36,6 +36,42 @@ CAND_FLOOR = _ALL.get("match", {}).get("candidate_min", 0.45)
 # to have a 14 in the name.
 HARVEST_FLOOR = _ALL.get("match", {}).get("accept_min", 0.6)
 
+# Which sizes this product page is actually offering, and which of them you
+# can buy. Shops mark a dead size a dozen ways — disabled, aria-disabled, a
+# "sold out" class, a line-through — so all of them are checked and anything
+# ambiguous is reported as unknown rather than as available.
+SIZES_JS = """() => {
+  const out = [], seen = new Set();
+  const push = (label, avail) => {
+    const t = (label || '').replace(/\\s+/g, ' ').trim();
+    if (!t || t.length > 14 || seen.has(t)) return;
+    if (/^(select|choose|size|guide|chart)$/i.test(t)) return;
+    seen.add(t);
+    out.push({size: t, available: avail});
+  };
+  const dead = e => {
+    if (e.disabled === true) return true;
+    if (e.getAttribute && e.getAttribute('aria-disabled') === 'true') return true;
+    const blob = ((e.className && e.className.toString()) || '') + ' ' +
+                 ((e.getAttribute && (e.getAttribute('data-status') || '')) || '') + ' ' +
+                 ((e.getAttribute && (e.getAttribute('title') || '')) || '');
+    if (/disabled|sold[-_ ]?out|unavailable|out[-_ ]?of[-_ ]?stock|not[-_ ]?available/i.test(blob)) return true;
+    try { if (getComputedStyle(e).textDecorationLine.indexOf('line-through') >= 0) return true; } catch (err) {}
+    return false;
+  };
+  for (const o of document.querySelectorAll('select[name*="size" i] option, select[id*="size" i] option'))
+    push(o.textContent || o.value, !dead(o));
+  const scopes = document.querySelectorAll(
+    '[class*="size" i], [id*="size" i], [data-option-name*="size" i], fieldset');
+  for (const sc of scopes) {
+    for (const e of sc.querySelectorAll('button, label, li, a, [data-size], [data-value]')) {
+      if (e.querySelector('button, label, li')) continue;
+      push(e.getAttribute('data-size') || e.getAttribute('data-value') || e.textContent, !dead(e));
+    }
+  }
+  return out.slice(0, 60);
+}"""
+
 # A results page is a list of doors, not a list of facts. We only need the
 # doors: which links on this page are plausibly the item. Price and name are
 # read later, from behind each door, by inspect.py.
@@ -72,8 +108,11 @@ NOT_PRODUCT = re.compile(
     r"search|collections?|category|categories|product-category|product-tag|"
     r"product_cat|brands?|designers?|magazine|journal|lookbook|stories|guides?|"
     r"size-guide|c|sitemap|store-locator)(/|$)", re.I)
-# a path segment that really does name one product
-IS_PRODUCT = re.compile(r"/(products?|prd|dp|item|itm)/", re.I)
+# A path segment that really does name one product. `p` and `pd` are included
+# because plenty of shops use /collections/all/p/<slug> or /categories/shoes/pd/
+# — dropping them made every such shop yield nothing. The surrounding slashes
+# are what keep this from matching "product-category".
+IS_PRODUCT = re.compile(r"/(products?|prd|pd|p|dp|item|itm|style|artikel)/", re.I)
 
 # A product page is "ready" once schema.org data or a price meta tag exists.
 # Waiting for *that* instead of a flat sleep is what keeps page-by-page
@@ -326,9 +365,32 @@ SEARCH_TOGGLES = [
     '[class*="icon-search" i]', 'div[class*="search" i]', 'span[class*="search" i]',
     '[class*="\u05d7\u05d9\u05e4\u05d5\u05e9"]',
 ]
-# a visible text box that is plainly something else
-NOT_SEARCH = re.compile(r"mail|newsletter|subscribe|zip|postcode|phone|coupon|promo|"
-                        r"discount|qty|quantity|address|name|password", re.I)
+# A visible text box that is plainly something else. Deliberately does NOT
+# include a bare "name": "Search by product name" is a real and common search
+# placeholder, and matching it made the last-resort finder reject the very box
+# it exists to find.
+NOT_SEARCH = re.compile(
+    r"\b(e-?mail|newsletter|subscribe|signup|sign-up|zip|postcode|postal|phone|tel|"
+    r"coupon|promo|voucher|discount|qty|quantity|address|first-?name|last-?name|"
+    r"full-?name|password|username|comment|message|review)\b", re.I)
+IS_SEARCH_WORD = re.compile(
+    r"search|\u05d7\u05d9\u05e4\u05d5\u05e9|suche|recherche|ricerca|buscar|zoek", re.I)
+
+
+def _blob(el):
+    try:
+        return " ".join(filter(None, (el.get_attribute(a) for a in
+                                      ("name", "id", "placeholder", "aria-label", "class"))))
+    except Exception:
+        return ""
+
+
+def _rejected_as_non_search(el):
+    """A box that names itself a search box is one, whatever else it says."""
+    b = _blob(el)
+    if IS_SEARCH_WORD.search(b or ""):
+        return False
+    return bool(NOT_SEARCH.search(b or ""))
 
 
 # A consent dialog has its own search box ("Cookie list search" on OneTrust
@@ -381,17 +443,35 @@ def _is_consent(el):
     return bool(CONSENT_HINT.search(blob or ""))
 
 
+def _same_element(a, b):
+    try:
+        return bool(a.evaluate("(e, o) => e === o", b))
+    except Exception:
+        return False
+
+
 def _focused_input(page):
     """The box the shop itself focused. Clicking a search icon almost always
     focuses the search field, which identifies it more reliably than any
     selector — it needs no name, id, placeholder or class to be found."""
     try:
-        el = page.evaluate_handle("() => document.activeElement").as_element()
+        handle = page.evaluate_handle("() => document.activeElement")
+    except Exception:
+        return None
+    try:
+        el = handle.as_element()
         if el and el.evaluate("e => e.tagName") in ("INPUT", "TEXTAREA") \
-                and el.is_visible() and el.is_enabled() and not _is_consent(el):
+                and el.is_visible() and el.is_enabled() and not _is_consent(el) \
+                and not _rejected_as_non_search(el):
             return el
     except Exception:
         pass
+    finally:
+        # a long-lived single browser process: these accumulate otherwise
+        try:
+            handle.dispose()
+        except Exception:
+            pass
     return None
 
 
@@ -399,12 +479,17 @@ def _any_text_box(page):
     """Last resort: a visible text box that is not obviously a newsletter,
     address or quantity field."""
     try:
-        for el in page.query_selector_all('input[type="text"], input:not([type])')[:12]:
+        # filter first, then stop — a page with a dozen hidden filter inputs
+        # would otherwise use up the cap before reaching the visible box
+        found = 0
+        for el in page.query_selector_all(
+                'input[type="search"], input[type="text"], input:not([type])'):
             if not (el.is_visible() and el.is_enabled()) or _is_consent(el):
                 continue
-            blob = " ".join(filter(None, (el.get_attribute(a) for a in
-                                          ("name", "id", "placeholder", "aria-label", "class"))))
-            if NOT_SEARCH.search(blob or ""):
+            found += 1
+            if _rejected_as_non_search(el):
+                if found >= 12:
+                    break
                 continue
             return el
     except Exception:
@@ -461,22 +546,23 @@ def _do_type_search(br, domain, query, wait_ms, timeout_ms):
             # The box is behind a magnifier icon and is rendered only after the
             # click, so look again *after waiting* — and give it two goes,
             # because the first click often just opens a drawer.
-            tried = set()
-            for _ in range(3):
-                toggle = None
-                for sel in SEARCH_TOGGLES:
-                    if sel in tried:
-                        continue
-                    cand = _first_visible(page, [sel])
-                    if cand is not None:
-                        toggle, _sel = cand, tried.add(sel)
-                        break
-                if toggle is None or not _press(toggle):
+            # Try each toggle selector in turn. A failed press must not end the
+            # hunt: the broad selectors often match an unclickable wrapper
+            # first, and the real icon is behind the next one.
+            pressed = []
+            for sel in SEARCH_TOGGLES:
+                if box is not None or len(pressed) >= 3:
                     break
+                cand = _first_visible(page, [sel])
+                if cand is None:
+                    continue
+                if any(_same_element(cand, p) for p in pressed):
+                    continue          # two selectors, one node — do not re-press
+                pressed.append(cand)
+                if not _press(cand):
+                    continue
                 page.wait_for_timeout(1500)
                 box = _focused_input(page) or _first_visible(page, SEARCH_INPUTS)
-                if box is not None:
-                    break
             if box is None:
                 box = _any_text_box(page)
         if box is None:
@@ -571,7 +657,7 @@ def harvest(links, domain, identity, limit=6, floor=HARVEST_FLOOR):
     return leads[:limit]
 
 
-def search(pb, url, identity, deep=False, limit=6, floor=HARVEST_FLOOR):
+def search(pb, url, identity, deep=False, limit=6, floor=None):
     """Search one store the way a person does: open the results page in a real
     browser, then take the links that actually match what we are hunting.
 
@@ -580,20 +666,27 @@ def search(pb, url, identity, deep=False, limit=6, floor=HARVEST_FLOOR):
     as a result."""
     v = visit(url, wait_ms=3000, collect=LINKS_JS)
     domain = pb["domain"]
-    # 1. structured data, when the shop bothers to emit it on a results page
-    offers = [o for o in offers_from_jsonld(v["html"], domain)]
+    # 1. Structured data, when the shop emits it on a results page. This uses
+    #    the *candidate* bar, not the publish bar: a results-page title is
+    #    often truncated ("Nike Air Max 90 Men's...") and inspect.py re-scores
+    #    the authoritative page name at the publish bar anyway. Judging it
+    #    twice at the higher bar throws away leads that would have confirmed.
+    offers = offers_from_jsonld(v["html"], domain)
     if offers:
         from agent import match
         kept = []
         for o in offers:
             o["match"], o["match_why"] = match.score(
                 o.get("title"), identity, url=o.get("url", ""), brand=o.get("brand", ""))
-            if o["match"] >= floor:
+            if o["match"] >= (floor if floor is not None else CAND_FLOOR):
                 kept.append(o)
         offers = sorted(kept, key=lambda o: -o["match"])[:limit]
-    # 2. otherwise walk the links like a person would
+    # 2. Otherwise walk the links. This uses the publish bar: there are 100+
+    #    anchors per page and no structured data behind any of them, so a
+    #    weak match is just a page load spent on a lamp.
     if not offers:
-        offers = harvest(v.get("collected"), domain, identity, limit, floor)
+        offers = harvest(v.get("collected"), domain, identity, limit,
+                         floor if floor is not None else HARVEST_FLOOR)
     # 3. last resort, and only when asked: pay the model to read the page
     if not offers and deep:
         offers = offers_from_llm(v["text"], domain,
