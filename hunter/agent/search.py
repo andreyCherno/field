@@ -274,8 +274,16 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                         hits, err = browser_search(pb, identity, q, deep)
                         if err:
                             # the shop would not be read. Before giving up and
-                            # handing back a link, look in its own index.
+                            # handing back a link, look in its own index, then
+                            # ask Google's index for what it already holds.
                             hits = from_index(pb, identity)
+                            if not hits:
+                                try:
+                                    from agent import google
+                                    if google.available():
+                                        hits = google.offers_for(pb, identity)
+                                except Exception:
+                                    hits = []
                             if not hits:
                                 hits = [{"store": pb["domain"], "title": None,
                                          "price": None, "manual": True, "why": err,

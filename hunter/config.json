@@ -45,5 +45,11 @@
   "_comment": "Shopify Markets and most boutiques price by the requesting IP/locale, and never name the currency. This is the identity the hunter's browser presents, so it decides WHICH market's price you are shown. en-US reads US-market prices; he-IL reads what you would actually pay from Israel, but some stores geo-block or hide stock. Every inspected offer records the locale it was read under.",
   "locale": "en-US",
   "timezone": "Asia/Jerusalem"
+ },
+ "google": {
+  "_comment": "Google Custom Search JSON API — the sanctioned route to prices at shops that answer 403. NOT Google Shopping scraping: google.com/robots.txt disallows /search and /shopping/*, and this project honours a Disallow. Free, 100 queries/day, no billing. Key: developers.google.com/custom-search/v1/introduction · Engine id: programmablesearchengine.google.com/controlpanel/create (turn on 'Search the entire web'). Env GOOGLE_API_KEY / GOOGLE_CX override these.",
+  "api_key": "",
+  "cx": "",
+  "daily_cap": 100
  }
 }

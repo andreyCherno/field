@@ -353,7 +353,16 @@ def confirm_store(store_offers, identity, should_stop=None, limit=PER_STORE):
     kept = [o for o in store_offers if o.get("manual")]
     for o in kept:
         o["status"] = "manual"
-    leads, off = shortlist(store_offers, identity, limit)
+    # A price Google read off a page we are forbidden to open is a real number
+    # with a stated source. It never gets visited (the visit is what 403s) and
+    # it never gets called verified — its own status says where it came from.
+    for o in store_offers:
+        if o.get("from_google") and not o.get("manual"):
+            o["status"] = "google-index"
+            o["checked"] = datetime.now(timezone.utc).isoformat(timespec="minutes")
+            kept.append(o)
+    leads, off = shortlist([o for o in store_offers if not o.get("from_google")],
+                           identity, limit)
     confirmed = []
     for o in leads:
         if should_stop and should_stop():

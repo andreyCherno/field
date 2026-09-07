@@ -95,6 +95,7 @@
   .badge.sold-out,.badge.price-changed,.badge.unpriced{background:#b8862b;color:#fff;border-color:#b8862b}
   .badge.price-unconfirmed,.badge.dead{background:#d12a6a;color:#fff;border-color:#d12a6a}
   .badge.other-colour{background:#5b5bd6;color:#fff;border-color:#5b5bd6}
+  .badge.google-index{background:#3f6ad8;color:#fff;border-color:#3f6ad8}
   .g.gone{opacity:.5}
   .g .gw{font:10px var(--mono);color:var(--dim);padding:0 10px 8px;line-height:1.4}
   .g .gc{font:10px var(--mono);padding:0 10px 8px}
@@ -212,7 +213,8 @@ const STATUS={verified:["מאומת","הדף מאשר את השם ואת המח�
  "sold-out":["אזל","הפריט הנכון — פשוט לא ניתן לקנייה"],
  unpriced:["בלי מחיר","הפריט הנכון, אין מחיר על הדף"],
  live:["חי","פיד מובנה של החנות, בן שניות"],
- manual:["ידני","פתח את חיפוש החנות בעצמך"], dead:["מת","הדף לא נפתח"]};
+ manual:["ידני","פתח את חיפוש החנות בעצמך"], dead:["מת","הדף לא נפתח"],
+ "google-index":["מאינדקס גוגל","המחיר כפי שגוגל קרא אותו מהדף — החנות חוסמת קריאה ישירה"]};
 
 function addOffers(offers){
   const g=F("gallery"); g.hidden=false;

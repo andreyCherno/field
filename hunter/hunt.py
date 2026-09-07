@@ -78,6 +78,15 @@ body{{margin:0;background:#f0eee9;color:#111;font-family:ui-sans-serif,system-ui
 .st.verified{{background:#156b3b;color:#fff;border-color:#156b3b}}
 .st.dead,.st.price-unconfirmed{{background:#d12a6a;color:#fff;border-color:#d12a6a}}
 .st.sold-out,.st.price-changed,.st.unpriced{{background:#b8862b;color:#fff;border-color:#b8862b}}
+.st.link{{background:#5b5bd6;color:#fff;border-color:#5b5bd6}}
+details.unread{{border-bottom:1px solid #111}}
+details.unread summary{{padding:12px 18px;cursor:pointer;font:600 12px ui-monospace,monospace;
+  color:#555;list-style:none}}
+details.unread summary::-webkit-details-marker{{display:none}}
+details.unread summary::before{{content:"\25b8  "}}
+details.unread[open] summary::before{{content:"\25be  "}}
+details.unread summary:hover{{background:#e8e5dc}}
+.row.sub{{padding-inline-start:36px;background:#f6f4ef}}
 footer{{padding:10px 18px;font:11px ui-monospace,monospace;color:#888;line-height:1.7}}
 </style></head><body><div class="wrap"><div class="card">
 <div class="head"><b>{title}</b><br><span class="sku">{sku}</span></div>
@@ -122,14 +131,26 @@ def publish(identity, offers):
                  f'<div class="pname">{name}</div>'
                  f'<small>{why_match}</small></span>'
                  f'<span class="st {status}">{label}</span></a>')
-    for o in manual:
+    # A direct product link is a real answer and belongs in the list. "This
+    # shop refused to be read" is not — 23 rows of HTTP 403 buried 22 genuine
+    # offers on the last hunt. Those fold into one line you can open.
+    links = [o for o in manual if o.get("from_index")]
+    unread = [o for o in manual if not o.get("from_index")]
+    for o in links:
         name = o.get("title") or ""
-        why = o.get("why") or "open the store search in the browser"
         rows += (f'<a class="row" href="{o["url"]}" target="_blank" rel="noopener">'
-                 f'<span class="price">?</span><span class="store"><b>{o["store"]}</b>'
+                 f'<span class="price">see shop</span><span class="store"><b>{o["store"]}</b>'
                  + (f'<div class="pname">{name[:90]}</div>' if name else "")
-                 + f'<small>{why}</small></span>'
-                 f'<span class="st manual">{"direct link" if o.get("from_index") else "manual"}</span></a>')
+                 + f'<small>{o.get("why", "")}</small></span>'
+                 f'<span class="st link">direct link</span></a>')
+    if unread:
+        inner = "".join(
+            f'<a class="row sub" href="{o["url"]}" target="_blank" rel="noopener">'
+            f'<span class="store"><b>{o["store"]}</b> <small>{o.get("why") or "not readable"}'
+            f'</small></span><span class="st manual">search it yourself</span></a>'
+            for o in unread)
+        rows += (f'<details class="unread"><summary>{len(unread)} shops could not be read '
+                 f'&mdash; open one to search it yourself</summary>{inner}</details>')
     ts = datetime.now(timezone.utc).isoformat(timespec="minutes")
     path = os.path.join(items_dir, slug + ".html")
     open(path, "w", encoding="utf-8").write(PAGE.format(
