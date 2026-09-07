@@ -265,11 +265,8 @@ def read_product(node):
     offer = node.get("offers") or {}
     if isinstance(offer, list):
         offer = next((o for o in offer if isinstance(o, dict)), {})
-    price = offer.get("price") or offer.get("lowPrice")
-    try:
-        price = float(str(price).replace(",", ""))
-    except (TypeError, ValueError):
-        price = None
+    from agent import fx
+    price = fx.parse_amount(offer.get("price") or offer.get("lowPrice"))
     avail = str(offer.get("availability") or "").lower()
     brand = node.get("brand")
     img = node.get("image")

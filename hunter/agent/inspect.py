@@ -91,10 +91,7 @@ def _meta(html, key):
 
 
 def _num(s):
-    try:
-        return float(str(s).replace(",", "").strip())
-    except (TypeError, ValueError):
-        return None
+    return fx.parse_amount(s)
 
 
 def read_page(url, timeout_ms=20000):

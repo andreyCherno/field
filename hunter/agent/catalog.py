@@ -117,7 +117,10 @@ def lookup(query, limit=6, min_score=0.5):
 
 
 _DASH = re.compile(r"\s+[-\u2013\u2014]\s+")
-_SLASH_COLOR = re.compile(r"\s((?:[A-Z][\w']*)(?:\s*/\s*[A-Z][\w']*)+)\s*$")
+# "Putty / Collegiate Navy" is a colourway and so is "Ivory / Cream", but a
+# pattern of capitalised words alone would eat "Adizero EVO SL EXO" too. The
+# slash is the reliable marker: the colourway starts at the word before it.
+_SLASH_COLOR = re.compile(r"\s(\S+\s*/\s*.+)$")
 # two or more trailing SHOUTED words are a colourway ("QS LT BASE GREY");
 # one alone is usually part of the model ("XT 6 GTX"), so it stays
 _CAPS_COLOR = re.compile(r"\s((?:\b[A-Z]{3,}\b\s+)+\b[A-Z]{3,}\b)\s*$")

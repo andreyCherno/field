@@ -6,7 +6,7 @@ Rates: baked fallbacks below, refreshed from frankfurter.app (free, no key)
 at most once a day into data/fx.json. If the refresh fails we keep going on
 the last known rates — a slightly stale rate never blocks a hunt.
 """
-import json, os, urllib.request
+import json, os, re, urllib.request
 from datetime import date
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -45,6 +45,41 @@ def rates():
     except Exception:
         pass   # offline / blocked — fallback rates carry the day
     return _rates
+
+def parse_amount(raw):
+    """Any shop's way of writing a number -> a float, or None.
+
+    Europe writes 154,34 for what the US writes 154.34, and 1.299,00 for
+    1,299.00. Stripping commas — which is what this used to do everywhere —
+    turns 154,34 into 15434 (a 100x overcharge) and 1.299,00 into 1.299
+    (a 1000x undercount). Both were live: an adidas hunt reported $12,500.99
+    for a running shoe.
+
+    The rule that resolves it: whichever separator appears LAST is the decimal
+    one. With only one separator present, a group of exactly three digits
+    after it is a thousands group, and anything else is a decimal fraction.
+    """
+    if raw is None:
+        return None
+    t = re.sub(r"[^\d.,\-]", "", str(raw).replace("\u00a0", " ")).strip()
+    if not t or not re.search(r"\d", t):
+        return None
+    last_dot, last_comma = t.rfind("."), t.rfind(",")
+    if last_dot >= 0 and last_comma >= 0:
+        dec = "." if last_dot > last_comma else ","
+        t = t.replace("," if dec == "." else ".", "").replace(dec, ".")
+    elif last_comma >= 0:
+        tail = len(t) - last_comma - 1
+        t = t.replace(",", "") if (tail == 3 and t.count(",") >= 1) else t.replace(",", ".")
+    elif last_dot >= 0:
+        tail = len(t) - last_dot - 1
+        if tail == 3:
+            t = t.replace(".", "")          # 12.500 is twelve thousand five hundred
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
 
 def to_usd(price, currency):
     if price is None:
