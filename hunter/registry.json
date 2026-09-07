@@ -1295,5 +1295,93 @@
   "note": "Tokyo select shop chain; official stockist; search via /search/?keyword=",
   "platform": "custom",
   "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "29CM",
+  "url": "https://www.29cm.co.kr",
+  "country": "KR",
+  "category": "fashion",
+  "focus": "Seoul multi-brand fashion platform (Musinsa group); official stockist; search via /store/search?keyword=",
+  "ships_to_israel": "unknown",
+  "note": "Seoul multi-brand fashion platform (Musinsa group); official stockist; search via /store/search?keyword=",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "Siam Discovery",
+  "url": "https://www.siamdiscovery.co.th",
+  "country": "TH",
+  "category": "department store",
+  "focus": "Lifestyle department store featuring curated fashion and outdoor brands",
+  "ships_to_israel": "unknown",
+  "note": "Lifestyle department store featuring curated fashion and outdoor brands",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "A-FORTY",
+  "url": "https://www.aforty.com",
+  "country": "TW",
+  "category": "outdoor",
+  "focus": "Outdoor-focused multi-brand store stocking Salomon and technical outerwear labels",
+  "ships_to_israel": "unknown",
+  "note": "Outdoor-focused multi-brand store stocking Salomon and technical outerwear labels",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "Santa Eulalia",
+  "url": "https://www.santaeulalia.com",
+  "country": "ES",
+  "category": "luxury boutique",
+  "focus": "Historic luxury multi-brand boutique with authorised designer and streetwear lines, international shipping",
+  "ships_to_israel": "unknown",
+  "note": "Historic luxury multi-brand boutique with authorised designer and streetwear lines, international shipping",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "WMT",
+  "url": "https://www.wmt.com.tw",
+  "country": "TW",
+  "category": "streetwear boutique",
+  "focus": "Long-running Taiwan streetwear retailer with authorised access to Stone Island and adidas lines",
+  "ships_to_israel": "unknown",
+  "note": "Long-running Taiwan streetwear retailer with authorised access to Stone Island and adidas lines",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "Limited Edt",
+  "url": "https://limitededt.com",
+  "country": "SG",
+  "category": "streetwear boutique",
+  "focus": "Authorised sneaker/streetwear retailer carrying adidas, ASICS and select apparel labels, ships internationally",
+  "ships_to_israel": "unknown",
+  "note": "Authorised sneaker/streetwear retailer carrying adidas, ASICS and select apparel labels, ships internationally",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "De Bijenkorf",
+  "url": "https://www.debijenkorf.nl",
+  "country": "NL",
+  "category": "department store",
+  "focus": "Dutch department store carrying Stone Island, adidas, ASICS and more, ships internationally",
+  "ships_to_israel": "unknown",
+  "note": "Dutch department store carrying Stone Island, adidas, ASICS and more, ships internationally",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "Robinsons",
+  "url": "https://www.robinsons.com.sg",
+  "country": "SG",
+  "category": "department store",
+  "focus": "Long-standing department store offering multi-brand fashion and outdoor lines with global delivery",
+  "ships_to_israel": "unknown",
+  "note": "Long-standing department store offering multi-brand fashion and outdoor lines with global delivery",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
  }
 ]

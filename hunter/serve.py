@@ -119,6 +119,9 @@ class Handler(SimpleHTTPRequestHandler):
             if raw_identity:
                 identity = json.loads(raw_identity)      # the card you confirmed
                 identity.setdefault("query", query or identity.get("product") or "")
+                item = (qs.get("item") or [""])[0].strip()
+                if item:
+                    identity["shelf_item"] = item          # write the answer back to this piece
             elif query:
                 identity = identify(query)               # unconfirmed: CLI-style
             else:

@@ -1,0 +1,17 @@
+{
+ "domain": "29cm.co.kr",
+ "method": "search-url",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "KRW",
+ "currency_source": "not readable from a product page; defaulted from country KR",
+ "onboarded": "2026-09-07",
+ "search_url": "https://www.29cm.co.kr/store/search?keyword={q}",
+ "search_url_source": "read from the shop's own search form"
+}

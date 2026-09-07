@@ -763,6 +763,7 @@
         <a href="brands.html" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:6px 14px">Brands</a>
         <a href="super-sales.html" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--card);background:var(--acc);border:1px solid var(--acc);padding:6px 14px">Super Sales</a>
         <button id="activityKitsBtn" style="cursor:pointer;background:var(--ink);color:var(--card);border:none;padding:6px 14px;border-radius:0;font:700 12px var(--mono);display:inline-flex;align-items:center;gap:6px;">Activity Kits</button>
+        <a href="../hunter/" id="hunterNav" title="Hunt one exact piece across every shop, priced to the door" style="font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;text-decoration:none;color:var(--ink);border:1px solid var(--ink);padding:6px 14px;box-shadow:3px 3px 0 var(--ink)">Hunter</a>
       </nav>
       <span class="tag">Every piece, priced by what it costs delivered. Colour of the frame is what it costs.</span>
       <input class="q" id="q" type="search" placeholder="find a piece, a brand, a region…"
@@ -886,6 +887,8 @@
   <div class="whyfree">Value = price vs. comparable pieces here. Never influenced by who pays us.</div>
   <div class="shipto" id="sheetShip" hidden></div>
   <a class="open" id="sheetOpen" target="_blank" rel="noopener">Open brand →</a>
+  <a class="open" id="sheetHunt" href="../hunter/" title="Hunt this exact piece across every shop, priced to the door" style="margin-left:6px;background:var(--ink);color:var(--card);border-color:var(--ink)">Hunt this piece ↗</a>
+  <div class="landed" id="sheetHunted" hidden></div>
   <button class="ask" id="sheetAsk">Ask about this piece</button>
 </aside>
 
@@ -915,6 +918,8 @@
         <div class="shipto" id="ipageShip" hidden></div>
         <div>
           <a class="openb" id="ipageOpen" target="_blank" rel="noopener">Open brand →</a>
+          <a class="openb" id="ipageHunt" href="../hunter/" title="Hunt this exact piece across every shop, priced to the door" style="margin-left:6px;background:var(--ink);color:var(--card);border-color:var(--ink)">Hunt this piece ↗</a>
+          <div class="landed" id="ipageHunted" hidden></div>
           <button class="askb" id="ipageAsk">Ask about this piece</button>
         </div>
       </div>
@@ -2133,6 +2138,39 @@ function labelMarket(){
   renderMarket();     // the country control owns the market label now
 }
 
+/* ---- the hunter -----------------------------------------------------------------
+   One exact piece, every shop, priced to the door. The shelf hands the hunter the
+   style code (exact) or the name (close), plus this piece's id so the hunter can
+   write its answer back. That answer arrives as hunter-overlay.json — a sidecar,
+   never a change to items.json, which is the pipeline's file. The overlay is shown
+   NEXT to the snapshot price with its own date and status, never in place of it. */
+const HUNTER = "../hunter/";
+function huntUrl(it){
+  const p = new URLSearchParams();
+  if(it.styleCode) p.set("sku", it.styleCode); else p.set("q", `${it.brand||""} ${it.name||""}`.trim());
+  if(it.id) p.set("item", it.id);
+  return HUNTER + "?" + p.toString();
+}
+let HUNTED = null;
+async function loadHunted(){
+  if(HUNTED) return HUNTED;
+  try{ const r = await fetch("hunter-overlay.json", {cache:"no-store"}); HUNTED = r.ok ? await r.json() : {}; }
+  catch(e){ HUNTED = {}; }
+  return HUNTED;
+}
+async function paintHunted(it, el){
+  if(!el) return;
+  el.hidden = true;
+  const ov = (await loadHunted())[it.id];
+  if(!ov || !ov.cheapest_landed_usd) return;
+  const when = String(ov.hunted||"").slice(0,10);
+  const st = {verified:"verified", "price-changed":"price moved", archived:"archived", "google-index":"google index", live:"live"}[ov.status] || ov.status || "";
+  el.innerHTML = `<b>Hunted ${esc(when)}:</b> $${esc(String(ov.cheapest_landed_usd))} to the door at `
+    + `<a href="${esc(ov.url||"#")}" target="_blank" rel="noopener">${esc(ov.store||"")}</a>`
+    + ` <span style="font:600 9px var(--mono);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);padding:1px 5px;margin-left:4px">${esc(st)}</span>`
+    + ` · ${esc(String(ov.offers||0))} shops · <a href="../${esc(ov.page||"hunter/")}">all offers</a>`;
+  el.hidden = false;
+}
 function openSheet(it, {replace = false} = {}){
   sheet._it = it;
   pushItem(it, {replace});
@@ -2190,6 +2228,8 @@ function openSheet(it, {replace = false} = {}){
   const v = valueLine(it), ve = document.getElementById("sheetValue");
   ve.className = "value " + v.cls; ve.textContent = v.txt;
   document.getElementById("sheetOpen").href = wrapOut(safeUrl(it.url)) || "#";
+  document.getElementById("sheetHunt").href = huntUrl(it);
+  paintHunted(it, document.getElementById("sheetHunted"));
   backdrop.classList.add("open");
   reveal(sheet);
   requestAnimationFrame(()=> sheet.classList.add("open"));
@@ -2342,6 +2382,8 @@ function openPage(it, {replace = false} = {}){
   const v = valueLine(it), ve = document.getElementById("ipageValue");
   ve.className = "value " + v.cls; ve.textContent = v.txt;
   document.getElementById("ipageOpen").href = wrapOut(safeUrl(it.url)) || "#";
+  document.getElementById("ipageHunt").href = huntUrl(it);
+  paintHunted(it, document.getElementById("ipageHunted"));
 
   renderLanded(it, document.getElementById("ipageLanded"));
   renderCheaper(it, document.getElementById("ipageCheaper"));

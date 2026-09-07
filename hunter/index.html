@@ -347,7 +347,8 @@ function startHunt(identity){
   F("coverage").hidden=false; F("coverage").innerHTML="<h3>איפה חיפשתי — חי</h3>";
   let checked=0, rejected=0;
   es=new EventSource(`/api/hunt/stream?identity=${encodeURIComponent(JSON.stringify(identity))}`+
-    `&deep=${F("deep").checked?1:0}&skip=${[...skipSet].join(",")}`);
+    `&deep=${F("deep").checked?1:0}&skip=${[...skipSet].join(",")}`+
+    (window.SHELF_ITEM?`&item=${encodeURIComponent(window.SHELF_ITEM)}`:""));
   es.onmessage=ev=>{
     const d=JSON.parse(ev.data);
     if(d.type==="status"){
@@ -382,6 +383,15 @@ F("stop").onclick=()=>{
   fetch("/api/hunt/stop").catch(()=>{}).finally(()=>{F("stop").disabled=false;});
 };
 
+// Arriving from the shelf: ?q=<name> or ?sku=<style code> (+ &item=<shelf id>)
+// fills the box and opens the confirmation card at once. Nothing is searched
+// until you say yes — the card is the gate, however you got here.
+const ARRIVE=new URLSearchParams(location.search);
+window.SHELF_ITEM=ARRIVE.get("item")||null;
+window.addEventListener("DOMContentLoaded",()=>{
+  const q=(ARRIVE.get("sku")||ARRIVE.get("q")||"").trim();
+  if(q){F("q").value=q; F("huntform").requestSubmit();}
+});
 F("huntform").onsubmit=async e=>{
   e.preventDefault();
   const q=F("q").value.trim(); if(!q) return;

@@ -23,8 +23,14 @@ MARKETPLACES = re.compile(
     r"shopee|lazada|coupang|gmarket|11st|kream|stockx|goat\.com|grailed|vinted|"
     r"depop|poizon|dewu|farfetch|lyst|klarna|etsy|walmart|target\.com|jd\.com)", re.I)
 
-PROMPT = ("You list AUTHORISED multi-brand fashion, sneaker and outdoor retailers that "
-          "have their own e-commerce site and ship internationally. Country: {cc}. "
+ANGLES = {
+    "street": "streetwear and sneaker boutiques (the kind that stock Salomon, ASICS, adidas, "
+              "Carhartt WIP, Stone Island, Our Legacy, Norse Projects)",
+    "designer": "designer / contemporary multi-brand boutiques, outdoor specialists and "
+                "department stores with their own online shop",
+}
+PROMPT = ("You list AUTHORISED multi-brand retailers that have their own e-commerce site and "
+          "ship internationally. Country: {cc}. Angle: {angle}. "
           "Rules: official/authorised stockists only — NO marketplaces, NO resale, NO "
           "brand-owned mono-brand stores, NO price aggregators. Prefer independent "
           "boutiques and department stores that carry brands like Salomon, ASICS, "
@@ -34,10 +40,15 @@ PROMPT = ("You list AUTHORISED multi-brand fashion, sneaker and outdoor retailer
           '"note": "one line"}}, …] with 6 to 10 entries. If unsure a domain is exact, omit it.')
 
 
-def propose(cc):
+def propose(cc, angle="street"):
     from agent import llm
-    rows = llm.complete_json("reason", "You are a careful retail researcher. JSON only.",
-                             PROMPT.format(cc=cc), max_tokens=1500)
+    try:
+        rows = llm.complete_json("reason", "You are a careful retail researcher. JSON only.",
+                                 PROMPT.format(cc=cc, angle=ANGLES[angle]), max_tokens=1500)
+    except ValueError:      # malformed JSON from the model — one retry, stricter
+        rows = llm.complete_json("reason", "Reply with ONLY a valid JSON array. No prose, "
+                                 "no comments, no trailing commas, every string double-quoted.",
+                                 PROMPT.format(cc=cc, angle=ANGLES[angle]), max_tokens=1500)
     out = []
     for r in rows if isinstance(rows, list) else []:
         d = str(r.get("domain", "")).lower().strip().removeprefix("https://").removeprefix("http://").removeprefix("www.").strip("/")
@@ -54,10 +65,15 @@ def run(countries, dry=False):
     os.makedirs(os.path.dirname(LOG), exist_ok=True)
     summary = {}
     for cc in countries:
-        try:
-            cands = propose(cc)
-        except Exception as e:
-            print(f"[{cc}] proposal failed: {type(e).__name__}: {e}", flush=True)
+        cands, seen = [], set()
+        for angle in ANGLES:
+            try:
+                for c in propose(cc, angle):
+                    if c["domain"] not in seen:
+                        seen.add(c["domain"]); cands.append(c)
+            except Exception as e:
+                print(f"[{cc}/{angle}] proposal failed: {type(e).__name__}: {e}", flush=True)
+        if not cands:
             continue
         print(f"\n[{cc}] model proposed {len(cands)}: " + ", ".join(c["domain"] for c in cands), flush=True)
         added, failed = [], []

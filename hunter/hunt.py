@@ -169,7 +169,50 @@ def publish(identity, offers):
                    "cheapest_landed": landed(buyable[0]["usd"], buyable[0].get("currency"),
                                              buyable[0].get("url")) if buyable else None})
     json.dump(idx, open(idx_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    write_overlay(identity, priced, slug, ts)
     return path
+
+
+OVERLAY = os.path.join(os.path.dirname(HERE), "shelf", "hunter-overlay.json")
+
+
+def write_overlay(identity, priced, slug, ts, shelf_item=None):
+    """Hand the hunt's answer back to the shelf, without touching items.json.
+
+    items.json is the seam between the backend pipeline and the shelf page, and
+    it is written by that pipeline on its own schedule. The hunter never edits
+    it. It writes a sidecar keyed by shelf item id, and the shelf page merges
+    it: a fresh verified price, where, when, with the verification status —
+    next to the snapshot price, never silently replacing it."""
+    from agent import catalog
+    buyable = [o for o in priced if o.get("status") not in ("sold-out", "unpriced", "dead")]
+    if not buyable:
+        return
+    best = min(buyable, key=lambda o: landed(o["usd"], o.get("currency"), o.get("url")) or 9e9)
+    entry = {"hunted": ts, "page": f"hunter/items/{slug}.html",
+             "cheapest_landed_usd": landed(best["usd"], best.get("currency"), best.get("url")),
+             "price": best.get("price"), "currency": best.get("currency"),
+             "store": store_domain(best.get("url")) or best.get("store"),
+             "url": best.get("url"), "status": best.get("status"),
+             "offers": len(priced), "sku": identity.get("sku")}
+    ids = set()
+    if shelf_item or identity.get("shelf_item"):
+        ids.add(shelf_item or identity.get("shelf_item"))
+    code = (identity.get("sku") or "").replace("-", "").lower()
+    if code:                                    # every shelf piece with this style code
+        for it in catalog.items():
+            if (it.get("styleCode") or "").replace("-", "").lower() == code:
+                ids.add(it.get("id"))
+    if not ids:
+        return
+    try:
+        ov = json.load(open(OVERLAY, encoding="utf-8"))
+    except (OSError, ValueError):
+        ov = {}
+    for i in ids:
+        if i:
+            ov[i] = entry
+    json.dump(ov, open(OVERLAY, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
 def confirm(query, assume_yes=False):

@@ -70,9 +70,20 @@ def complete(role, system, prompt, max_tokens=2000):
     return "".join(b.text for b in resp.content if b.type == "text")
 
 def complete_json(role, system, prompt, max_tokens=2000):
-    """complete(), then parse the reply as JSON (tolerates a ```json fence)."""
+    """complete(), then parse the reply as JSON.
+
+    Tolerates the ways a model wraps JSON — a ```json fence, a sentence
+    before or after, trailing commas, // comments — because a whole country's
+    shop proposals were being thrown away for a stray trailing comma."""
+    import re
     text = complete(role, system, prompt, max_tokens).strip()
-    if text.startswith("```"):
-        text = text.split("```")[1]
-        text = text[4:] if text.startswith("json") else text
+    m = re.search(r"```(?:json)?\s*(.*?)```", text, re.S)
+    if m:
+        text = m.group(1).strip()
+    start = min([i for i in (text.find("["), text.find("{")) if i >= 0] or [0])
+    end = max(text.rfind("]"), text.rfind("}"))
+    if end > start:
+        text = text[start:end + 1]
+    text = re.sub(r"//[^\n]*", "", text)                 # line comments
+    text = re.sub(r",\s*([}\]])", r"\1", text)         # trailing commas
     return json.loads(text)

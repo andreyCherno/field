@@ -1,0 +1,18 @@
+{
+ "domain": "robinsons.com.sg",
+ "method": "search-url",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "SGD",
+ "currency_source": "read off a product page",
+ "onboarded": "2026-09-07",
+ "search_url": "https://www.robinsons.com.sg/?q={q}",
+ "search_url_source": "read from the shop's own search form",
+ "needs_browser": true
+}
