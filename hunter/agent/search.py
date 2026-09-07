@@ -125,6 +125,22 @@ def from_index(pb, identity):
     return leads
 
 
+_INDEX_CACHE = {}
+
+
+def index_first(pb, identity, max_age_days=14):
+    """Leads from a fresh local index, or None to mean 'ask the shop'."""
+    from agent import sitemap
+    d = pb["domain"]
+    if d not in _INDEX_CACHE:
+        age = sitemap.age_days(d)
+        _INDEX_CACHE[d] = sitemap.has_index(d) and age is not None and age <= max_age_days
+    if not _INDEX_CACHE[d]:
+        return None
+    leads = from_index(pb, identity)
+    return leads or None
+
+
 def url_variants(pb, q):
     """The playbook's search url, plus its www / no-www twin.
 
@@ -244,6 +260,14 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                 elif method == "sitemap-index":
                     # this shop refuses to be searched; read its own index
                     hits = from_index(pb, identity)
+                elif index_first(pb, identity) is not None:
+                    # A fresh index answers in ~0.2s against 5-8s for a live
+                    # search, and costs the shop nothing. It is a lead list,
+                    # not an answer — the page visit still reads the price, so
+                    # a stale entry shows up as dead or price-changed rather
+                    # than as a wrong number. When it finds nothing we fall
+                    # through and search the shop for real.
+                    hits = index_first(pb, identity)
                 else:  # search-url: open it in a real browser like a human would
                     from agent import browser
                     if browser.available():

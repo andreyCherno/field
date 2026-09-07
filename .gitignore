@@ -6,3 +6,4 @@ hunter/web/dist/
 .idea/
 hunter/aliases.json
 hunter/data/index/*.txt
+hunter/data/index/*.json

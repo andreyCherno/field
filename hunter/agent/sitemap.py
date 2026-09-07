@@ -16,6 +16,7 @@ first, every Disallow for `*` is respected, and a shop that disallows a path is
 simply not crawled there. A Sitemap: line is an invitation; a Disallow is a
 refusal, and neither is a puzzle to route around.
 """
+import html as _html
 import json, os, re, sys, urllib.request, ssl, gzip
 from datetime import date, datetime, timezone
 
@@ -27,6 +28,22 @@ UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
 _ctx = ssl.create_default_context()
 _ctx.check_hostname = False
 _ctx.verify_mode = ssl.CERT_NONE
+
+# Sitemaps that never list products. Shops publish a lot of these, and one
+# 10 Corso Como run spent its whole budget re-reading sitemap_blogs_1.xml.
+NOT_PRODUCT_SITEMAP = re.compile(
+    r"(blog|article|news|magazine|stylemag|journal|editorial|lookbook|"
+    r"metaobject|filter[_-]?page|collection|categor|brand|designer|store|"
+    r"author|tag|page[s_-]|cms|policy|discovery)", re.I)
+
+
+def _sitemap_key(url):
+    """A sitemap's identity ignoring locale. 10 Corso Como publishes the same
+    file under /en-gb/, /en-us/, /en-row/, /it/, /en-ca/, /en-hk/ and /en-sg/;
+    they are one catalogue, and reading it seven times is six wasted budgets."""
+    name = url.split("?")[0].rstrip("/").rsplit("/", 1)[-1].lower()
+    return re.sub(r"[-_](?:[a-z]{2}([-_][a-z]{2})?)(?=\.xml)", "", name)
+
 
 # Deliberately NOT a "is this a product url" filter. Plenty of shops name
 # products with plain hierarchical slugs (/sv/accessoarer/balten/...) that
@@ -106,31 +123,55 @@ def _allowed(url, disallow):
 
 
 def _locs(xml):
-    return re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", xml or "")
+    # &amp; is how XML spells & — Shopify paginates product sitemaps as
+    # sitemap_products_1.xml?from=…&amp;to=… and the raw string is not a url
+    return [_html.unescape(u) for u in
+            re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", xml or "")]
 
 
-def build(domain, max_urls=80_000, max_sitemaps=40, verbose=True):
+def _is_sitemap(url):
+    """A sitemap even when it carries a query string. Shopify paginates with
+    ?from=&to=, so `.endswith(".xml")` classified every product sitemap as an
+    ordinary url — and they were then discarded as if they were pages."""
+    return url.split("?")[0].rstrip("/").endswith((".xml", ".xml.gz"))
+
+
+def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True):
     """Walk the shop's sitemaps and write every product url to the index."""
     info = robots(domain)
     if not info["sitemaps"]:
         return {"domain": domain, "error": "no sitemap published", "urls": 0}
-    seen, queue, fetched = set(), list(info["sitemaps"][:max_sitemaps]), 0
+    seen, queue, fetched = set(), list(info["sitemaps"]), 0
+    visited, keys = set(), set()
     while queue and len(seen) < max_urls and fetched < max_sitemaps:
         sm = queue.pop(0)
-        if not _allowed(sm, info["disallow"]):
+        if sm in visited or not _allowed(sm, info["disallow"]):
             continue
+        visited.add(sm)
+        if NOT_PRODUCT_SITEMAP.search(sm.split("?")[0].rsplit("/", 1)[-1]):
+            continue            # blogs, cms pages, collection listings
         status, xml = _fetch(sm)
         fetched += 1
         if status != 200 or not xml:
             continue
         locs = _locs(xml)
-        subs = [l for l in locs if l.endswith((".xml", ".xml.gz"))]
+        subs = [l for l in locs if _is_sitemap(l)]
+        locs = [l for l in locs if not _is_sitemap(l)]
+        # Locale de-duplication applies to LEAF sitemaps only. Index files
+        # share a filename across locales (/en-gb/sitemap.xml, /en-us/...),
+        # so keying them dropped every branch of the tree and returned zero.
+        if not subs:
+            key = _sitemap_key(sm)
+            if key in keys:
+                continue        # same catalogue file, another language
+            keys.add(key)
         if subs:
             # prefer the sub-sitemaps that plainly hold products
-            ranked = sorted(subs, key=lambda s: 0 if re.search(
-                r"produc|item|catalog|shop|clothing|abbigl", s, re.I) else 1)
+            fresh = [x for x in subs if x not in visited]
+            ranked = sorted(fresh, key=lambda s: 0 if re.search(
+                r"produc|item|catalog|shop|clothing|abbigl|prod", s, re.I) else 1)
             queue = ranked + queue
-            continue
+            # a file can be BOTH an index and a list of urls — keep both
         for u in locs:
             if len(seen) >= max_urls:
                 break
@@ -197,12 +238,62 @@ def find(domain, identity, limit=6, floor=None):
     return out[:limit]
 
 
+def build_all(domains=None, max_age_days=7, verbose=True):
+    """Build or refresh an index for every shop that publishes a sitemap.
+
+    Resumable by design: a shop with a fresh index is skipped, so an
+    interrupted run costs nothing to restart. Shops that publish nothing are
+    recorded with the reason rather than retried silently forever."""
+    import glob as _glob
+    if domains is None:
+        domains = []
+        for f in sorted(_glob.glob(os.path.join(ROOT, "playbooks", "*.json"))):
+            if os.path.basename(f).startswith("_"):
+                continue
+            pb = json.load(open(f, encoding="utf-8"))
+            if pb.get("skip"):
+                continue          # a shop we have been asked not to crawl
+            domains.append(pb["domain"])
+
+    done, skipped, failed = [], [], []
+    for i, d in enumerate(domains, 1):
+        age = age_days(d)
+        if age is not None and age <= max_age_days:
+            skipped.append((d, f"fresh ({age}d old)"))
+            if verbose:
+                print(f"[{i}/{len(domains)}] {d:26s} skip — index is {age}d old", flush=True)
+            continue
+        if verbose:
+            print(f"[{i}/{len(domains)}] {d}", flush=True)
+        try:
+            meta = build(d, verbose=verbose)
+        except Exception as e:
+            meta = {"domain": d, "error": f"{type(e).__name__}: {e}", "urls": 0}
+        if meta.get("urls"):
+            done.append((d, meta["urls"]))
+        else:
+            failed.append((d, meta.get("error", "no urls")))
+        if verbose:
+            print(f'    -> {meta.get("urls", 0):,} urls  {meta.get("error", "")}', flush=True)
+    return {"built": done, "skipped": skipped, "failed": failed}
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "build"
     if cmd == "build":
         for d in sys.argv[2:]:
             print(f"=== {d}")
             print("   ", json.dumps(build(d), ensure_ascii=False))
+    elif cmd == "build-all":
+        r = build_all(sys.argv[2:] or None)
+        print(f'\n=== built {len(r["built"])} · skipped {len(r["skipped"])} · '
+              f'no index {len(r["failed"])}')
+        for d, n in sorted(r["built"], key=lambda t: -t[1]):
+            print(f'   {d:28s} {n:>7,} urls')
+        if r["failed"]:
+            print("\n   nothing published / unreachable:")
+            for d, why in r["failed"]:
+                print(f'   {d:28s} {str(why)[:64]}')
     elif cmd == "find":
         from agent.identify import identify
         d, q = sys.argv[2], " ".join(sys.argv[3:])
