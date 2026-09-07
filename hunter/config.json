@@ -47,7 +47,7 @@
   "timezone": "Asia/Jerusalem"
  },
  "google": {
-  "_comment": "Google Custom Search JSON API — the sanctioned route to prices at shops that answer 403. NOT Google Shopping scraping: google.com/robots.txt disallows /search and /shopping/*, and this project honours a Disallow. Free, 100 queries/day, no billing. Key: developers.google.com/custom-search/v1/introduction · Engine id: programmablesearchengine.google.com/controlpanel/create (turn on 'Search the entire web'). Env GOOGLE_API_KEY / GOOGLE_CX override these.",
+  "_comment": "Google Custom Search JSON API — CLOSED to new customers as of 2026 (existing keys valid to 1 Jan 2027). Only fill this in if you already hold a key. Blocked shops are served by agent/archive.py (Common Crawl, keyless) instead. NOT Google Shopping scraping: google.com/robots.txt disallows /search and /shopping/*, and this project honours a Disallow.",
   "api_key": "",
   "cx": "",
   "daily_cap": 100

@@ -96,6 +96,7 @@
   .badge.price-unconfirmed,.badge.dead{background:#d12a6a;color:#fff;border-color:#d12a6a}
   .badge.other-colour{background:#5b5bd6;color:#fff;border-color:#5b5bd6}
   .badge.google-index{background:#3f6ad8;color:#fff;border-color:#3f6ad8}
+  .badge.archived{background:#6b5b95;color:#fff;border-color:#6b5b95}
   .g.gone{opacity:.5}
   .g .gw{font:10px var(--mono);color:var(--dim);padding:0 10px 8px;line-height:1.4}
   .g .gc{font:10px var(--mono);padding:0 10px 8px}
@@ -214,7 +215,8 @@ const STATUS={verified:["מאומת","הדף מאשר את השם ואת המח�
  unpriced:["בלי מחיר","הפריט הנכון, אין מחיר על הדף"],
  live:["חי","פיד מובנה של החנות, בן שניות"],
  manual:["ידני","פתח את חיפוש החנות בעצמך"], dead:["מת","הדף לא נפתח"],
- "google-index":["מאינדקס גוגל","המחיר כפי שגוגל קרא אותו מהדף — החנות חוסמת קריאה ישירה"]};
+ "google-index":["מאינדקס גוגל","המחיר כפי שגוגל קרא אותו מהדף — החנות חוסמת קריאה ישירה"],
+ archived:["מהארכיון","מחיר מארכיון האינטרנט הציבורי (Common Crawl) — בן שבועות, החנות חוסמת קריאה ישירה"]};
 
 function addOffers(offers){
   const g=F("gallery"); g.hidden=false;
@@ -236,7 +238,8 @@ function addOffers(offers){
       `<div class="gi"><div class="gp">$${o.landed}<small>${o.price} ${o.currency||"USD"}</small></div>
        <div class="gs"><span class="badge ${o.status||""}">${lbl}</span>${o.colourway==="different"
           ?`<span class="badge other-colour" title="מק״ט ${esc(o.page_sku||"")} — אותו דגם, צבע אחר">צבע אחר</span>`:""}${o.store}</div>
-       <div class="gt">${o.page_name||o.title||""}</div></div>
+       <div class="gt">${o.page_name||o.title||""}</div>
+       ${o.crawled?`<div class="gw">ארכיון מתאריך ${esc(o.crawled)}</div>`:""}</div>
        ${sizeLine(o)}
        <div class="gc ${o.landed_confidence||""}">${CONF[o.landed_confidence]||""}</div>
        <div class="gw">${o.match_why||""}</div>`;

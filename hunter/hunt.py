@@ -35,6 +35,8 @@ STATUS_LABEL = {
     "sold-out": ("sold out", "right item, not buyable"),
     "unpriced": ("no price", "right item, the page shows no price"),
     "live": ("live", "structured store feed, seconds old"),
+    "google-index": ("google index", "price as Google indexed it — the shop refuses direct reads"),
+    "archived": ("archived", "price from the public web archive, weeks old — the shop refuses direct reads"),
     "manual": ("manual", "open the store search yourself"),
     "dead": ("dead", "the page would not open"),
 }
@@ -79,6 +81,8 @@ body{{margin:0;background:#f0eee9;color:#111;font-family:ui-sans-serif,system-ui
 .st.dead,.st.price-unconfirmed{{background:#d12a6a;color:#fff;border-color:#d12a6a}}
 .st.sold-out,.st.price-changed,.st.unpriced{{background:#b8862b;color:#fff;border-color:#b8862b}}
 .st.link{{background:#5b5bd6;color:#fff;border-color:#5b5bd6}}
+.st.archived{{background:#6b5b95;color:#fff;border-color:#6b5b95}}
+.st.google-index{{background:#3f6ad8;color:#fff;border-color:#3f6ad8}}
 details.unread{{border-bottom:1px solid #111}}
 details.unread summary{{padding:12px 18px;cursor:pointer;font:600 12px ui-monospace,monospace;
   color:#555;list-style:none}}

@@ -18,15 +18,14 @@ shop, and honouring it selectively would make the whole verified/uncertain
 distinction worthless. The Custom Search JSON API is the route Google
 publishes for exactly this, free for 100 queries a day.
 
-Setup, once (two minutes, no billing):
-  1. API key   -> https://developers.google.com/custom-search/v1/introduction
-                  ("Get a Key")
-  2. Engine id -> https://programmablesearchengine.google.com/controlpanel/create
-                  create one, then switch on "Search the entire web"
-  3. Put them in hunter/config.json:
-       "google": {"api_key": "...", "cx": "...", "daily_cap": 100}
-     or in the environment as GOOGLE_API_KEY / GOOGLE_CX.
+STATUS (checked 7 Sep 2026): Google has CLOSED the Custom Search JSON API to
+new customers; existing keys work until 1 Jan 2027. So this module only helps
+someone who already holds a key. It stays because it is correct and harmless
+when unconfigured — but it is no longer the answer for blocked shops.
+agent/archive.py is: the public web archive, no key, no account.
 
+If you do hold a key:  "google": {"api_key": "...", "cx": "...", "daily_cap": 100}
+in hunter/config.json, or GOOGLE_API_KEY / GOOGLE_CX in the environment.
 Without them this module reports itself unavailable and nothing else changes.
 """
 import json, os, re, urllib.parse, urllib.request

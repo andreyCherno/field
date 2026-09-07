@@ -284,6 +284,14 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                                         hits = google.offers_for(pb, identity)
                                 except Exception:
                                     hits = []
+                            if not hits and pb.get("archive", True):
+                                # last resort: the public web archive already
+                                # holds this shop's pages; read the price there
+                                try:
+                                    from agent import archive
+                                    hits = archive.offers_for(pb, identity)
+                                except Exception:
+                                    hits = []
                             if not hits:
                                 hits = [{"store": pb["domain"], "title": None,
                                          "price": None, "manual": True, "why": err,

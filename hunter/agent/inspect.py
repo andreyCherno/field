@@ -361,7 +361,14 @@ def confirm_store(store_offers, identity, should_stop=None, limit=PER_STORE):
             o["status"] = "google-index"
             o["checked"] = datetime.now(timezone.utc).isoformat(timespec="minutes")
             kept.append(o)
-    leads, off = shortlist([o for o in store_offers if not o.get("from_google")],
+        elif o.get("from_archive") and not o.get("manual"):
+            # read from the web archive: a real number with a stated date,
+            # weeks old, never visited live (the visit is what 403s)
+            o["status"] = "archived"
+            o["checked"] = o.get("crawled")
+            kept.append(o)
+    leads, off = shortlist([o for o in store_offers
+                            if not o.get("from_google") and not o.get("from_archive")],
                            identity, limit)
     confirmed = []
     for o in leads:
