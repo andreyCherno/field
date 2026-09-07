@@ -1,0 +1,18 @@
+{
+ "domain": "juicestore.com",
+ "method": "shopify-suggest",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "HKD",
+ "currency_source": "read off a product page",
+ "onboarded": "2026-09-07",
+ "search_url": "https://www.juicestore.com/search?q={q}",
+ "search_url_source": "shopify: suggest.json verified live",
+ "host": "www.juicestore.com"
+}

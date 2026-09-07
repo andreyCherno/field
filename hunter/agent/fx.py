@@ -16,6 +16,10 @@ FALLBACK = {  # USD per 1 unit
     "USD": 1.0, "ILS": 0.27, "EUR": 1.09, "GBP": 1.28, "SEK": 0.095,
     "DKK": 0.146, "PLN": 0.25, "TRY": 0.03, "AED": 0.272, "AUD": 0.66,
     "CAD": 0.73, "JPY": 0.0067, "CHF": 1.12, "HKD": 0.128, "CNY": 0.14,
+    # Asia-Pacific shops, added with them. A currency missing here converts
+    # at 1.0 silently — SGD would have read as USD, a 33% overstatement.
+    "SGD": 0.75, "KRW": 0.00072, "TWD": 0.031, "MYR": 0.22, "THB": 0.029,
+    "NZD": 0.60, "INR": 0.012, "PHP": 0.017, "IDR": 0.000061, "VND": 0.000039,
 }
 
 _rates = None

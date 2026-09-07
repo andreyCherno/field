@@ -84,7 +84,10 @@ def _by_domain():
         try:
             for r in json.load(open(os.path.join(ROOT, "registry.json"), encoding="utf-8")):
                 d = re.sub(r"^www\.", "", re.sub(r"^https?://", "", r.get("url") or "")).split("/")[0]
-                iso = NAME_TO_ISO.get(str(r.get("country", "")).strip().lower())
+                raw = str(r.get("country", "")).strip()
+                # registry rows carry either a name ("Italy") or an ISO code
+                # ("HK") — the onboarding tool writes codes, so accept both
+                iso = NAME_TO_ISO.get(raw.lower()) or (raw.upper() if re.fullmatch(r"[A-Za-z]{2}", raw) else None)
                 if d and iso:
                     _registry[d] = iso
         except (OSError, ValueError):

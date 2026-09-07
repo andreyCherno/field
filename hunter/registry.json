@@ -1240,5 +1240,49 @@
   "note": "Meta-resource for locating עודפים branches and sales",
   "platform": "wordpress",
   "source": "home"
+ },
+ {
+  "name": "JUICE",
+  "url": "https://www.juicestore.com",
+  "country": "HK",
+  "category": "streetwear boutique",
+  "focus": "Hong Kong streetwear/sneaker boutique (CLOT); official stockist",
+  "ships_to_israel": "unknown",
+  "note": "Hong Kong streetwear/sneaker boutique (CLOT); official stockist",
+  "platform": "shopify",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "Club 21",
+  "url": "https://www.club21.com",
+  "country": "SG",
+  "category": "luxury boutique",
+  "focus": "Singapore multi-brand designer retailer; official stockist",
+  "ships_to_israel": "unknown",
+  "note": "Singapore multi-brand designer retailer; official stockist",
+  "platform": "shopify",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "Incu",
+  "url": "https://www.incu.com",
+  "country": "AU",
+  "category": "fashion",
+  "focus": "Sydney/Melbourne multi-brand; official stockist",
+  "ships_to_israel": "unknown",
+  "note": "Sydney/Melbourne multi-brand; official stockist",
+  "platform": "shopify",
+  "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "Up There",
+  "url": "https://www.uptherestore.com",
+  "country": "AU",
+  "category": "streetwear boutique",
+  "focus": "Melbourne sneaker/streetwear boutique; official stockist",
+  "ships_to_israel": "unknown",
+  "note": "Melbourne sneaker/streetwear boutique; official stockist",
+  "platform": "shopify",
+  "source": "onboard 2026-09-07"
  }
 ]
