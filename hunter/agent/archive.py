@@ -88,8 +88,133 @@ def _slug_regex(identity):
     return "(?i).*" + ".*".join(re.escape(t) for t in toks[:2]) + ".*"
 
 
+INDEX_DIR = os.path.join(ROOT, "data", "index")
+# server-side narrowing for shops whose product urls carry a marker; the rest
+# are pulled whole up to a cap and sifted locally
+PRODUCT_HINT = r".*(/prd/|/product/|/products/|/dp/|/p/|/item/).*"
+
+
+def _cdx_pages(crawl, pattern, url_regex):
+    q = (f"https://index.commoncrawl.org/{crawl}-index?url={urllib.parse.quote(pattern)}"
+         f"&output=json&showNumPages=true")
+    if url_regex:
+        q += "&filter=~url:" + urllib.parse.quote(url_regex)
+    try:
+        r = urllib.request.urlopen(urllib.request.Request(q, headers=UA), timeout=60, context=_ctx)
+        return int(json.load(r).get("pages", 0))
+    except Exception:
+        return 0
+
+
+def build(domain, max_pages=40, use_hint=True, verbose=True):
+    """Pull the archive's whole listing for a shop ONCE into a local index, so
+    a hunt never waits on the rate-limited CDX server again.
+
+    The live path costs 15-60s per shop per hunt: several index queries, each
+    spaced four seconds apart, before the first page can even be fetched.
+    With the listing on disk a lookup is a scan of a local file, and only the
+    one WARC range request per candidate page stays live (~1s)."""
+    global _last_call
+    rx = PRODUCT_HINT if use_hint else None
+    rows_out, crawl_used = {}, None
+    for crawl in crawls(2):
+        for host in (f"www.{domain}", domain):
+            pattern = f"{host}/*"
+            pages = _cdx_pages(crawl, pattern, rx)
+            if verbose:
+                print(f"    {crawl} {pattern}: {pages} index pages", flush=True)
+            if not pages:
+                continue
+            for pg in range(min(pages, max_pages)):
+                q = (f"https://index.commoncrawl.org/{crawl}-index?url={urllib.parse.quote(pattern)}"
+                     f"&output=json&filter=status:200&filter=mime:text/html&page={pg}")
+                if rx:
+                    q += "&filter=~url:" + urllib.parse.quote(rx)
+                got = None
+                for t in range(4):
+                    wait = 4 - (time.time() - _last_call)
+                    if wait > 0:
+                        time.sleep(wait)
+                    _last_call = time.time()
+                    try:
+                        r = urllib.request.urlopen(urllib.request.Request(q, headers=UA),
+                                                   timeout=180, context=_ctx)
+                        got = r.read(60_000_000).decode("utf-8", "replace")
+                        break
+                    except urllib.error.HTTPError as e:
+                        if e.code == 404:
+                            got = ""; break
+                        time.sleep(12 * (t + 1))
+                    except Exception:
+                        time.sleep(10 * (t + 1))
+                if got is None:
+                    if verbose:
+                        print(f"      page {pg}: unanswered, stopping this crawl", flush=True)
+                    break
+                n = 0
+                for line in got.splitlines():
+                    try:
+                        rec = json.loads(line)
+                    except ValueError:
+                        continue
+                    u = rec.get("url", "").split("?")[0]
+                    if not u or u in rows_out:
+                        continue
+                    rows_out[u] = {"u": u, "t": rec["timestamp"], "f": rec["filename"],
+                                   "o": int(rec["offset"]), "l": int(rec["length"])}
+                    n += 1
+                if verbose:
+                    print(f"      page {pg}: +{n}  total {len(rows_out):,}", flush=True)
+            if rows_out:
+                crawl_used = crawl
+                break
+        if rows_out:
+            break
+    os.makedirs(INDEX_DIR, exist_ok=True)
+    path = os.path.join(INDEX_DIR, domain + ".cc.jsonl")
+    with open(path, "w", encoding="utf-8") as f:
+        for rec in rows_out.values():
+            f.write(json.dumps(rec) + "\n")
+    meta = {"domain": domain, "urls": len(rows_out), "crawl": crawl_used,
+            "built": datetime.now(timezone.utc).date().isoformat()}
+    json.dump(meta, open(path.replace(".jsonl", ".json"), "w"), indent=1)
+    return meta
+
+
+def has_local(domain):
+    return os.path.exists(os.path.join(INDEX_DIR, domain + ".cc.jsonl"))
+
+
+def find_local(domain, identity, limit=6):
+    """Scan the local archive listing — no network at all."""
+    from agent import match, browser
+    path = os.path.join(INDEX_DIR, domain + ".cc.jsonl")
+    out = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            u = rec["u"]
+            slug = re.sub(r"[^A-Za-z0-9]+", " ", re.sub(r"^https?://[^/]+", "", u))
+            sc, why = match.score(slug, identity, url=u, extra=slug)
+            if sc >= browser.HARVEST_FLOOR:
+                out.append({"url": u, "match": sc, "match_why": why, "crawl": "local",
+                            "timestamp": rec["t"], "filename": rec["f"],
+                            "offset": rec["o"], "length": rec["l"]})
+    out.sort(key=lambda o: -o["match"])
+    return out[:limit]
+
+
 def find(domain, identity, limit=6):
-    """Archived product pages at this shop that plausibly are the item."""
+    """Archived product pages at this shop that plausibly are the item.
+    A local listing is scanned first (instant); the live index only when there
+    is none."""
+    if has_local(domain):
+        hits = find_local(domain, identity, limit)
+        if hits:
+            return hits
     from agent import match
     rx = _slug_regex(identity)
     out = []
@@ -175,6 +300,12 @@ def offers_for(pb, identity, limit=4):
 
 
 if __name__ == "__main__":
+    if sys.argv[1:2] == ["build"]:
+        for d in sys.argv[2:]:
+            print(f"=== {d}", flush=True)
+            print("   ", json.dumps(build(d)), flush=True)
+        print("ARCHIVE BUILD DONE", flush=True)
+        raise SystemExit(0)
     from agent.identify import identify
     d, q = sys.argv[1], " ".join(sys.argv[2:])
     idy = identify(q, prefer_catalog=True)

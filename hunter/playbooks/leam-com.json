@@ -10,5 +10,7 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "EUR"
+ "currency": "EUR",
+ "archive": false,
+ "archive_note": "checked 2026-09-07: no product pages in CC-MAIN-2026-34 or 2026-30; set true to re-check"
 }
