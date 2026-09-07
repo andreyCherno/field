@@ -1284,5 +1284,16 @@
   "note": "Melbourne sneaker/streetwear boutique; official stockist",
   "platform": "shopify",
   "source": "onboard 2026-09-07"
+ },
+ {
+  "name": "United Arrows",
+  "url": "https://www.united-arrows.co.jp",
+  "country": "JP",
+  "category": "fashion",
+  "focus": "Tokyo select shop chain; official stockist; search via /search/?keyword=",
+  "ships_to_israel": "unknown",
+  "note": "Tokyo select shop chain; official stockist; search via /search/?keyword=",
+  "platform": "custom",
+  "source": "onboard 2026-09-07"
  }
 ]

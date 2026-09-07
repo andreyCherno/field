@@ -137,17 +137,33 @@ def probe(domain, verbose=True):
     return o
 
 
+# When no product page could be read, the currency a shop in this country
+# prices in. Written down as a default WITH its source; never silently USD —
+# a Japanese shop defaulted to USD reads ¥28,000 as $28,000.
+COUNTRY_CCY = {"JP": "JPY", "KR": "KRW", "TW": "TWD", "HK": "HKD", "SG": "SGD", "MY": "MYR",
+               "TH": "THB", "AU": "AUD", "NZ": "NZD", "IL": "ILS", "GB": "GBP", "US": "USD",
+               "CA": "CAD", "CH": "CHF", "SE": "SEK", "DK": "DKK", "NO": "NOK", "PL": "PLN",
+               "AE": "AED", "IN": "INR", "CN": "CNY", "ID": "IDR", "PH": "PHP", "VN": "VND",
+               "IT": "EUR", "DE": "EUR", "FR": "EUR", "ES": "EUR", "PT": "EUR", "NL": "EUR",
+               "BE": "EUR", "AT": "EUR", "IE": "EUR", "FI": "EUR", "GR": "EUR"}
+
+
 def add(domain, country=None, name=None, category=None, note=None, ships_il="unknown"):
     o = probe(domain)
     if o["verdict"] != "ok":
         print(f'  NOT ADDED — {o["verdict"]}')
         return o
     d = o["domain"]
+    cc = (country or o["country"] or "").upper()
+    if not o["currency"] and cc not in COUNTRY_CCY:
+        o["verdict"] = "no currency and no country to infer one from"
+        print(f'  NOT ADDED — {o["verdict"]}')
+        return o
     pb = {"domain": d, "method": o["method"], "accepts_sku": True, "query_tips": "",
           "rate_limit_s": 2, "stats": {"attempts": 0, "hits": 0, "last_success": None},
-          "currency": o["currency"] or "USD",
+          "currency": o["currency"] or COUNTRY_CCY[cc],
           "currency_source": ("read off a product page" if o["currency"] else
-                              "UNKNOWN — defaulted to USD, fix me"),
+                              f"not readable from a product page; defaulted from country {cc}"),
           "onboarded": date.today().isoformat()}
     if o["search_url"]:
         pb["search_url"] = o["search_url"]
