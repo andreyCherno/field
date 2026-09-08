@@ -1,14 +1,20 @@
 {
  "domain": "revolve.com",
  "method": "search-url",
- "search_url": "https://revolve.com/search?q={q}",
  "accepts_sku": true,
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 18,
+  "attempts": 0,
   "hits": 0,
   "last_success": null
  },
- "currency": "USD"
+ "currency": "USD",
+ "currency_source": "",
+ "onboarded": "2026-09-08",
+ "search_url": "https://www.revolve.com/content/s/url?search={q}&d=Womens",
+ "search_url_source": "read from the shop's own search form",
+ "needs_browser": true,
+ "needs_headed": true,
+ "needs_headed_source": "refuses a headless robot; answers a visible Chrome with a persistent profile"
 }

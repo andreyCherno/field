@@ -1,0 +1,20 @@
+{
+ "domain": "musinsa.com",
+ "method": "shopify-suggest",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "KRW",
+ "currency_source": "not readable from a product page; defaulted from country KR",
+ "onboarded": "2026-09-08",
+ "search_url": "https://www.musinsa.com/search?q={q}",
+ "search_url_source": "shopify: suggest.json verified live",
+ "host": "www.musinsa.com",
+ "needs_headed": true,
+ "needs_headed_source": "refuses a headless robot; answers a visible Chrome with a persistent profile"
+}

@@ -198,18 +198,40 @@ def _headed_ctx():
         # this route answer with 403 — so an onboarding run reported
         # "unreachable" for shops a real Chrome had opened minutes earlier.
         # Clear a stale lock, and never fall back quietly.
-        for lock in ("SingletonLock", "SingletonSocket", "SingletonCookie"):
+        # Two hunter processes (the server and a CLI tool) cannot share one
+        # Chrome profile at the same time. If the lock belongs to a LIVE
+        # process, take a second profile rather than block for minutes; only a
+        # stale lock (dead owner) is cleared.
+        profile = PROFILE_DIR
+        lock = os.path.join(PROFILE_DIR, "SingletonLock")
+        if os.path.lexists(lock):
+            owner = None
             try:
-                os.remove(os.path.join(PROFILE_DIR, lock))
-            except OSError:
+                owner = int(os.readlink(lock).rsplit("-", 1)[-1])
+            except (OSError, ValueError):
                 pass
+            alive = False
+            if owner:
+                try:
+                    os.kill(owner, 0); alive = True
+                except OSError:
+                    alive = False
+            if alive:
+                profile = PROFILE_DIR + "-2"
+                print(f"[browser] profile in use by pid {owner}; using {profile}", flush=True)
+            else:
+                for f in ("SingletonLock", "SingletonSocket", "SingletonCookie"):
+                    try:
+                        os.remove(os.path.join(PROFILE_DIR, f))
+                    except OSError:
+                        pass
         try:
-            _headed = _pw.chromium.launch_persistent_context(PROFILE_DIR, channel="chrome", **kw)
+            _headed = _pw.chromium.launch_persistent_context(profile, channel="chrome", **kw)
             _headed._field_channel = "chrome"
         except Exception as e:
             print(f"[browser] real Chrome unavailable ({type(e).__name__}); using bundled Chromium — "
                   f"shops that need a real window may refuse it", flush=True)
-            _headed = _pw.chromium.launch_persistent_context(PROFILE_DIR, **kw)
+            _headed = _pw.chromium.launch_persistent_context(profile, **kw)
             _headed._field_channel = "chromium"
     return _headed
 

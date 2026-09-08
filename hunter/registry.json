@@ -2516,5 +2516,115 @@
   "note": "New Zealand outdoor specialist carrying Salomon and other performance brands, ships internationally",
   "platform": "shopify",
   "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "AFENDS",
+  "url": "https://www.afends.com",
+  "country": "AU",
+  "category": "streetwear boutique",
+  "focus": "Australian streetwear retailer with select multi-brand collabs, ships internationally",
+  "ships_to_israel": "unknown",
+  "note": "Australian streetwear retailer with select multi-brand collabs, ships internationally",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Sneaker Freaker Store",
+  "url": "https://www.sneakerfreaker.com",
+  "country": "AU",
+  "category": "streetwear boutique",
+  "focus": "Sneaker culture retailer stocking ASICS, adidas and collab releases with global shipping",
+  "ships_to_israel": "unknown",
+  "note": "Sneaker culture retailer stocking ASICS, adidas and collab releases with global shipping",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "General Pants Co.",
+  "url": "https://www.generalpants.com.au",
+  "country": "AU",
+  "category": "streetwear boutique",
+  "focus": "Official stockist of Carhartt WIP, adidas and Norse Projects, ships worldwide.",
+  "ships_to_israel": "unknown",
+  "note": "Official stockist of Carhartt WIP, adidas and Norse Projects, ships worldwide.",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Universal Store",
+  "url": "https://www.universalstore.com",
+  "country": "AU",
+  "category": "streetwear boutique",
+  "focus": "Multi-brand contemporary retailer stocking adidas and Carhartt WIP, international delivery.",
+  "ships_to_israel": "unknown",
+  "note": "Multi-brand contemporary retailer stocking adidas and Carhartt WIP, international delivery.",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Kickstarter",
+  "url": "https://www.kickstarter.hk",
+  "country": "HK",
+  "category": "streetwear boutique",
+  "focus": "Sneaker and streetwear boutique stocking ASICS and adidas collaborations with international shipping",
+  "ships_to_israel": "unknown",
+  "note": "Sneaker and streetwear boutique stocking ASICS and adidas collaborations with international shipping",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Livestock",
+  "url": "https://www.livestockco.com",
+  "country": "HK",
+  "category": "streetwear boutique",
+  "focus": "Multi-brand streetwear and sneaker retailer carrying Norse Projects and adidas with global delivery",
+  "ships_to_israel": "unknown",
+  "note": "Multi-brand streetwear and sneaker retailer carrying Norse Projects and adidas with global delivery",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Flannels",
+  "url": "https://www.flannels.com",
+  "country": "GB",
+  "category": "luxury e-tailer",
+  "focus": "opens only in a visible Chrome",
+  "ships_to_israel": "unknown",
+  "note": "opens only in a visible Chrome",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Musinsa",
+  "url": "https://www.musinsa.com",
+  "country": "KR",
+  "category": "fashion",
+  "focus": "opens only in a visible Chrome",
+  "ships_to_israel": "unknown",
+  "note": "opens only in a visible Chrome",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Joyce Boutique",
+  "url": "https://www.joyce.com",
+  "country": "HK",
+  "category": "luxury boutique",
+  "focus": "Long-standing HK luxury multi-brand boutique with international shipping and curated designer edits.",
+  "ships_to_israel": "unknown",
+  "note": "Long-standing HK luxury multi-brand boutique with international shipping and curated designer edits.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "D-mop",
+  "url": "https://www.d-mop.com",
+  "country": "HK",
+  "category": "fashion",
+  "focus": "Contemporary HK boutique mixing designer and streetwear brands, including Stone Island and Our Legacy, with global shipping.",
+  "ships_to_israel": "unknown",
+  "note": "Contemporary HK boutique mixing designer and streetwear brands, including Stone Island and Our Legacy, with global shipping.",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
  }
 ]
