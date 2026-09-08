@@ -70,13 +70,48 @@ def _hit(tok, parts, bag):
     return False
 
 
+# Deliberately short and deliberately multilingual: these are the words that
+# actually appeared on rows this hunter published wrongly, in the languages of
+# the shops it reads. Add to it when a new kind of thing slips through.
+OTHER_KIND = {
+    "bag":   ("backpack", "rucksack", "rygs", "rygsaek", "ryggsekk", "reppu",
+              "mochila", "zaino", "sac", "tasche", "bag", "tote", "duffel"),
+    "knife": ("knife", "kniv", "kokkekniv", "veitsi", "messer", "coltello"),
+    "pole":  ("pole", "poles", "sauva", "sauvat", "stock", "batons",
+              "laskettelusauvat", "stav"),
+    "pot":   ("gryde", "kattle", "pan", "kasseroll", "kattila"),
+}
+WEARS = ("footwear", "shoe", "shoes", "sneaker", "sneakers", "boot", "boots",
+         "trainer", "trainers", "clothing", "apparel")
+
+
+def _category_clash(category, title):
+    """The kind of thing this page sells, when it is plainly not the kind being
+    hunted. Empty when there is no conflict — silence, not a guess."""
+    if not category or not any(w in squash(category) for w in WEARS):
+        return ""
+    bag = set(words(title))
+    for kind, names in OTHER_KIND.items():
+        if bag & set(names):
+            return kind
+    return ""
+
+
+def _path_only(url):
+    """The part of a URL the shop chose, without the part we asked for."""
+    return re.split(r"[?#]", url or "", 1)[0]
+
+
 def score(title, identity, url="", brand="", extra=""):
     """(0..1, human reason). 1.0 only ever means: the style code is on the page.
 
     Without a style code the ceiling is 0.95 — a name can always be a different
     colourway or a kid's cut, and pretending otherwise is how a hunter promises
     a deal on the wrong shoe."""
-    parts = [p for p in (squash(title), squash(brand), squash(url), squash(extra)) if p]
+    # Only the URL *path* is evidence. A query string is our own search terms
+    # echoed back by the shop ("?searchstring=salomon xt-6"), and counting it
+    # scored footish's consent banner 0.95 for a shoe it never mentioned.
+    parts = [p for p in (squash(title), squash(brand), squash(_path_only(url)), squash(extra)) if p]
     bag = set(words(title) + words(brand) + words(extra))
 
     sku = squash(identity.get("sku"))
@@ -89,6 +124,14 @@ def score(title, identity, url="", brand="", extra=""):
     missing = [t for t in models if not _hit(t, parts, bag)]
     if missing:
         return 0.0, "model code " + "/".join(missing) + " is not on the page"
+
+    # A model line covers more than the shoe. intersport.dk's "XT 6 rygsæk" is
+    # the matching BACKPACK: it carries the code, the brand and nothing that
+    # says otherwise. When the page names a different KIND of thing than the
+    # one being hunted, the code is not evidence, it is a coincidence.
+    clash = _category_clash(identity.get("category"), title)
+    if clash:
+        return 0.0, f'the page is selling a {clash}, not {identity.get("category") or "the item"}'
 
     brand_words = [w for w in words(identity.get("brand")) if w not in STOP]
     brand_ok = not brand_words or all(_hit(w, parts, bag) for w in brand_words)
@@ -114,6 +157,7 @@ def score(title, identity, url="", brand="", extra=""):
         # Shops leave the brand out of the title ("Air Max 90 SE") or put their
         # own name in JSON-LD's brand field; the code plus the full name still
         # carries it, just never to certainty.
+        #
         return 0.75, f"model {code} and the whole name match, brand not stated on the page"
     if not brand_ok:
         return round(0.30 * cover, 2), f'brand {identity.get("brand")} is not on the page' 

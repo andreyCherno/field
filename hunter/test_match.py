@@ -17,6 +17,8 @@ NIKE = {"brand": "Nike", "product": "Air Max 90 Mercurial",
         "sku": "IR5903-010", "query": "nike air max 90 mercurial"}
 SALOMON = {"brand": "Salomon", "product": "XT-6 Gore-Tex",
            "sku": None, "query": "salomon xt-6 gore-tex"}
+XT6 = {"brand": "Salomon", "product": "XT-6", "sku": None,
+       "category": "Footwear", "query": "salomon xt-6"}
 ASICS = {"brand": "ASICS", "product": "Gel-Kayano 14",
          "sku": "1203A740-101", "query": "asics gel kayano 14"}
 
@@ -45,6 +47,12 @@ CASES = [
     (ASICS, "Gel-Kayano 14", "", "", True),
     (ASICS, "ASICS Gel-Kayano 31", "ASICS", "", False),
     (ASICS, "Gel-Kayano 14 sneakers in mesh", "", "", True),
+    # the hunter published these on a live XT-6 hunt, 8 Sep 2026
+    (XT6, "XT 6 rygsæk", "", "", False),          # the matching backpack, in Danish
+    (XT6, "Salomon XT 6 backpack", "Salomon", "", False),
+    (XT6, "Consent", "",
+     "https://www.footish.se/searchresults?searchstring=salomon%20xt-6", False),
+    (XT6, "Salomon XT-6 Expanse Sneakers Black", "Salomon", "", True),
 ]
 
 
