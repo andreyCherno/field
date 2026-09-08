@@ -2692,5 +2692,16 @@
   "note": "NZ designer and international contemporary label boutique with online shop",
   "platform": "shopify",
   "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Torpedo7",
+  "url": "https://www.torpedo7.co.nz",
+  "country": "NZ",
+  "category": "outdoor",
+  "focus": "Authorised outdoor specialist retailer stocking Salomon and other performance brands",
+  "ships_to_israel": "unknown",
+  "note": "Authorised outdoor specialist retailer stocking Salomon and other performance brands",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
  }
 ]

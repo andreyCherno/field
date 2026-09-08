@@ -136,8 +136,12 @@ def _is_sitemap(url):
     return url.split("?")[0].rstrip("/").endswith((".xml", ".xml.gz"))
 
 
-def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True):
-    """Walk the shop's sitemaps and write every product url to the index."""
+def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True, headed=False):
+    """Walk the shop's sitemaps and write every product url to the index.
+    `headed`: fetch through the visible Chrome — Mr Porter and Bloomingdale's
+    publish a sitemap and refuse it to anything but a real window."""
+    from agent import browser
+    browser.FORCE_HEADED = bool(headed)
     info = robots(domain)
     if not info["sitemaps"]:
         return {"domain": domain, "error": "no sitemap published", "urls": 0}
@@ -266,7 +270,9 @@ def build_all(domains=None, max_age_days=7, verbose=True):
         if verbose:
             print(f"[{i}/{len(domains)}] {d}", flush=True)
         try:
-            meta = build(d, verbose=verbose)
+            pbf = os.path.join(ROOT, "playbooks", d.replace(".", "-") + ".json")
+            needs = json.load(open(pbf, encoding="utf-8")).get("needs_headed", False) if os.path.exists(pbf) else False
+            meta = build(d, verbose=verbose, headed=needs)
         except Exception as e:
             meta = {"domain": d, "error": f"{type(e).__name__}: {e}", "urls": 0}
         if meta.get("urls"):
@@ -281,9 +287,10 @@ def build_all(domains=None, max_age_days=7, verbose=True):
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "build"
     if cmd == "build":
-        for d in sys.argv[2:]:
+        headed = "--headed" in sys.argv
+        for d in [a for a in sys.argv[2:] if not a.startswith("--")]:
             print(f"=== {d}")
-            print("   ", json.dumps(build(d), ensure_ascii=False))
+            print("   ", json.dumps(build(d, headed=headed), ensure_ascii=False))
     elif cmd == "build-all":
         r = build_all(sys.argv[2:] or None)
         print(f'\n=== built {len(r["built"])} · skipped {len(r["skipped"])} · '

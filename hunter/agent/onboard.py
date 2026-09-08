@@ -221,7 +221,8 @@ def add(domain, country=None, name=None, category=None, note=None, ships_il="unk
         json.dump(reg, open(regp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f'  ADDED {d} as {o["method"]} · currency {pb["currency"]} · country {country or o["country"]}')
     if o["sitemap"] and not o["robots_disallow_all"]:
-        print(f'  (publishes a sitemap — run: python3 -m agent.sitemap build {d})')
+        flag = " --headed" if o.get("needs_headed") else ""
+        print(f'  (publishes a sitemap — run: python3 -m agent.sitemap build {d}{flag})')
     return o
 
 
