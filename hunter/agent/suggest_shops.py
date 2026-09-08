@@ -31,6 +31,11 @@ ANGLES = {
     "running": "specialist running, trail and outdoor retailers (the kind that stock Salomon, "
                "ASICS, adidas Adizero, Hoka, On, Arc'teryx) plus independent sneaker shops in "
                "second cities, not the capital",
+    "cities": "independent multi-brand boutiques named city by city — list the 3 to 4 largest "
+              "cities of the country and for each the best-known independent sneaker, streetwear "
+              "or contemporary-menswear shop with its own webshop that ships abroad",
+    "outlets": "official outlet and off-price webshops, department-store online arms, and "
+               "multi-brand sports retailers (Intersport-type chains) with international shipping",
 }
 PROMPT = ("You list AUTHORISED multi-brand retailers that have their own e-commerce site and "
           "ship internationally. Country: {cc}. Angle: {angle}. "

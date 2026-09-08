@@ -236,7 +236,7 @@ function addOffers(offers){
     a.className="g"+(gone?" gone":""); a.href=o.url; a.target="_blank"; a.rel="noopener";
     a.title=[why,bd,o.landed_note||""].filter(Boolean).join("\n\n");
     a.innerHTML=(o.img?`<img src="${o.img}" alt="" loading="lazy">`:"")+
-      `<div class="gi"><div class="gp">$${o.landed}<small>${o.price} ${o.currency||"USD"}</small></div>
+      `<div class="gi"><div class="gp">$${o.landed}<small>${o.price} ${o.currency||"USD"}${o.price_here?` · לך: ${o.price_here} ${o.currency_here}`:""}</small></div>
        <div class="gs"><span class="badge ${o.status||""}">${lbl}</span>${o.colourway==="different"
           ?`<span class="badge other-colour" title="מק״ט ${esc(o.page_sku||"")} — אותו דגם, צבע אחר">צבע אחר</span>`:""}${o.store}</div>
        <div class="gt">${o.page_name||o.title||""}</div>

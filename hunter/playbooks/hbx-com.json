@@ -10,5 +10,6 @@
   "hits": 9,
   "last_success": null
  },
- "currency": "USD"
+ "currency": "HKD",
+ "currency_source": "corrected 2026-09-08: page showed USD to an en-US visitor; home currency of HK"
 }

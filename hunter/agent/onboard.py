@@ -33,6 +33,19 @@ def _get(url, n=300_000, t=12):
     return r.status, r.geturl(), r.read(n).decode("utf-8", "replace")
 
 
+def landed_tld(domain):
+    from agent import landed
+    d = domain.lower().removeprefix("www.")
+    for tld, iso in landed.TLD_TO_ISO.items():
+        if d.endswith("." + tld):
+            return iso
+    return None
+
+
+def country_hint(o, domain):
+    return landed_tld(domain) or o.get("country")
+
+
 def probe(domain, verbose=True, headed=False):
     from agent import browser, sitemap, landed
     if headed:
@@ -142,9 +155,18 @@ def probe(domain, verbose=True, headed=False):
         if sample:
             o["sample_product"] = sample
             p = insp.read_page(sample)
-            o["currency"] = p.get("currency")
             o["sample_price"] = p.get("price")
             o["sample_name"] = (p.get("name") or "")[:60]
+            cur = p.get("currency")
+            # A page read from an Israeli IP shows a GEO price. ILS on a shop
+            # that is not Israeli is what the shop would charge this visitor,
+            # never the shop's currency — recording it mis-priced 22 shops.
+            if cur == "ILS" and (country_hint(o, domain) or "").upper() != "IL":
+                o["geo_currency_seen"] = cur
+                cur = None
+            o["currency"] = cur
+            if p.get("lang") and "-" in p["lang"]:
+                o["lang_country"] = p["lang"].split("-")[-1].upper()
     except Exception as e:
         o["currency_error"] = type(e).__name__
     say(f'currency: {o["currency"] or "?"}  sample={o.get("sample_name") or "-"} {o.get("sample_price") or ""}')
@@ -179,6 +201,12 @@ def add(domain, country=None, name=None, category=None, note=None, ships_il="unk
         return o
     d = o["domain"]
     cc = (country or o["country"] or "").upper()
+    tld = landed_tld(d)
+    if tld and tld != cc:
+        print(f"  country: proposal said {cc or '?'}, the domain says {tld} — using the domain", flush=True)
+        cc = tld
+    elif o.get("lang_country") and cc and o["lang_country"] != cc:
+        print(f"  country: proposal said {cc}, the page's html lang says {o['lang_country']} — noted", flush=True)
     if not o["currency"] and cc not in COUNTRY_CCY:
         o["verdict"] = "no currency and no country to infer one from"
         print(f'  NOT ADDED — {o["verdict"]}')

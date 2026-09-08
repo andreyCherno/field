@@ -27,7 +27,7 @@
   "Our Legacy": "A"
  },
  "llm": {
-  "daily_cap_usd": 5.0,
+  "daily_cap_usd": 8.0,
   "models": {
    "parse": "claude-haiku-4-5",
    "reason": "claude-sonnet-5"

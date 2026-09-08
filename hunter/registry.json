@@ -2289,13 +2289,14 @@
  {
   "name": "Foot District",
   "url": "https://www.footdistrict.com",
-  "country": "NO",
+  "country": "ES",
   "category": "streetwear boutique",
   "focus": "Authorised sneaker and streetwear retailer stocking ASICS and Salomon with international shipping",
   "ships_to_israel": "unknown",
   "note": "Authorised sneaker and streetwear retailer stocking ASICS and Salomon with international shipping",
   "platform": "shopify",
-  "source": "onboard 2026-09-08"
+  "source": "onboard 2026-09-08",
+  "country_source": "corrected 2026-09-08 (Madrid); the proposal said NO"
  },
  {
   "name": "Wood Wood",
@@ -3329,6 +3330,17 @@
   "ships_to_israel": "unknown",
   "note": "Curated multi-brand store featuring Stone Island and other premium streetwear labels.",
   "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Sneaker Politics",
+  "url": "https://sneakerpolitics.com",
+  "country": "US",
+  "category": "streetwear boutique",
+  "focus": "Sneaker and apparel retailer offering Salomon and adidas collaborations worldwide.",
+  "ships_to_israel": "unknown",
+  "note": "Sneaker and apparel retailer offering Salomon and adidas collaborations worldwide.",
+  "platform": "custom",
   "source": "onboard 2026-09-08"
  }
 ]

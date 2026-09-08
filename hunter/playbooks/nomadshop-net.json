@@ -9,8 +9,8 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "CAD",
- "currency_source": "read off a product page",
+ "currency": "USD",
+ "currency_source": "corrected 2026-09-08: page showed CAD to an en-US visitor; home currency of US",
  "onboarded": "2026-09-07",
  "search_url": "https://www.nomadshop.net/search?q={q}",
  "search_url_source": "shopify: suggest.json verified live",

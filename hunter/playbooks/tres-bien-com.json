@@ -11,5 +11,6 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "USD"
+ "currency": "SEK",
+ "currency_source": "corrected 2026-09-08: page showed USD to an en-US visitor; home currency of SE"
 }

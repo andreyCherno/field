@@ -9,8 +9,8 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "EUR",
- "currency_source": "read off a product page",
+ "currency": "CZK",
+ "currency_source": "corrected 2026-09-08: page showed EUR to an en-US visitor; home currency of CZ",
  "onboarded": "2026-09-08",
  "search_url": "https://www.bibloo.com/search?q={q}",
  "search_url_source": "shopify: suggest.json verified live",

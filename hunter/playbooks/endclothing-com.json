@@ -10,6 +10,7 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "USD",
- "search_url_source": "observed: typed into the shop's own search box"
+ "currency": "GBP",
+ "search_url_source": "observed: typed into the shop's own search box",
+ "currency_source": "corrected 2026-09-08: page showed USD to an en-US visitor; home currency of GB"
 }

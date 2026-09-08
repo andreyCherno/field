@@ -9,8 +9,8 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "USD",
- "currency_source": "read off a product page",
+ "currency": "HKD",
+ "currency_source": "corrected 2026-09-08: page showed USD to an en-US visitor; home currency of HK",
  "onboarded": "2026-09-07",
  "search_url": "https://www.lanecrawford.com/search?query={q}&Nty=1",
  "search_url_source": "read from the shop's own search form"

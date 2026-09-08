@@ -9,8 +9,8 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "USD",
- "currency_source": "read off a product page",
+ "currency": "AUD",
+ "currency_source": "corrected 2026-09-08: page showed USD to an en-US visitor; home currency of AU",
  "onboarded": "2026-09-07",
  "search_url": "https://www.generalpants.com/collections/shop?q={q}",
  "search_url_source": "read from the shop's own search form",

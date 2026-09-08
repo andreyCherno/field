@@ -134,6 +134,8 @@ def read_page(url, timeout_ms=20000, headed=False):
             out.update(price=amount, read_by="meta",
                        currency=(_meta(html, "product:price:currency")
                                  or _meta(html, "og:price:currency") or out["currency"]))
+    m_lang = re.search(r'<html[^>]+lang="([A-Za-z-]+)"', html)
+    out["lang"] = m_lang.group(1) if m_lang else None
     if not out["name"]:
         h1 = re.search(r"<h1[^>]*>(.*?)</h1>", html, re.S | re.I)
         out["name"] = (re.sub(r"<[^>]+>", " ", h1.group(1)) if h1
@@ -387,15 +389,29 @@ def inspect_offer(offer, identity, timeout_ms=20000):
         # say where it came from, and let landed confidence stay "medium".
         out["price_note"] = "price read from page text — no structured price on this page"
 
-    out["price"] = page["price"]                  # the page is the price
-    out["currency"] = page["currency"] or offer.get("currency")
+    if offer.get("from_catalog") and listed and page["currency"] and \
+            (page["currency"] or "").upper() != (offer.get("currency") or "").upper():
+        # The catalogue said 185 USD; the page, served to an Israeli IP, says
+        # 465 ILS. Both are real. The base price is the one comparable across
+        # shops; the geo price is what this visitor would be charged — kept
+        # beside it, never mixed into the ranking as an "uncertain" number.
+        out["price_here"], out["currency_here"] = page["price"], page["currency"]
+        out["price"], out["currency"] = listed, offer.get("currency")
+        out["price_note"] = f'shop base price; this visitor is shown {page["price"]} {page["currency"]}'
+        agrees = True
+    else:
+        out["price"] = page["price"]                  # the page is the price
+        out["currency"] = page["currency"] or offer.get("currency")
     out["in_stock"] = page["in_stock"]
     if page["in_stock"] is False:
         out["status"] = "sold-out"
-    elif listed and not agrees:
+    elif listed and not agrees and not offer.get("from_shelf"):
         out["status"] = "price-changed"
     else:
         out["status"] = "verified"
+        if listed and not agrees and offer.get("from_shelf"):
+            out["price_note"] = f'shelf snapshot said {listed} {offer.get("listed_currency") or ""}; the page is the price'
+
     return out
 
 

@@ -9,8 +9,8 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "ILS",
- "currency_source": "read off a product page",
+ "currency": "EUR",
+ "currency_source": "corrected 2026-09-08: ILS was a geo-price shown to an Israeli IP; home currency of NL",
  "onboarded": "2026-09-07",
  "search_url": "https://www.labelsfashion.com/search?q={q}",
  "search_url_source": "shopify: suggest.json verified live",
