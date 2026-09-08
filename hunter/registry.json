@@ -3209,5 +3209,82 @@
   "note": "Outdoor specialist retailer carrying Salomon and Arc'teryx technical gear with international shipping",
   "platform": "custom",
   "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Fashion Clinic",
+  "url": "https://fashionclinic.com",
+  "country": "PT",
+  "category": "luxury boutique",
+  "focus": "Portuguese luxury multi-brand retailer carrying Stone Island, Our Legacy and contemporary designers, ships internationally",
+  "ships_to_israel": "unknown",
+  "note": "Portuguese luxury multi-brand retailer carrying Stone Island, Our Legacy and contemporary designers, ships internationally",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Outsider",
+  "url": "https://www.outsider.pt",
+  "country": "PT",
+  "category": "outdoor",
+  "focus": "Outdoor specialist retailer carrying Salomon and technical outerwear brands, own webshop with EU shipping",
+  "ships_to_israel": "unknown",
+  "note": "Outdoor specialist retailer carrying Salomon and technical outerwear brands, own webshop with EU shipping",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Distance",
+  "url": "https://www.distance.pl",
+  "country": "PL",
+  "category": "streetwear boutique",
+  "focus": "Contemporary multi-brand boutique stocking Norse Projects, Our Legacy, Stone Island with international shipping",
+  "ships_to_israel": "unknown",
+  "note": "Contemporary multi-brand boutique stocking Norse Projects, Our Legacy, Stone Island with international shipping",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "MODIVO",
+  "url": "https://www.modivo.pl",
+  "country": "PL",
+  "category": "fashion",
+  "focus": "Large Polish multi-brand fashion retailer offering Stone Island and adidas with EU shipping",
+  "ships_to_israel": "unknown",
+  "note": "Large Polish multi-brand fashion retailer offering Stone Island and adidas with EU shipping",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Notos",
+  "url": "https://www.notos.gr",
+  "country": "GR",
+  "category": "department store",
+  "focus": "Major Greek department store with online shop offering contemporary and sportswear brands.",
+  "ships_to_israel": "unknown",
+  "note": "Major Greek department store with online shop offering contemporary and sportswear brands.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Cosmos Sport",
+  "url": "https://www.cosmossport.gr",
+  "country": "GR",
+  "category": "outdoor",
+  "focus": "Authorised retailer for Salomon, ASICS and adidas with international shipping.",
+  "ships_to_israel": "unknown",
+  "note": "Authorised retailer for Salomon, ASICS and adidas with international shipping.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Sneaker10",
+  "url": "https://www.sneaker10.gr",
+  "country": "GR",
+  "category": "streetwear boutique",
+  "focus": "Multi-brand sneaker and streetwear retailer authorised for adidas, ASICS and Carhartt WIP, ships internationally.",
+  "ships_to_israel": "unknown",
+  "note": "Multi-brand sneaker and streetwear retailer authorised for adidas, ASICS and Carhartt WIP, ships internationally.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
  }
 ]

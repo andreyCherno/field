@@ -1,0 +1,17 @@
+{
+ "domain": "fashionclinic.com",
+ "method": "shopify-suggest",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "EUR",
+ "currency_source": "read off a product page",
+ "onboarded": "2026-09-08",
+ "search_url": "https://fashionclinic.com/search?q={q}",
+ "search_url_source": "shopify: suggest.json verified live"
+}

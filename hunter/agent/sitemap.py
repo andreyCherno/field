@@ -102,7 +102,14 @@ def robots(domain):
         status, txt = _fetch(f"https://{host}/robots.txt")
         if status != 200 or not re.search(r"(?im)^\s*(user-agent|disallow|sitemap)", txt or ""):
             continue
-        sitemaps = re.findall(r"(?im)^\s*sitemap:\s*(\S+)", txt)
+        sitemaps = []
+        for sm in re.findall(r"(?im)^\s*sitemap:\s*(\S+)", txt):
+            if sm.startswith("/"):
+                sm = f"https://{host}{sm}"          # bodega.com writes it relative
+            sm_host = re.sub(r"^https?://", "", sm).split("/")[0].lower().removeprefix("www.")
+            if sm_host != domain.removeprefix("www.").lower():
+                continue                            # costume.ie points at a parked domain
+            sitemaps.append(sm)
         disallow = []
         for block in re.split(r"(?im)^user-agent:", txt):
             if block.strip().startswith("*"):
@@ -150,7 +157,7 @@ def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True, headed=False):
     if not info["sitemaps"]:
         return {"domain": domain, "error": "no sitemap published", "urls": 0}
     seen, queue, fetched = set(), list(info["sitemaps"]), 0
-    visited, keys = set(), set()
+    visited, keys, seen_paths = set(), set(), set()
     while queue and len(seen) < max_urls and fetched < max_sitemaps:
         sm = queue.pop(0)
         if sm in visited or not _allowed(sm, info["disallow"]):
@@ -186,6 +193,14 @@ def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True, headed=False):
             host = re.sub(r"^https?://", "", u).split("/")[0].lower().removeprefix("www.")
             if host != domain.removeprefix("www.").lower():
                 continue          # a sub-site (registry, careers, ui) is not the shop
+            # SSENSE filled an 80,000-url cap with the same catalogue under
+            # en-us, en-ca, en-vn, en-th, en-ph … and never reached the shoes.
+            # One product path, one entry — the first locale seen keeps it.
+            path = re.sub(r"^https?://[^/]+/", "", u.split("?")[0])
+            nolocale = re.sub(r"^[a-z]{2}(?:-[a-z]{2})?/", "", path)
+            if nolocale in seen_paths:
+                continue
+            seen_paths.add(nolocale)
             if not _allowed(u, info["disallow"]):
                 continue
             if NOT_PRODUCT_URL.search(u):
