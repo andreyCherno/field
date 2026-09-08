@@ -60,6 +60,24 @@ def probe(domain, verbose=True, headed=False):
         except Exception as e:
             o["browser"] = type(e).__name__
     say(f'reach: plain={o["plain_http"]} browser={o["browser"]} host={o["host"]}')
+    if o["plain_http"] != 200 and o["browser"] != 200 and headed:
+        # Some shops refuse their front door and serve their search page —
+        # mrporter and bloomingdales both 403 the homepage and 200 a search.
+        # Reachable means ANY page answers, so walk in through the search box.
+        try:
+            v = browser.type_search(d, "shoes", wait_ms=3500, headed=True)
+            if v.get("status") == 200 and (v.get("collected") or []):
+                o["browser"] = 200
+                o["host"] = o["host"] or urllib.parse.urlparse(v["url"]).netloc
+                u = v["url"]
+                for form in (urllib.parse.quote("shoes"), urllib.parse.quote_plus("shoes"), "shoes"):
+                    u = u.replace(form, "{q}")
+                if "{q}" in u:
+                    o["search_url"] = u
+                    o["search_url_source"] = "observed in the visible Chrome: typed into the shop's own search box (homepage refuses)"
+                say(f'reach via search box: 200  {o["search_url"] or "(url not templatable)"}')
+        except Exception as e:
+            say(f'search-box attempt: {type(e).__name__}')
     if o["plain_http"] != 200 and o["browser"] != 200:
         o["verdict"] = "unreachable"
         return o
@@ -84,6 +102,8 @@ def probe(domain, verbose=True, headed=False):
     if o["shopify_host"]:                             # 4. search url
         o["search_url"] = f'https://{o["shopify_host"]}/search?q={{q}}'
         o["search_url_source"] = "shopify: suggest.json verified live"
+    elif o.get("search_url"):
+        pass                                          # already observed above
     else:
         try:
             o["search_url"] = browser.find_search_url(d)

@@ -2626,5 +2626,49 @@
   "note": "Contemporary HK boutique mixing designer and streetwear brands, including Stone Island and Our Legacy, with global shipping.",
   "platform": "shopify",
   "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "mita sneakers",
+  "url": "https://www.mita-sneakers.co.jp",
+  "country": "JP",
+  "category": "streetwear boutique",
+  "focus": "Long-running authorised sneaker specialist carrying ASICS, adidas and Salomon lines.",
+  "ships_to_israel": "unknown",
+  "note": "Long-running authorised sneaker specialist carrying ASICS, adidas and Salomon lines.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Nepenthes",
+  "url": "https://www.nepenthes.co.jp",
+  "country": "JP",
+  "category": "streetwear boutique",
+  "focus": "Boutique known for curated menswear including Carhartt WIP and Our Legacy collections.",
+  "ships_to_israel": "unknown",
+  "note": "Boutique known for curated menswear including Carhartt WIP and Our Legacy collections.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Restir",
+  "url": "https://www.restir.com",
+  "country": "JP",
+  "category": "luxury boutique",
+  "focus": "High-end multi-brand boutique carrying Stone Island and other premium designer labels.",
+  "ships_to_israel": "unknown",
+  "note": "High-end multi-brand boutique carrying Stone Island and other premium designer labels.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Kicks Lab",
+  "url": "https://www.kickslab.com",
+  "country": "JP",
+  "category": "streetwear boutique",
+  "focus": "Osaka-based sneaker and streetwear store stocking ASICS and adidas exclusives.",
+  "ships_to_israel": "unknown",
+  "note": "Osaka-based sneaker and streetwear store stocking ASICS and adidas exclusives.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
  }
 ]

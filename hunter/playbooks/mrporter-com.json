@@ -1,14 +1,18 @@
 {
  "domain": "mrporter.com",
- "method": "search-url",
- "search_url": "https://mrporter.com/search?q={q}",
+ "method": "sitemap-index",
  "accepts_sku": true,
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 17,
+  "attempts": 0,
   "hits": 0,
   "last_success": null
  },
- "currency": "GBP"
+ "currency": "GBP",
+ "currency_source": "",
+ "onboarded": "2026-09-08",
+ "needs_browser": true,
+ "needs_headed": true,
+ "needs_headed_source": "refuses a headless robot; answers a visible Chrome with a persistent profile"
 }
