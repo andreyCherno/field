@@ -328,6 +328,11 @@ function showConfirm(p){
   }catch(e){}})();
   F("c_no").onclick=()=>{c.hidden=true;F("go").disabled=false;F("live").hidden=true;};
   F("c_go").onclick=()=>{
+    // a hunt with no model and no style code has nothing to match against
+    if(!F("c_product").value.trim() && !F("c_sku").value.trim()){
+      F("sizehint").innerHTML="⚠️ צריך דגם או מק״ט — בלי אחד מהם אין למה להשוות, והצייד יחזיר הכל.";
+      F("c_product").focus(); return;
+    }
     c.hidden=true;
     startHunt({...i,brand:F("c_brand").value.trim()||null,
                     product:F("c_product").value.trim()||null,

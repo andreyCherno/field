@@ -41,7 +41,14 @@ def load_aliases():
 
 def save_alias(query, identity):
     """Remember a confirmed identity, so the same query never costs a model
-    call — or a second confirmation — again."""
+    call — or a second confirmation — again.
+
+    Never an identity with no model and no style code: one such save (a card
+    submitted with the model field emptied) answered every later hunt for that
+    query with brand=ADIDAS, product=None — and a matcher with nothing to
+    require accepts everything."""
+    if not (identity.get("product") or identity.get("sku")):
+        return
     db = load_aliases()
     db.setdefault("queries", {})[query.strip().lower()] = {
         k: identity.get(k) for k in FIELDS}
@@ -58,7 +65,7 @@ def blank(query, **kw):
 def identify(query, prefer_catalog=True):
     query = query.strip()
     known = load_aliases()["queries"].get(query.lower())
-    if known:
+    if known and (known.get("product") or known.get("sku")):
         return {**blank(query), **known, "query": query, "source": "aliases"}
     if prefer_catalog:
         from agent import catalog
