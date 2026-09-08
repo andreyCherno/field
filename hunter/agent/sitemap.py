@@ -147,7 +147,7 @@ def _is_sitemap(url):
     return url.split("?")[0].rstrip("/").endswith((".xml", ".xml.gz"))
 
 
-def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True, headed=False):
+def build(domain, max_urls=120_000, max_sitemaps=80, verbose=True, headed=False):
     """Walk the shop's sitemaps and write every product url to the index.
     `headed`: fetch through the visible Chrome — Mr Porter and Bloomingdale's
     publish a sitemap and refuse it to anything but a real window."""
@@ -157,7 +157,7 @@ def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True, headed=False):
     if not info["sitemaps"]:
         return {"domain": domain, "error": "no sitemap published", "urls": 0}
     seen, queue, fetched = set(), list(info["sitemaps"]), 0
-    visited, keys, seen_paths = set(), set(), set()
+    visited, keys, seen_paths, locale_lock = set(), set(), set(), [None]
     while queue and len(seen) < max_urls and fetched < max_sitemaps:
         sm = queue.pop(0)
         if sm in visited or not _allowed(sm, info["disallow"]):
@@ -197,6 +197,20 @@ def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True, headed=False):
             # en-us, en-ca, en-vn, en-th, en-ph … and never reached the shoes.
             # One product path, one entry — the first locale seen keeps it.
             path = re.sub(r"^https?://[^/]+/", "", u.split("?")[0])
+            m_loc = re.match(r"^([a-z]{2}(?:-[a-z]{2})?)/", path)
+            loc = m_loc.group(1) if m_loc else ""
+            # A translated locale has different slugs, so path de-duplication
+            # cannot see that fr-fr is the same catalogue as en-us — SSENSE
+            # spent half its cap on French. Lock to the first locale seen,
+            # preferring an English one when the sitemap offers a choice.
+            if loc:
+                if locale_lock[0] is None:
+                    locale_lock[0] = loc
+                elif loc != locale_lock[0]:
+                    if loc.startswith("en") and not locale_lock[0].startswith("en"):
+                        locale_lock[0] = loc         # switch to English once
+                    else:
+                        continue
             nolocale = re.sub(r"^[a-z]{2}(?:-[a-z]{2})?/", "", path)
             if nolocale in seen_paths:
                 continue

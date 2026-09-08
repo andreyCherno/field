@@ -3286,5 +3286,49 @@
   "note": "Multi-brand sneaker and streetwear retailer authorised for adidas, ASICS and Carhartt WIP, ships internationally.",
   "platform": "custom",
   "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Ballantynes",
+  "url": "https://www.ballantynes.co.nz",
+  "country": "NZ",
+  "category": "department store",
+  "focus": "Heritage department store stocking contemporary and designer labels, ships worldwide.",
+  "ships_to_israel": "unknown",
+  "note": "Heritage department store stocking contemporary and designer labels, ships worldwide.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Bivouac Outdoor",
+  "url": "https://www.bivouac.co.nz",
+  "country": "NZ",
+  "category": "outdoor",
+  "focus": "Independent outdoor specialist chain stocking Salomon and adidas Terrex, own e-commerce with international shipping.",
+  "ships_to_israel": "unknown",
+  "note": "Independent outdoor specialist chain stocking Salomon and adidas Terrex, own e-commerce with international shipping.",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Juice Store",
+  "url": "https://www.juice.com.sg",
+  "country": "SG",
+  "category": "streetwear boutique",
+  "focus": "Sneaker and streetwear boutique stocking adidas, ASICS, and other authorised brands.",
+  "ships_to_israel": "unknown",
+  "note": "Sneaker and streetwear boutique stocking adidas, ASICS, and other authorised brands.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "The Salvages",
+  "url": "https://www.thesalvages.com",
+  "country": "SG",
+  "category": "streetwear boutique",
+  "focus": "Curated multi-brand store featuring Stone Island and other premium streetwear labels.",
+  "ships_to_israel": "unknown",
+  "note": "Curated multi-brand store featuring Stone Island and other premium streetwear labels.",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
  }
 ]

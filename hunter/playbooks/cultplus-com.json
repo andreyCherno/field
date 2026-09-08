@@ -11,5 +11,10 @@
  },
  "currency": "AUD",
  "currency_source": "not readable from a product page; defaulted from country AU",
- "onboarded": "2026-09-07"
+ "onboarded": "2026-09-07",
+ "skip": {
+  "reason": "public sitemap lists one landing page and suggest.json answers nothing — a gated storefront",
+  "since": "2026-09-08",
+  "undo": "delete this key to retry"
+ }
 }
