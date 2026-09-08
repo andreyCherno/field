@@ -231,9 +231,14 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
     # One chip, not thirty-three: say how many shops were ruled out and why,
     # without burying the shops that were actually asked.
     if off_world:
+        # one chip, but an honest one: "47 not asked — 36 sell home goods,
+        # 11 gated storefronts", not the first reason stamped on all of them
+        from collections import Counter
+        reasons = Counter(why for _, why in off_world)
+        short = {r: (r if len(r) < 40 else r[:37] + "…") for r in reasons}
         row = {"store": f"{len(off_world)} shops not asked",
                "method": "relevance", "hits": 0,
-               "error": f"skipped — {off_world[0][1]}",
+               "error": "skipped — " + "; ".join(f"{n} {short[r]}" for r, n in reasons.most_common(3)),
                "domains": [pb["domain"] for pb, _ in off_world]}
         if report is not None:
             report.append(row)
