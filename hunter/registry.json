@@ -2703,5 +2703,49 @@
   "note": "Authorised outdoor specialist retailer stocking Salomon and other performance brands",
   "platform": "custom",
   "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Kith",
+  "url": "https://www.kithnyc.com",
+  "country": "US",
+  "category": "streetwear boutique",
+  "focus": "Carries adidas, ASICS, Norse Projects, and rotating designer collabs",
+  "ships_to_israel": "unknown",
+  "note": "Carries adidas, ASICS, Norse Projects, and rotating designer collabs",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Bodega",
+  "url": "https://www.bodega.com",
+  "country": "US",
+  "category": "streetwear boutique",
+  "focus": "Long-running sneaker boutique carrying ASICS, adidas, and Carhartt WIP",
+  "ships_to_israel": "unknown",
+  "note": "Long-running sneaker boutique carrying ASICS, adidas, and Carhartt WIP",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Notre",
+  "url": "https://www.notreshop.com",
+  "country": "US",
+  "category": "streetwear boutique",
+  "focus": "Authorised US retailer for Carhartt WIP, ASICS, Salomon with international shipping",
+  "ships_to_israel": "unknown",
+  "note": "Authorised US retailer for Carhartt WIP, ASICS, Salomon with international shipping",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "The Broderie",
+  "url": "https://www.thebroderie.com",
+  "country": "GB",
+  "category": "streetwear boutique",
+  "focus": "Boutique offering Norse Projects, Our Legacy, and Carhartt WIP with international delivery.",
+  "ships_to_israel": "unknown",
+  "note": "Boutique offering Norse Projects, Our Legacy, and Carhartt WIP with international delivery.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
  }
 ]

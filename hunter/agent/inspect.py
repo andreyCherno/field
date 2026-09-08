@@ -355,10 +355,15 @@ def inspect_offer(offer, identity, timeout_ms=20000):
         a, b = fx.to_usd(listed, offer.get("currency")), fx.to_usd(page["price"], page_ccy)
         agrees = bool(a and b) and abs(b - a) / max(a, 1) < FX_TOL
         out["listed_usd"] = a
-    if page["read_by"] == "text" and not agrees:
-        out["status"] = "price-unconfirmed"       # never trust a lone text scrape
+    if page["read_by"] == "text" and not agrees and listed:
+        out["status"] = "price-unconfirmed"       # a lone text scrape that contradicts the listing
         out["page_price_seen"] = page["price"]
         return out
+    if page["read_by"] == "text" and not listed:
+        # An index lead carries no listed price, so there is nothing for the
+        # text scrape to disagree with. It is the only number we have; keep it,
+        # say where it came from, and let landed confidence stay "medium".
+        out["price_note"] = "price read from page text — no structured price on this page"
 
     out["price"] = page["price"]                  # the page is the price
     out["currency"] = page["currency"] or offer.get("currency")
