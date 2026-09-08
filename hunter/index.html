@@ -102,7 +102,8 @@
   .g .gc{font:10px var(--mono);padding:0 10px 8px}
   .g .gz{font:10px var(--mono);padding:0 10px 6px;color:var(--ink-soft)}
   .g .gz b.yes{color:var(--good)} .g .gz b.no{color:#b0433a}
-  .g .gc.uncertain,.g .gc.unknown{color:#b0433a}
+  .g .gc.uncertain,.g .gc.unknown,.g .gc.no-delivery{color:#b0433a}
+  .g.nodeliver{opacity:.45}
   .g .gc.medium{color:var(--ink-soft)} .g .gc.high{color:var(--good)}
   #stop{background:#d12a6a;color:#fff;border:none;padding:9px 20px;font:700 14px var(--display);cursor:pointer}
   .empty{padding:48px 18px;text-align:center}
@@ -225,8 +226,8 @@ function addOffers(offers){
     if(!o.price||gallerySeen.has(o.url)) continue;
     gallerySeen.add(o.url);
     const [lbl,why]=STATUS[o.status]||[o.status||"?",""];
-    const gone=["sold-out","unpriced","dead"].includes(o.status);
-    const CONF={high:"מחיר סופי ודאי",medium:"ללא משלוח",
+    const gone=["sold-out","unpriced","dead"].includes(o.status) || o.landed_confidence==="no-delivery";
+    const CONF={high:"מחיר סופי ודאי",medium:"ללא משלוח","no-delivery":"לא שולחים לישראל",
                 uncertain:"ייתכן שכולל כבר מס יעד",unknown:"מדינת החנות לא ידועה",
                 none:"—"};
     // the breakdown lives in the tooltip: a total you cannot decompose is one

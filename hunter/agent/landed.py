@@ -110,6 +110,31 @@ def country_of(domain):
     return None
 
 
+_SHIP = None
+
+
+def ships_to_il(domain):
+    """True / False / None from the shelf's shipping-policies.json (57 known).
+    Keyed by the shelf's retailer slug, so match on the domain's first label."""
+    global _SHIP
+    if _SHIP is None:
+        _SHIP = {}
+        try:
+            data = json.load(open(os.path.join(ROOT, "..", "shelf", "shipping-policies.json"),
+                                  encoding="utf-8")).get("retailers", {})
+            for k, v in data.items():
+                _SHIP[k.lower()] = (v.get("IL") or {}).get("shipsTo")
+        except Exception:
+            pass
+    if not domain:
+        return None
+    label = re.sub(r"^www\.", "", domain.lower()).split(".")[0]
+    for k, v in _SHIP.items():
+        if k == label or k in label or label in k:
+            return v
+    return None
+
+
 def to_door(usd, domain=None, currency=None):
     """USD sticker -> {total, lines, confidence, note}.
 
@@ -121,6 +146,12 @@ def to_door(usd, domain=None, currency=None):
     ccy = (currency or "").upper()
     iso = country_of(domain)
     lines = [("Item price", round(usd, 2))]
+    if ccy and ccy not in ("USD", "ILS"):
+        fee = round(usd * CFG.get("card_fx_markup", 0.02), 2)
+        lines.append((f"Card FX markup ({CFG.get('card_fx_markup', 0.02)*100:.0f}%) — {ccy}, "
+                      f"the mid-market rate is not what your card gives you", fee))
+        usd = usd + fee
+    ship = ships_to_il(domain)
 
     if iso == "IL":
         return {"total": round(usd, 2), "lines": lines, "confidence": "high",
@@ -158,8 +189,16 @@ def to_door(usd, domain=None, currency=None):
         lines.append((f'Customs duty over ${CFG["customs_over_usd"]}', round(duty, 2)))
         total = net + v + duty
 
-    return {"total": round(total, 2), "lines": lines, "confidence": "medium",
-            "note": "shipping is not included — no delivery policy on file for this shop"}
+    out = {"total": round(total, 2), "lines": lines, "confidence": "medium",
+           "note": "shipping is not included — no delivery policy on file for this shop"}
+    if ship is False:
+        out["ships_to_il"] = False
+        out["confidence"] = "no-delivery"
+        out["note"] = "this shop does not ship to Israel (shelf shipping policy) — not a deal for you"
+    elif ship is True:
+        out["ships_to_il"] = True
+        out["note"] = "ships to Israel (shelf shipping policy); shipping cost itself is not on file"
+    return out
 
 
 def total(usd, domain=None, currency=None):

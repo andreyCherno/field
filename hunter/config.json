@@ -59,5 +59,7 @@
   "archive": true,
   "google": false,
   "headed_when_blocked": true
- }
+ },
+ "card_fx_markup": 0.02,
+ "_card_fx_markup": "the mid-market rate is not what your card gives you; the shelf's landed engine uses 2% and so does this"
 }

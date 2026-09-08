@@ -126,7 +126,11 @@ def publish(identity, offers):
                  if o.get("img") else "")
         status = o.get("status", "?")
         label, why = STATUS_LABEL.get(status, (status, ""))
-        gone = " gone" if status in ("sold-out", "dead", "unpriced") else ""
+        d_ship = landed_detail(o)
+        no_ship = d_ship.get("ships_to_il") is False
+        gone = " gone" if status in ("sold-out", "dead", "unpriced") or no_ship else ""
+        if no_ship:
+            why = "does not ship to Israel — " + why
         name = o.get("page_name") or o.get("title", "")
         why_match = o.get("match_why", "")
         rows += (f'<a class="row{gone}" href="{o["url"]}" target="_blank" rel="noopener" title="{why}">'
@@ -163,7 +167,9 @@ def publish(identity, offers):
     idx_path = os.path.join(items_dir, "index.json")
     idx = json.load(open(idx_path, encoding="utf-8")) if os.path.exists(idx_path) else []
     idx = [e for e in idx if e["slug"] != slug]
-    buyable = [o for o in priced if o.get("status") not in ("sold-out", "unpriced")]
+    from agent.landed import to_door
+    buyable = [o for o in priced if o.get("status") not in ("sold-out", "unpriced")
+               and to_door(o["usd"], store_domain(o.get("url")), o.get("currency")).get("ships_to_il") is not False]
     idx.insert(0, {"slug": slug, "title": title, "sku": identity.get("sku"),
                    "hunted": ts, "offers": len(priced), "manual": len(manual),
                    "cheapest_landed": landed(buyable[0]["usd"], buyable[0].get("currency"),
@@ -185,7 +191,9 @@ def write_overlay(identity, priced, slug, ts, shelf_item=None):
     it: a fresh verified price, where, when, with the verification status —
     next to the snapshot price, never silently replacing it."""
     from agent import catalog
-    buyable = [o for o in priced if o.get("status") not in ("sold-out", "unpriced", "dead")]
+    from agent.landed import to_door
+    buyable = [o for o in priced if o.get("status") not in ("sold-out", "unpriced", "dead")
+               and to_door(o["usd"], store_domain(o.get("url")), o.get("currency")).get("ships_to_il") is not False]
     if not buyable:
         return
     best = min(buyable, key=lambda o: landed(o["usd"], o.get("currency"), o.get("url")) or 9e9)
