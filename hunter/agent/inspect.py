@@ -253,8 +253,40 @@ def inspect_offer(offer, identity, timeout_ms=20000):
 
     page = read_page(offer["url"], timeout_ms, headed=bool(offer.get("needs_headed")))
     if page is None or page.get("error"):
+        # The exact page refused us. Mr Porter opens its sitemap and its
+        # search to a real window and still 403s every product page. Before
+        # calling it dead, read the ARCHIVED copy of this same url — a real
+        # number with a crawl date beats a shrug.
+        err = (page or {}).get("error", "unreachable")
+        if str(err).startswith("HTTP 40") and CFG.get("read", {}).get("archive", True):
+            try:
+                from agent import archive
+                for crawl in archive.crawls(2):
+                    rows, e = archive._cdx(crawl, offer["url"].split("?")[0], None, limit=3)
+                    rows = [r for r in rows or [] if str(r.get("status")) == "200"]
+                    if rows:
+                        rec = {"url": rows[0]["url"], "timestamp": rows[0]["timestamp"],
+                               "filename": rows[0]["filename"], "offset": int(rows[0]["offset"]),
+                               "length": int(rows[0]["length"])}
+                        ap = archive.read(rec)
+                        if ap.get("price") is not None:
+                            sc, why = match.score(ap["name"] or offer.get("title"), identity,
+                                                  url=offer["url"], brand=ap.get("brand") or "")
+                            if sc >= ACCEPT_MIN:
+                                out.update(status="archived", price=ap["price"],
+                                           currency=ap["currency"] or offer.get("currency"),
+                                           page_name=ap["name"], in_stock=ap["in_stock"],
+                                           img=ap.get("img") or out.get("img", ""),
+                                           read_by=ap["read_by"], crawled=ap["crawled"],
+                                           match=sc, match_why=why, from_archive=True,
+                                           why=f"live page refused ({err}); price as archived "
+                                               f"by Common Crawl on {ap['crawled']}")
+                                return out
+                        break
+            except Exception:
+                pass
         out["status"] = "dead"
-        out["error"] = (page or {}).get("error", "unreachable")
+        out["error"] = err
         return out
 
     out["page_name"] = page["name"]
@@ -290,6 +322,29 @@ def inspect_offer(offer, identity, timeout_ms=20000):
 
     listed = offer.get("price")
     if page["price"] is None:
+        # The page opened and said nothing readable — a JS-rendered price the
+        # readers cannot see. The archived copy of the same url may carry a
+        # server-rendered one; try it before settling for "unpriced".
+        if CFG.get("read", {}).get("archive", True):
+            try:
+                from agent import archive
+                for crawl in archive.crawls(2):
+                    rows, _ = archive._cdx(crawl, offer["url"].split("?")[0], None, limit=3)
+                    rows = [r for r in rows or [] if str(r.get("status")) == "200"]
+                    if rows:
+                        rec = {"url": rows[0]["url"], "timestamp": rows[0]["timestamp"],
+                               "filename": rows[0]["filename"], "offset": int(rows[0]["offset"]),
+                               "length": int(rows[0]["length"])}
+                        ap = archive.read(rec)
+                        if ap.get("price") is not None:
+                            out.update(status="archived", price=ap["price"], read_by=ap["read_by"],
+                                       currency=ap["currency"] or offer.get("currency"),
+                                       crawled=ap["crawled"], from_archive=True,
+                                       why=f"live page shows no readable price; archived copy of {ap['crawled']}")
+                            return out
+                        break
+            except Exception:
+                pass
         out["status"] = "unpriced"
         return out
     page_ccy = page["currency"] or offer.get("currency")

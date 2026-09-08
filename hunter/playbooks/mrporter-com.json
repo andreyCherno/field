@@ -14,5 +14,6 @@
  "onboarded": "2026-09-08",
  "needs_browser": true,
  "needs_headed": true,
- "needs_headed_source": "refuses a headless robot; answers a visible Chrome with a persistent profile"
+ "needs_headed_source": "refuses a headless robot; answers a visible Chrome with a persistent profile",
+ "pages_note": "verified 2026-09-08: sitemap and search open to a visible Chrome; product pages answer 403 even to it. Prices come from the archived copy of the same url when the crawl holds one."
 }

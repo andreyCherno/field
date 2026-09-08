@@ -82,7 +82,10 @@ def _fetch(url, timeout=20, browser_ok=True):
             try:
                 resp = ctx.request.get(u, timeout=45000)
                 try:
-                    return resp.status, resp.text()[:8_000_000]
+                    b = resp.body()          # bytes: a .xml.gz read as text is garbage
+                    if b[:2] == b"\x1f\x8b":
+                        b = gzip.decompress(b)
+                    return resp.status, b[:8_000_000].decode("utf-8", "replace")
                 except Exception:
                     return resp.status, ""
             finally:
@@ -238,8 +241,17 @@ def find(domain, identity, limit=6, floor=None):
                 out.append({"store": domain, "url": url, "title": slug.strip(),
                             "price": None, "match": sc, "match_why": why,
                             "from_index": True})
-    out.sort(key=lambda o: -o["match"])
-    return out[:limit]
+    # One product under many locale prefixes (/en-ae/, /en-at/, /en-gb/ …) is
+    # one lead, not six: Mr Porter's index handed back the same shoe in six
+    # locales and nothing else fitted in the limit.
+    seen, dedup = set(), []
+    for o in sorted(out, key=lambda o: -o["match"]):
+        key = re.sub(r"^https?://[^/]+/", "", o["url"])
+        key = re.sub(r"^[a-z]{2}(?:-[a-z]{2})?/", "", key).rstrip("/")
+        if key in seen:
+            continue
+        seen.add(key); dedup.append(o)
+    return dedup[:limit]
 
 
 def build_all(domains=None, max_age_days=7, verbose=True):

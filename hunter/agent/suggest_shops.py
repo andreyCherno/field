@@ -28,6 +28,9 @@ ANGLES = {
               "Carhartt WIP, Stone Island, Our Legacy, Norse Projects)",
     "designer": "designer / contemporary multi-brand boutiques, outdoor specialists and "
                 "department stores with their own online shop",
+    "running": "specialist running, trail and outdoor retailers (the kind that stock Salomon, "
+               "ASICS, adidas Adizero, Hoka, On, Arc'teryx) plus independent sneaker shops in "
+               "second cities, not the capital",
 }
 PROMPT = ("You list AUTHORISED multi-brand retailers that have their own e-commerce site and "
           "ship internationally. Country: {cc}. Angle: {angle}. "
