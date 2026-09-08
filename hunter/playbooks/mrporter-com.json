@@ -15,5 +15,7 @@
  "needs_browser": true,
  "needs_headed": true,
  "needs_headed_source": "refuses a headless robot; answers a visible Chrome with a persistent profile",
- "pages_note": "verified 2026-09-08: sitemap and search open to a visible Chrome; product pages answer 403 even to it. Prices come from the archived copy of the same url when the crawl holds one."
+ "pages_note": "verified 2026-09-08: sitemap and search open to a visible Chrome; product pages answer 403 even to it. Prices come from the archived copy of the same url when the crawl holds one.",
+ "pages_blocked": true,
+ "pages_blocked_note": "verified 2026-09-08: sitemap and search open to a visible Chrome; every product page answers Akamai 'Access Denied' even to it. Leads are exact product links; a price only when the archive holds that url."
 }

@@ -34,7 +34,8 @@ _ctx.verify_mode = ssl.CERT_NONE
 NOT_PRODUCT_SITEMAP = re.compile(
     r"(blog|article|news|magazine|stylemag|journal|editorial|lookbook|"
     r"metaobject|filter[_-]?page|collection|categor|brand|designer|store|"
-    r"author|tag|page[s_-]|cms|policy|discovery)", re.I)
+    r"author|tag|page[s_-]|cms|policy|discovery|"
+    r"facet|registry|homepg|landing|search|help|faq)", re.I)   # bloomingdales: 72k facet/registry urls, 0 products
 
 
 def _sitemap_key(url):
@@ -176,12 +177,15 @@ def build(domain, max_urls=80_000, max_sitemaps=60, verbose=True, headed=False):
             # prefer the sub-sitemaps that plainly hold products
             fresh = [x for x in subs if x not in visited]
             ranked = sorted(fresh, key=lambda s: 0 if re.search(
-                r"produc|item|catalog|shop|clothing|abbigl|prod", s, re.I) else 1)
+                r"produc|item|catalog|shop|clothing|abbigl|prod|pdp", s, re.I) else 1)
             queue = ranked + queue
             # a file can be BOTH an index and a list of urls — keep both
         for u in locs:
             if len(seen) >= max_urls:
                 break
+            host = re.sub(r"^https?://", "", u).split("/")[0].lower().removeprefix("www.")
+            if host != domain.removeprefix("www.").lower():
+                continue          # a sub-site (registry, careers, ui) is not the shop
             if not _allowed(u, info["disallow"]):
                 continue
             if NOT_PRODUCT_URL.search(u):
