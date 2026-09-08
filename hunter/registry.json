@@ -1453,13 +1453,14 @@
  {
   "name": "Sivasdescalzo",
   "url": "https://www.sivasdescalzo.com",
-  "country": "HK",
+  "country": "ES",
   "category": "streetwear boutique",
   "focus": "International boutique with HK presence carrying Salomon, adidas and Our Legacy",
   "ships_to_israel": "unknown",
   "note": "International boutique with HK presence carrying Salomon, adidas and Our Legacy",
   "platform": "custom",
-  "source": "onboard 2026-09-07"
+  "source": "onboard 2026-09-07",
+  "country_source": "corrected 2026-09-08: JSON-LD addressCountry says Spain (Madrid); the proposal filed it under HK"
  },
  {
   "name": "Cult Edition",
@@ -1992,13 +1993,14 @@
  {
   "name": "Dessy",
   "url": "https://www.dessy.com",
-  "country": "IT",
+  "country": "US",
   "category": "fashion",
   "focus": "Multi-brand fashion retailer carrying adidas and contemporary designers",
   "ships_to_israel": "unknown",
   "note": "Multi-brand fashion retailer carrying adidas and contemporary designers",
   "platform": "custom",
-  "source": "onboard 2026-09-08"
+  "source": "onboard 2026-09-08",
+  "country_source": "corrected 2026-09-08: JSON-LD addressCountry says United States; the proposal filed it under IT"
  },
  {
   "name": "Naked",
@@ -3340,6 +3342,28 @@
   "focus": "Sneaker and apparel retailer offering Salomon and adidas collaborations worldwide.",
   "ships_to_israel": "unknown",
   "note": "Sneaker and apparel retailer offering Salomon and adidas collaborations worldwide.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Blends",
+  "url": "https://www.blendsus.com",
+  "country": "US",
+  "category": "streetwear boutique",
+  "focus": "Independent multi-brand boutique offering Our Legacy, Norse Projects and Carhartt WIP internationally.",
+  "ships_to_israel": "unknown",
+  "note": "Independent multi-brand boutique offering Our Legacy, Norse Projects and Carhartt WIP internationally.",
+  "platform": "custom",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Nordstrom Rack",
+  "url": "https://www.nordstromrack.com",
+  "country": "US",
+  "category": "outdoor",
+  "focus": "Official off-price webshop for ASICS, adidas, and Salomon",
+  "ships_to_israel": "unknown",
+  "note": "Official off-price webshop for ASICS, adidas, and Salomon",
   "platform": "custom",
   "source": "onboard 2026-09-08"
  }
