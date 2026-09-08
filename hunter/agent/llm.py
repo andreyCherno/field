@@ -56,7 +56,8 @@ def complete(role, system, prompt, max_tokens=2000):
     if spent_today() >= DAILY_CAP_USD:
         raise BudgetExceeded(f"daily LLM cap ${DAILY_CAP_USD} reached")
     model = MODELS[role]
-    resp = client().messages.create(
+    # hard 30s timeout — a hunt must never hang on one model call
+    resp = client().with_options(timeout=30.0, max_retries=1).messages.create(
         model=model, max_tokens=max_tokens, system=system,
         messages=[{"role": "user", "content": prompt}],
     )

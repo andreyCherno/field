@@ -117,6 +117,7 @@ class Handler(SimpleHTTPRequestHandler):
             from agent import catalog, inspect
             from hunt import publish, landed, landed_detail
 
+            print(f"[hunt] start q={query!r} deep={deep} headed={headed}", flush=True)
             if raw_identity:
                 identity = json.loads(raw_identity)      # the card you confirmed
                 identity.setdefault("query", query or identity.get("product") or "")
@@ -130,6 +131,7 @@ class Handler(SimpleHTTPRequestHandler):
 
             # a previous hunt may still be finishing — say so instead of hanging
             if not lock.acquire(timeout=0.1):
+                print("[hunt] waiting for lock", flush=True)
                 emit({"type": "status", "message": "ציד קודם עדיין מסיים — ממתין לתור…"})
                 lock.acquire()
             stopped = False
@@ -142,6 +144,7 @@ class Handler(SimpleHTTPRequestHandler):
                         save_alias(identity["query"], identity)   # never ask twice
                     except Exception:
                         pass
+                print(f"[hunt] identity: {identity.get('brand')} / {identity.get('product')} / {identity.get('sku')}", flush=True)
                 if not emit({"type": "identity", "identity": identity}):
                     raise ClientGone()
                 all_offers, off_total = [], 0
@@ -166,7 +169,9 @@ class Handler(SimpleHTTPRequestHandler):
                     if manual:            # why the shop could not be read
                         row["why"] = manual[0].get("why")
                     all_offers.extend(kept)
+                    print(f"[hunt] {row['store']}: hits={row['hits']} off={off} err={row.get('error')}", flush=True)
                     if not emit({"type": "store", "report": row, "offers": kept}):
+                        print("[hunt] client gone — aborting", flush=True)
                         raise ClientGone()   # browser left — stop hunting, free the lock
 
                 # your own shelf first: 1,334 of its items already carry a
