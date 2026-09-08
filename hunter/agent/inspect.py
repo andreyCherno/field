@@ -214,6 +214,20 @@ def size_verdict(sizes):
     return None, []
 
 
+LISTING_PATH = re.compile(r"/(collections?|category|categories|search|c|catalogsearch|s)(/|$|\.)", re.I)
+LISTING_NAME = re.compile(r"^\s*(search results?|search for|results for|\d+ results|תוצאות חיפוש|suchergebnis|"
+                          r"résultats|risultati)\b", re.I)
+
+
+def _looks_like_listing(url, name):
+    path = re.sub(r"^https?://[^/]+", "", url or "").split("?")[0]
+    if LISTING_PATH.search(path) and not re.search(r"/(products?|prd|pd|p|dp|item)/", path, re.I):
+        return True
+    if re.search(r"[?&](q|query|s|keyword|keywords|search)=", url or "", re.I):
+        return True
+    return bool(name and LISTING_NAME.search(name))
+
+
 def _colourway(sku, page, url):
     """'same' / 'different' / None. None means the page never said which."""
     m = re.match(r"^([A-Za-z0-9]{4,})[-_ ]?(\d{2,3})$", str(sku or "").strip())
@@ -289,6 +303,14 @@ def inspect_offer(offer, identity, timeout_ms=20000):
         out["error"] = err
         return out
 
+    # A listing is never a product. Two rows on the last hunt were exactly that:
+    # a terminalx collection page (₪9.90 "adidas adizero") and connox's own
+    # search page ("Search for … returned 550 results", €112.99). Both carried
+    # a price in a meta tag, and both would have been sold as a deal.
+    if _looks_like_listing(offer.get("url", ""), page.get("name")):
+        out["status"] = "wrong-item"
+        out["match"], out["match_why"] = 0.0, "a listing or search page, not a product"
+        return out
     out["page_name"] = page["name"]
     out["read_by"] = page["read_by"]
     # `sizes` on the lead is the shelf's list of plain strings; `page_sizes` is

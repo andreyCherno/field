@@ -118,7 +118,7 @@ NOT_PRODUCT = re.compile(
     r"contact|policy|policies|terms|privacy|shipping|returns|gift|wishlist|compare|"
     r"search|collections?|category|categories|product-category|product-tag|"
     r"product_cat|brands?|designers?|magazine|journal|lookbook|stories|guides?|"
-    r"size-guide|c|sitemap|store-locator)(/|$)", re.I)
+    r"size-guide|c|sitemap|store-locator)(/|$|\.)", re.I)     # search.html too
 # A path segment that really does name one product. `p` and `pd` are included
 # because plenty of shops use /collections/all/p/<slug> or /categories/shoes/pd/
 # — dropping them made every such shop yield nothing. The surrounding slashes
@@ -731,6 +731,8 @@ def harvest(links, domain, identity, limit=6, floor=HARVEST_FLOOR):
             continue
         if u.path.strip("/") == "":
             continue          # the results page itself, or the shop's front door
+        if re.search(r"(^|[?&])(q|query|s|keyword|keywords|search|searchparam)=", u.query or "", re.I):
+            continue          # a search url is never a product — connox's own results page became a lead
         # The query string is never product identity — and on a results page it
         # literally contains the words we searched for, so scoring it would let
         # the search url certify itself as a perfect match.
