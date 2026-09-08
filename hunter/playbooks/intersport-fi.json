@@ -1,0 +1,17 @@
+{
+ "domain": "intersport.fi",
+ "method": "search-url",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "EUR",
+ "currency_source": "not readable from a product page; defaulted from country FI",
+ "onboarded": "2026-09-08",
+ "search_url": "https://www.intersport.fi/fi/haku/?q={q}",
+ "search_url_source": "observed: typed into the shop's own search box"
+}

@@ -10,7 +10,8 @@
   "hits": 20,
   "last_success": null
  },
- "currency": "SEK",
+ "currency": "EUR",
  "host": "sneakersnstuff.com",
- "note": "promoted 2026-09-04: /search/suggest.json verified live"
+ "note": "promoted 2026-09-04: /search/suggest.json verified live",
+ "currency_source": "shopify /meta.json — the shop's own base currency, read 2026-09-08"
 }

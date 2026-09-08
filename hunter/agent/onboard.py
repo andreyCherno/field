@@ -105,7 +105,16 @@ def probe(domain, verbose=True, headed=False):
                 break
         except Exception:
             pass
-    say(f'shopify: {o["shopify_host"] or "no"}')
+    if o["shopify_host"]:
+        # the shop's own base currency, stated by Shopify — not the country's,
+        # not what a page shows this visitor. sneakersnstuff is Swedish and
+        # prices in EUR; "SEK because Sweden" turned €150 into $11.63.
+        try:
+            s2, fu, h = _get(f'https://{o["shopify_host"]}/meta.json', 20_000, 8)
+            o["base_currency"] = (json.loads(h).get("currency") or "").upper() or None
+        except Exception:
+            o["base_currency"] = None
+    say(f'shopify: {o["shopify_host"] or "no"}  base currency: {o.get("base_currency") or "?"}')
 
     info = sitemap.robots(d)                          # 3. sitemap (honours robots)
     o["sitemap"] = info["sitemaps"][0] if info["sitemaps"] else None
@@ -213,8 +222,9 @@ def add(domain, country=None, name=None, category=None, note=None, ships_il="unk
         return o
     pb = {"domain": d, "method": o["method"], "accepts_sku": True, "query_tips": "",
           "rate_limit_s": 2, "stats": {"attempts": 0, "hits": 0, "last_success": None},
-          "currency": o["currency"] or COUNTRY_CCY[cc],
-          "currency_source": ("read off a product page" if o["currency"] else
+          "currency": o.get("base_currency") or o["currency"] or COUNTRY_CCY[cc],
+          "currency_source": ("shopify /meta.json — the shop's own base currency" if o.get("base_currency") else
+                              "read off a product page" if o["currency"] else
                               f"not readable from a product page; defaulted from country {cc}"),
           "onboarded": date.today().isoformat()}
     if o["search_url"]:

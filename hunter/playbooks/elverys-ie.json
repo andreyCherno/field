@@ -1,5 +1,5 @@
 {
- "domain": "solestage.com",
+ "domain": "elverys.ie",
  "method": "shopify-suggest",
  "accepts_sku": true,
  "query_tips": "",
@@ -9,10 +9,10 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "USD",
- "currency_source": "shopify /meta.json — the shop's own base currency, read 2026-09-08",
+ "currency": "EUR",
+ "currency_source": "read off a product page",
  "onboarded": "2026-09-08",
- "search_url": "https://www.solestage.com/search?q={q}",
+ "search_url": "https://www.elverys.ie/search?q={q}",
  "search_url_source": "shopify: suggest.json verified live",
- "host": "www.solestage.com"
+ "host": "www.elverys.ie"
 }

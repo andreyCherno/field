@@ -1,0 +1,15 @@
+{
+ "domain": "oslo.no",
+ "method": "sitemap-index",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "NOK",
+ "currency_source": "not readable from a product page; defaulted from country NO",
+ "onboarded": "2026-09-08"
+}

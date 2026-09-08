@@ -9,8 +9,8 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "EUR",
- "currency_source": "read off a product page",
+ "currency": "DKK",
+ "currency_source": "shopify /meta.json — the shop's own base currency, read 2026-09-08",
  "onboarded": "2026-09-08",
  "search_url": "https://www.nakedcph.com/search?q={q}",
  "search_url_source": "shopify: suggest.json verified live",
