@@ -16,5 +16,7 @@
  "needs_headed": true,
  "needs_headed_source": "refuses a headless robot; answers a visible Chrome with a persistent profile",
  "archive": false,
- "archive_note": "checked 2026-09-07: no product pages in CC-MAIN-2026-34 or 2026-30; set true to re-check"
+ "archive_note": "checked 2026-09-07: no product pages in CC-MAIN-2026-34 or 2026-30; set true to re-check",
+ "pages_blocked": true,
+ "pages_blocked_note": "verified 2026-09-08: pdp sitemap opens to a visible Chrome; every product page answers 403 even to it. Leads are exact product links; archive rarely holds them."
 }

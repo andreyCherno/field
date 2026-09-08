@@ -28,6 +28,8 @@ CASES = [
     (NIKE, "Air Max 90 Essential", "Nike", "", False),           # right code, wrong shoe
     (NIKE, "Air Max 95 SE 'Mercurial'", "Nike", "", False),      # wrong model number
     (NIKE, "Air Max 900 Mercurial", "Nike", "", False),          # 90 must not match 900
+    ({"brand": "New Balance", "product": "990", "sku": None, "query": "new balance 990"},
+     "Feizy Katya 8990F Area Rug", "", "/shop/product/feizy-katya-8990f-area-rug", False),  # 990 inside 8990f
     (NIKE, "Air Force 1 Mercurial", "Nike", "", False),
     (NIKE, "Adidas Samba", "Adidas", "", False),
     (NIKE, "Some Other Shoe", "", "/products/ir5903-010", True), # style code in the url wins

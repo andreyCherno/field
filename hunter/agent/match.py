@@ -59,6 +59,12 @@ def _hit(tok, parts, bag):
             return True
         if t.isdigit() and len(t) < 3:
             continue
+        if t.isdigit():
+            # a model number must not be a slice of a longer number: "990"
+            # matched an area rug coded 8990f, and 0.75 is above the bar
+            if any(re.search(rf"(?<!\d){t}(?!\d)", p) for p in parts):
+                return True
+            continue
         if any(t in p for p in parts):
             return True
     return False
