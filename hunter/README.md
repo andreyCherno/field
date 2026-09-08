@@ -141,6 +141,54 @@ python3 -m agent.sitemap find  careofcarl.com salomon xt-6
 פשוט. מהם מקבלים **קישור מוצר מדויק** במקום "לך תחפש בחנות" — שיפור אמיתי, אבל
 לא מחיר.
 
+### 3ו. הדפדפן — שלושה מצבים (`config.browser.mode`)
+| מצב | מה זה | מתי |
+|---|---|---|
+| `headless` | Chromium בלתי-נראה, הקשר חדש לכל עמוד | ברירת מחדל — הכי מהיר |
+| `headed` | **חלון Chrome אמיתי עם פרופיל קבוע** — הקוקיז, ההסכמות שקיבלת בעצמך, ההתחברויות | חנויות שחוסמות רובוט ופותחות חלון אמיתי (`needs_headed` בפלייבוק, או ✓ "דפדפן גלוי" לכל הציד) |
+| `attach` | נהיגה ב-Chrome שכבר פתחת עם `--remote-debugging-port=9222` | הסשן שלך, הפרופיל שלך |
+
+זה המסלול שבו נקראו 5,734 שורות ASOS למדף: רובוט headless מקבל 403, חלון אמיתי
+מקבל 200 עם 72 קישורי מוצר. **אין stealth, אין זיוף fingerprint** —
+`navigator.webdriver` נשאר `true`; חנות שחוסמת עליו נשארת חסומה, וזו הגבול.
+
+### 3ז. קטלוגים שלמים של Shopify (`agent/shopify.py`)
+`/products.json` נותן כל וריאנט: מידה, מלאי, מחיר ו-`compare_at_price`. הקטלוג
+נמשך פעם ביום לאינדקס מקומי ונסרק במילישניות — kith.com: 15,000 מוצרים, XT-6 בכל
+צבע **עם המידות המדויקות במלאי, בלי טעינת עמוד**. זה המסלול הראשון לחנויות Shopify.
+
+```bash
+python3 -m agent.shopify build kith.com
+python3 -m agent.shopify find  kith.com salomon xt-6
+```
+
+### 3ח. מצבי קריאה כמתגים (`config.read`)
+`shopify_catalog` · `sitemap_index` · `archive` · `google` · `headed_when_blocked` —
+כל מסלול נדלק ונכבה בנפרד. סדר האמון בתוך עמוד קבוע: `jsonld > meta > text`.
+
+### 3ט. לחקות את איך שאתה מחפש מבצעים (`agent/sales.py`)
+```bash
+python3 -m agent.sales record     # פותח Chrome גלוי; גלוש; Ctrl-C בסיום
+python3 -m agent.sales sweep      # בונה את "הציד של היום"
+```
+`record` מסתכל לאן אתה הולך: כל עמוד בחנות רשומה נרשם, ועמודי sale/outlet
+הופכים ל-`sale_urls` של החנות — הצייד לומד את המסלול ממך. `sweep` הולך במסלולים
+לבד, קורא מחיר ומידות אמיתיים, מפעיל את השערים שלך בדיוק כפי שהם ב-`config.json`
+(מידות, דרגת מותג מהקונפיג ואז מ-`ledger.json`, תקרת תקציב, הנחה מינימלית) וכותב
+`data/feed.json`. חנויות Shopify לא צריכות עמוד בכלל — `compare_at_price` הוא המבצע.
+פיד ריק מדפיס **למה** כל פריט נפסל; ב-kith התשובה הייתה "מעל $60" — תקרת ברירת
+המחדל שלך, שפוסלת כמעט כל נעל.
+
+### 3י. להוסיף חנויות (`agent/onboard.py`, `agent/suggest_shops.py`)
+```bash
+python3 -m agent.onboard probe juicestore.com
+python3 -m agent.onboard add   juicestore.com --country HK --name JUICE --category "streetwear boutique"
+python3 -m agent.onboard add   mrporter.com   --country GB --headed      # דרך החלון הגלוי
+python3 -m agent.suggest_shops KR TW SG                                  # המודל מציע, הבדיקה מכריעה
+```
+נכתב רק מה שנצפה. מטבע לעולם לא ברירת מחדל USD — מעמוד מוצר, ואם לא — מהמדינה,
+עם מקור. 6 מתוך 8 הצעות לטייוואן היו דומיינים מומצאים — לכן הבדיקה מחליטה, לא המודל.
+
 ### 4. עצירה
 `GET /api/hunt/stop` — הציד נבדק לפני כל חנות, כל שאילתה וכל עמוד מוצר, ולכן
 העצירה נוחתת תוך טעינת עמוד אחת. מה שכבר אומת מתפרסם.

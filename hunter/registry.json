@@ -2670,5 +2670,27 @@
   "note": "Osaka-based sneaker and streetwear store stocking ASICS and adidas exclusives.",
   "platform": "custom",
   "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Superette",
+  "url": "https://www.superette.co.nz",
+  "country": "NZ",
+  "category": "streetwear boutique",
+  "focus": "Contemporary multi-brand boutique stocking Stone Island, Our Legacy and Norse Projects",
+  "ships_to_israel": "unknown",
+  "note": "Contemporary multi-brand boutique stocking Stone Island, Our Legacy and Norse Projects",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "Workshop",
+  "url": "https://www.workshop.co.nz",
+  "country": "NZ",
+  "category": "fashion",
+  "focus": "NZ designer and international contemporary label boutique with online shop",
+  "ships_to_israel": "unknown",
+  "note": "NZ designer and international contemporary label boutique with online shop",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
  }
 ]
