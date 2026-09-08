@@ -1,16 +1,22 @@
 {
  "domain": "coggles.com",
  "method": "search-url",
- "search_url": "https://coggles.com/search?q={q}",
  "accepts_sku": true,
  "query_tips": "",
  "rate_limit_s": 2,
  "stats": {
-  "attempts": 21,
+  "attempts": 0,
   "hits": 0,
   "last_success": null
  },
  "currency": "GBP",
+ "currency_source": "",
+ "onboarded": "2026-09-08",
+ "search_url": "https://www.flannels.com/search?q={q}",
+ "search_url_source": "observed: typed into the shop's own search box",
+ "needs_browser": true,
+ "needs_headed": true,
+ "needs_headed_source": "refuses a headless robot; answers a visible Chrome with a persistent profile",
  "archive": false,
  "archive_note": "checked 2026-09-07: no product pages in CC-MAIN-2026-34 or 2026-30; set true to re-check"
 }

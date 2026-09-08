@@ -51,5 +51,13 @@
   "api_key": "",
   "cx": "",
   "daily_cap": 100
+ },
+ "read": {
+  "_comment": "Which ways of reading a shop are on. Order of trust inside a page is fixed (jsonld > meta > text). shopify_catalog: whole /products.json with sizes. sitemap_index: the shop's own product list. archive: Common Crawl copy of shops that refuse us (weeks old). google: only for holders of a legacy Custom Search key. headed_when_blocked: open the visible Chrome for shops marked needs_headed.",
+  "shopify_catalog": true,
+  "sitemap_index": true,
+  "archive": true,
+  "google": false,
+  "headed_when_blocked": true
  }
 }

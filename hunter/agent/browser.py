@@ -193,10 +193,24 @@ def _headed_ctx():
     if _headed is None:
         kw = dict(headless=False, locale=LOCALE, timezone_id=TZ,
                   viewport={"width": 1280, "height": 900})
+        # A profile in use by another Chrome refuses to open; the old fallback
+        # then silently launched bundled Chromium, which the shops that need
+        # this route answer with 403 — so an onboarding run reported
+        # "unreachable" for shops a real Chrome had opened minutes earlier.
+        # Clear a stale lock, and never fall back quietly.
+        for lock in ("SingletonLock", "SingletonSocket", "SingletonCookie"):
+            try:
+                os.remove(os.path.join(PROFILE_DIR, lock))
+            except OSError:
+                pass
         try:
             _headed = _pw.chromium.launch_persistent_context(PROFILE_DIR, channel="chrome", **kw)
-        except Exception:
+            _headed._field_channel = "chrome"
+        except Exception as e:
+            print(f"[browser] real Chrome unavailable ({type(e).__name__}); using bundled Chromium — "
+                  f"shops that need a real window may refuse it", flush=True)
             _headed = _pw.chromium.launch_persistent_context(PROFILE_DIR, **kw)
+            _headed._field_channel = "chromium"
     return _headed
 
 

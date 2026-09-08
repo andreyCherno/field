@@ -2505,5 +2505,16 @@
   "note": "Chilean outdoor equipment retailer carrying its own gear alongside authorized international outdoor brands.",
   "platform": "shopify",
   "source": "onboard 2026-09-08"
+ },
+ {
+  "name": "WildBounds",
+  "url": "https://www.wildbounds.com",
+  "country": "AU HK JP KR MY NZ SG TH TW",
+  "category": "outdoor",
+  "focus": "New Zealand outdoor specialist carrying Salomon and other performance brands, ships internationally",
+  "ships_to_israel": "unknown",
+  "note": "New Zealand outdoor specialist carrying Salomon and other performance brands, ships internationally",
+  "platform": "shopify",
+  "source": "onboard 2026-09-08"
  }
 ]

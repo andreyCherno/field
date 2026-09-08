@@ -261,7 +261,7 @@ def inspect_offer(offer, identity, timeout_ms=20000):
     out["read_by"] = page["read_by"]
     # `sizes` on the lead is the shelf's list of plain strings; `page_sizes` is
     # what this page itself offers, with stock state. Two shapes, two keys.
-    out["page_sizes"] = page.get("page_sizes") or []
+    out["page_sizes"] = page.get("page_sizes") or offer.get("page_sizes") or []
     out["your_size"], out["your_sizes"] = size_verdict(out["page_sizes"])
     out["read_locale"] = browser.LOCALE   # which market's price this is
 

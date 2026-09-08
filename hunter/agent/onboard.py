@@ -33,8 +33,10 @@ def _get(url, n=300_000, t=12):
     return r.status, r.geturl(), r.read(n).decode("utf-8", "replace")
 
 
-def probe(domain, verbose=True):
+def probe(domain, verbose=True, headed=False):
     from agent import browser, sitemap, landed
+    if headed:
+        browser.FORCE_HEADED = True
     d = re.sub(r"^https?://", "", domain).strip("/").removeprefix("www.")
     o = {"domain": d, "host": None, "plain_http": None, "browser": None, "shopify_host": None,
          "sitemap": None, "search_url": None, "search_url_source": None, "currency": None,
@@ -61,6 +63,8 @@ def probe(domain, verbose=True):
     if o["plain_http"] != 200 and o["browser"] != 200:
         o["verdict"] = "unreachable"
         return o
+    if headed:
+        o["needs_headed"] = True
 
     for host in ("www." + d, d):                      # 2. shopify?
         try:
@@ -148,8 +152,8 @@ COUNTRY_CCY = {"JP": "JPY", "KR": "KRW", "TW": "TWD", "HK": "HKD", "SG": "SGD", 
                "BE": "EUR", "AT": "EUR", "IE": "EUR", "FI": "EUR", "GR": "EUR"}
 
 
-def add(domain, country=None, name=None, category=None, note=None, ships_il="unknown"):
-    o = probe(domain)
+def add(domain, country=None, name=None, category=None, note=None, ships_il="unknown", headed=False):
+    o = probe(domain, headed=headed)
     if o["verdict"] != "ok":
         print(f'  NOT ADDED — {o["verdict"]}')
         return o
@@ -172,7 +176,18 @@ def add(domain, country=None, name=None, category=None, note=None, ships_il="unk
         pb["host"] = o["shopify_host"]
     if o["plain_http"] != 200:
         pb["needs_browser"] = True
+    if o.get("needs_headed"):
+        pb["needs_headed"] = True
+        pb["needs_headed_source"] = "refuses a headless robot; answers a visible Chrome with a persistent profile"
     path = os.path.join(ROOT, "playbooks", d.replace(".", "-") + ".json")
+    if os.path.exists(path):        # keep what was learned before; overwrite only what was observed now
+        old = json.load(open(path, encoding="utf-8"))
+        for k in ("stats", "currency_source", "sale_urls", "sale_urls_source", "archive", "archive_note"):
+            if k in old and k not in pb:
+                pb[k] = old[k]
+        if old.get("currency") and not o["currency"]:
+            pb["currency"] = old["currency"]; pb["currency_source"] = old.get("currency_source", "")
+        pb.pop("skip", None)
     json.dump(pb, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
     regp = os.path.join(ROOT, "registry.json")
@@ -196,9 +211,10 @@ if __name__ == "__main__":
     ap.add_argument("domain")
     ap.add_argument("--country"); ap.add_argument("--name"); ap.add_argument("--category")
     ap.add_argument("--note"); ap.add_argument("--ships-il", default="unknown")
+    ap.add_argument("--headed", action="store_true", help="probe through the visible Chrome")
     a = ap.parse_args()
     print(f"=== {a.domain}")
     if a.cmd == "probe":
-        print("   ", json.dumps(probe(a.domain), ensure_ascii=False))
+        print("   ", json.dumps(probe(a.domain, headed=a.headed), ensure_ascii=False))
     else:
-        add(a.domain, a.country, a.name, a.category, a.note, a.ships_il)
+        add(a.domain, a.country, a.name, a.category, a.note, a.ships_il, headed=a.headed)

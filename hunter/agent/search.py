@@ -126,6 +126,22 @@ def from_index(pb, identity):
 
 
 _INDEX_CACHE = {}
+READ = json.load(open(os.path.join(ROOT, "config.json"), encoding="utf-8")).get("read", {})
+
+
+def from_catalog(pb, identity):
+    """A Shopify shop's whole catalogue, read locally: price, sizes, stock —
+    no page load, no ten-result cap. Off when config.read.shopify_catalog is."""
+    if not READ.get("shopify_catalog", True):
+        return None
+    from agent import shopify
+    d = pb["domain"]
+    if not shopify.has_index(d):
+        return None
+    age = shopify.age_days(d)
+    if age is None or age > 3:
+        return None
+    return shopify.find(d, identity, currency=pb.get("currency")) or None
 
 
 def index_first(pb, identity, max_age_days=14):
@@ -252,7 +268,7 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
             t0, hits, err = time.time(), [], None
             try:
                 if method == "shopify-suggest":
-                    hits = run_shopify_suggest(pb, q)
+                    hits = from_catalog(pb, identity) or run_shopify_suggest(pb, q)
                 elif method == "llm-parse":
                     hits = [h for h in run_llm_parse(pb, q) if h.get("price")]
                     for h in hits:
@@ -260,7 +276,7 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                 elif method == "sitemap-index":
                     # this shop refuses to be searched; read its own index
                     hits = from_index(pb, identity)
-                elif index_first(pb, identity) is not None:
+                elif READ.get("sitemap_index", True) and index_first(pb, identity) is not None:
                     # A fresh index answers in ~0.2s against 5-8s for a live
                     # search, and costs the shop nothing. It is a lead list,
                     # not an answer — the page visit still reads the price, so
@@ -271,6 +287,8 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                 else:  # search-url: open it in a real browser like a human would
                     from agent import browser
                     if browser.available():
+                        if pb.get("needs_headed") and not READ.get("headed_when_blocked", True):
+                            pb = dict(pb, needs_headed=False)
                         hits, err = browser_search(pb, identity, q, deep)
                         if err:
                             # the shop would not be read. Before giving up and
@@ -280,11 +298,11 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                             if not hits:
                                 try:
                                     from agent import google
-                                    if google.available():
+                                    if READ.get("google") and google.available():
                                         hits = google.offers_for(pb, identity)
                                 except Exception:
                                     hits = []
-                            if not hits and pb.get("archive", True):
+                            if not hits and pb.get("archive", True) and READ.get("archive", True):
                                 # last resort: the public web archive already
                                 # holds this shop's pages; read the price there
                                 try:
