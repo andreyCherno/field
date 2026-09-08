@@ -94,12 +94,12 @@ def _num(s):
     return fx.parse_amount(s)
 
 
-def read_page(url, timeout_ms=20000):
+def read_page(url, timeout_ms=20000, headed=False):
     """Open one product page and report what it actually says.
     Returns None when the page could not be opened at all."""
     try:
         v = browser.visit(url, wait_ms=4000, timeout_ms=timeout_ms,
-                          ready_js=browser.PRODUCT_READY, collect=browser.SIZES_JS)
+                          ready_js=browser.PRODUCT_READY, collect=browser.SIZES_JS, headed=headed)
     except Exception as e:
         return {"error": type(e).__name__}
     html, text = v["html"], v["text"]
@@ -251,7 +251,7 @@ def inspect_offer(offer, identity, timeout_ms=20000):
         out["read_by"] = "http"
         return out
 
-    page = read_page(offer["url"], timeout_ms)
+    page = read_page(offer["url"], timeout_ms, headed=bool(offer.get("needs_headed")))
     if page is None or page.get("error"):
         out["status"] = "dead"
         out["error"] = (page or {}).get("error", "unreachable")

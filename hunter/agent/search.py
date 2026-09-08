@@ -162,7 +162,7 @@ def browser_search(pb, identity, q, deep):
     err = None
     for u in url_variants(pb, q):
         try:
-            offers, v = browser.search(pb, u, identity, deep=deep)
+            offers, v = browser.search(pb, u, identity, deep=deep, headed=bool(pb.get("needs_headed")))
         except Exception as e:
             err = type(e).__name__
             continue
@@ -176,7 +176,7 @@ def browser_search(pb, identity, q, deep):
     # search links. Walk in the front door and use its own search box — which
     # is what a person would have done in the first place.
     try:
-        v = browser.type_search(pb["domain"], q)
+        v = browser.type_search(pb["domain"], q, headed=bool(pb.get("needs_headed")))
     except Exception as e:
         return [], err or type(e).__name__
     offers = browser.harvest(v.get("collected"), pb["domain"], identity)
@@ -308,6 +308,8 @@ def hunt(identity, deep=False, report=None, skip=None, on_store=None,
                          "item": identity.get("sku") or identity["query"]})
             for h in hits:   # every offer knows its currency (store's, unless page said)
                 h.setdefault("currency", pb.get("currency", "USD"))
+                if pb.get("needs_headed"):
+                    h["needs_headed"] = True     # its product page needs the visible browser too
             offers += hits
             store_offers += hits
             store_hits += len([h for h in hits if not h.get("manual")])

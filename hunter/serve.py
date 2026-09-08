@@ -90,6 +90,7 @@ class Handler(SimpleHTTPRequestHandler):
         offer already walked into and read off its own product page."""
         qs = self.query()
         deep = (qs.get("deep") or ["0"])[0] == "1"
+        headed = (qs.get("headed") or ["0"])[0] == "1"
         skip = [d for d in (qs.get("skip") or [""])[0].split(",") if d]
         raw_identity = (qs.get("identity") or [""])[0]
         query = (qs.get("q") or [""])[0].strip()
@@ -134,6 +135,8 @@ class Handler(SimpleHTTPRequestHandler):
             stopped = False
             try:
                 stop_flag.clear()
+                from agent import browser as _b
+                _b.FORCE_HEADED = headed          # this hunt only
                 if raw_identity and identity.get("query"):
                     try:
                         save_alias(identity["query"], identity)   # never ask twice
@@ -183,6 +186,7 @@ class Handler(SimpleHTTPRequestHandler):
                 page = publish(identity, all_offers)
             finally:
                 stop_flag.clear()
+                _b.FORCE_HEADED = False
                 lock.release()
             emit({"type": "done", "stopped": stopped, "off_target": off_total,
                   "page": "/hunter/items/" + os.path.basename(page),
@@ -205,7 +209,9 @@ class Handler(SimpleHTTPRequestHandler):
         return self.send_json({"error": "not found"}, 404)
 
     def log_message(self, fmt, *args):   # keep the terminal quiet
-        if "/api/" in (args[0] if args else ""):
+        # a 404's first arg is an HTTPStatus, not a string — it used to raise
+        # a TypeError into the log on every missing favicon
+        if "/api/" in str(args[0] if args else ""):
             super().log_message(fmt, *args)
 
 

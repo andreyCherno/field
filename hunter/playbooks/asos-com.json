@@ -10,5 +10,7 @@
   "hits": 0,
   "last_success": null
  },
- "currency": "USD"
+ "currency": "GBP",
+ "needs_headed": true,
+ "search_url_source": "verified 2026-09-08 in a visible Chrome with a persistent profile: HTTP 200, 72 product links; a headless robot gets 403"
 }

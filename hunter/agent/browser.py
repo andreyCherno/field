@@ -29,6 +29,17 @@ _ALL = json.load(open(os.path.join(os.path.dirname(os.path.dirname(
 _CFG = _ALL.get("browser", {})
 LOCALE = _CFG.get("locale", "en-US")
 TZ = _CFG.get("timezone", "Asia/Jerusalem")
+# How the browser runs — see config.browser.mode:
+#   headless   invisible Chromium, fresh context per page (default; fastest)
+#   headed     a visible Chrome window with a PERSISTENT profile: cookies,
+#              consent choices you made yourself, logins — it browses the way
+#              you do, in front of you. Slower; some shops that refuse a
+#              headless robot serve a real window normally.
+#   attach     drive a Chrome you already started with
+#              --remote-debugging-port=9222 (your own profile, your session)
+MODE = _CFG.get("mode", "headless")
+PROFILE_DIR = os.path.expanduser(_CFG.get("profile_dir", "~/.field-hunter-chrome"))
+CDP_URL = _CFG.get("cdp_url", "http://localhost:9222")
 CAND_FLOOR = _ALL.get("match", {}).get("candidate_min", 0.45)
 # Harvesting reads 100+ anchors per results page, so it uses the *publish* bar,
 # not the candidate bar. The candidate bar exists to justify opening a page we
@@ -133,12 +144,25 @@ def available():
         return False
 
 
+_persistent = None   # the shared context in attach mode
+_headed = None       # the visible persistent Chrome, opened the first time it is asked for
+_pw = None
+FORCE_HEADED = False   # a hunt can ask for the visible browser for every shop
+
+
 def _serve():
     """The one thread that ever touches Playwright."""
+    global _persistent, _pw
     from playwright.sync_api import sync_playwright
     pw = sync_playwright().start()
+    _pw = pw
     exe = os.environ.get("HUNTER_CHROMIUM")   # pre-installed chromium override
-    br = pw.chromium.launch(headless=True, executable_path=exe if exe else None)
+    br = None
+    if MODE == "attach":
+        br = pw.chromium.connect_over_cdp(CDP_URL)
+        _persistent = br.contexts[0] if br.contexts else br.new_context()
+    else:
+        br = pw.chromium.launch(headless=True, executable_path=exe if exe else None)
     try:
         while True:
             job = _jobs.get()
@@ -150,10 +174,30 @@ def _serve():
             except Exception as e:                      # noqa: BLE001
                 out.put(("err", e))
     finally:
+        for c in (_headed, _persistent):
+            try:
+                if c is not None:
+                    c.close()
+            except Exception:
+                pass
         try:
             br.close(); pw.stop()
         except Exception:
             pass
+
+
+def _headed_ctx():
+    """The visible Chrome with the persistent profile — a real window, your
+    cookies, the consent choices you made yourself. Opened once, kept open."""
+    global _headed
+    if _headed is None:
+        kw = dict(headless=False, locale=LOCALE, timezone_id=TZ,
+                  viewport={"width": 1280, "height": 900})
+        try:
+            _headed = _pw.chromium.launch_persistent_context(PROFILE_DIR, channel="chrome", **kw)
+        except Exception:
+            _headed = _pw.chromium.launch_persistent_context(PROFILE_DIR, **kw)
+    return _headed
 
 
 def _submit(fn, *args):
@@ -179,7 +223,25 @@ def close():
     _worker = None
 
 
-def _context(br):
+class _Shared:
+    """In headed/attach mode every page lives in the one persistent context, so
+    'closing the context' after a page must only close the page."""
+    def __init__(self, ctx): self.ctx = ctx; self.pages = []
+    def new_page(self):
+        p = self.ctx.new_page(); self.pages.append(p); return p
+    @property
+    def request(self): return self.ctx.request
+    def close(self):
+        for p in self.pages:
+            try: p.close()
+            except Exception: pass
+
+
+def _context(br, headed=False):
+    if headed or FORCE_HEADED or MODE == "headed":
+        return _Shared(_headed_ctx())
+    if _persistent is not None:
+        return _Shared(_persistent)
     # locale decides WHICH market's price the shop serves — see config.browser
     return br.new_context(
         user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -187,7 +249,7 @@ def _context(br):
         locale=LOCALE, timezone_id=TZ)
 
 
-def visit(url, wait_ms=2500, timeout_ms=20000, ready_js=None, collect=None):
+def visit(url, wait_ms=2500, timeout_ms=20000, ready_js=None, collect=None, headed=False):
     """Open one page and report what we landed on: {html, text, url, status}.
 
     The *final* url matters as much as the html. A delisted product quietly
@@ -197,11 +259,11 @@ def visit(url, wait_ms=2500, timeout_ms=20000, ready_js=None, collect=None):
 
     `ready_js` is a JS predicate: when it returns true the page is done and we
     stop waiting — `wait_ms` becomes the ceiling instead of a flat sleep."""
-    return _submit(_do_visit, url, wait_ms, timeout_ms, ready_js, collect)
+    return _submit(_do_visit, url, wait_ms, timeout_ms, ready_js, collect, headed)
 
 
-def _do_visit(br, url, wait_ms, timeout_ms, ready_js, collect=None):
-    ctx = _context(br)
+def _do_visit(br, url, wait_ms, timeout_ms, ready_js, collect=None, headed=False):
+    ctx = _context(br, headed)
     try:
         page = ctx.new_page()
         resp = page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
@@ -505,7 +567,7 @@ def _first_visible(page, selectors):
     return None
 
 
-def type_search(domain, query, wait_ms=3000, timeout_ms=20000):
+def type_search(domain, query, wait_ms=3000, timeout_ms=20000, headed=False):
     """Search a shop the way a person does: open it, find the search box, type,
     press Enter, read whatever comes back.
 
@@ -517,11 +579,11 @@ def type_search(domain, query, wait_ms=3000, timeout_ms=20000):
     the box, this fails and the shop is reported unreadable, which is the
     honest outcome — consent is not something to give on someone's behalf.
     """
-    return _submit(_do_type_search, domain, query, wait_ms, timeout_ms)
+    return _submit(_do_type_search, domain, query, wait_ms, timeout_ms, headed)
 
 
-def _do_type_search(br, domain, query, wait_ms, timeout_ms):
-    ctx = _context(br)
+def _do_type_search(br, domain, query, wait_ms, timeout_ms, headed=False):
+    ctx = _context(br, headed)
     try:
         page = ctx.new_page()
         landed = None
@@ -654,14 +716,14 @@ def harvest(links, domain, identity, limit=6, floor=HARVEST_FLOOR):
     return leads[:limit]
 
 
-def search(pb, url, identity, deep=False, limit=6, floor=None):
+def search(pb, url, identity, deep=False, limit=6, floor=None, headed=False):
     """Search one store the way a person does: open the results page in a real
     browser, then take the links that actually match what we are hunting.
 
     Raises if the page could not be opened at all — that is a broken playbook
     or a blocked shop, and it must be reported as such rather than dressed up
     as a result."""
-    v = visit(url, wait_ms=3000, collect=LINKS_JS)
+    v = visit(url, wait_ms=3000, collect=LINKS_JS, headed=headed or bool(pb.get("needs_headed")))
     domain = pb["domain"]
     # 1. Structured data, when the shop emits it on a results page. This uses
     #    the *candidate* bar, not the publish bar: a results-page title is

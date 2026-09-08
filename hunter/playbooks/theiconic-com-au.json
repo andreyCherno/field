@@ -1,0 +1,17 @@
+{
+ "domain": "theiconic.com.au",
+ "method": "search-url",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "USD",
+ "currency_source": "read off a product page",
+ "onboarded": "2026-09-07",
+ "search_url": "https://www.theiconic.com.au/?q={q}",
+ "search_url_source": "read from the shop's own search form"
+}

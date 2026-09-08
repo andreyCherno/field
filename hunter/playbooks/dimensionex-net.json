@@ -1,0 +1,17 @@
+{
+ "domain": "dimensionex.net",
+ "method": "search-url",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "EUR",
+ "currency_source": "not readable from a product page; defaulted from country IT",
+ "onboarded": "2026-09-08",
+ "search_url": "https://www.dimensionex.net/search_gcse/?q={q}&cx=partner-pub-3542242647736863%3A7858186036&cof=FORID%3A10&ie=UTF-8&VhZpyobmtuFf=GCO49AWtwdx3pNio",
+ "search_url_source": "read from the shop's own search form"
+}

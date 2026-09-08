@@ -132,6 +132,7 @@
   <form id="huntform" dir="rtl">
     <input type="text" id="q" placeholder="מה לצוד? שם מוצר או מק״ט — salomon xt-6 / DV1748-101">
     <label><input type="checkbox" id="deep"> חיפוש עמוק (LLM על חנויות קשות)</label>
+    <label title="פותח חלון Chrome אמיתי עם פרופיל קבוע — הקוקיז וההסכמות שלך. איטי יותר; חנויות שחוסמות רובוט לרוב פותחות חלון אמיתי"><input type="checkbox" id="headed"> דפדפן גלוי</label>
     <button type="submit" id="go">בדוק פריט</button>
     <button type="button" id="stop" hidden>■ עצור</button>
     <button type="button" id="gear" title="הגדרות" style="background:none;border:1px solid var(--line);color:var(--ink);padding:8px 12px;cursor:pointer">⚙</button>
@@ -347,7 +348,7 @@ function startHunt(identity){
   F("coverage").hidden=false; F("coverage").innerHTML="<h3>איפה חיפשתי — חי</h3>";
   let checked=0, rejected=0;
   es=new EventSource(`/api/hunt/stream?identity=${encodeURIComponent(JSON.stringify(identity))}`+
-    `&deep=${F("deep").checked?1:0}&skip=${[...skipSet].join(",")}`+
+    `&deep=${F("deep").checked?1:0}&headed=${F("headed").checked?1:0}&skip=${[...skipSet].join(",")}`+
     (window.SHELF_ITEM?`&item=${encodeURIComponent(window.SHELF_ITEM)}`:""));
   es.onmessage=ev=>{
     const d=JSON.parse(ev.data);

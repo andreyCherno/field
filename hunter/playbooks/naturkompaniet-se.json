@@ -1,0 +1,17 @@
+{
+ "domain": "naturkompaniet.se",
+ "method": "search-url",
+ "accepts_sku": true,
+ "query_tips": "",
+ "rate_limit_s": 2,
+ "stats": {
+  "attempts": 0,
+  "hits": 0,
+  "last_success": null
+ },
+ "currency": "SEK",
+ "currency_source": "not readable from a product page; defaulted from country SE",
+ "onboarded": "2026-09-08",
+ "search_url": "https://www.naturkompaniet.se/?search={q}",
+ "search_url_source": "read from the shop's own search form"
+}
